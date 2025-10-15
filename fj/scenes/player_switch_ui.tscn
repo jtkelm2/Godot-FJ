@@ -1,0 +1,25 @@
+[gd_scene load_steps=2 format=3 uid="uid://c25bwreodnx0t"]
+
+[ext_resource type="Script" uid="uid://c8lsumqoe0vi8" path="res://fj/scenes/player_switch_ui.gd" id="1_switch"]
+
+[node name="PlayerSwitchUI" type="CanvasLayer"]
+script = ExtResource("1_switch")
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_right = 200.0
+offset_bottom = 80.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="PlayerLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Current Player: RED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "[Enter] to pass turn"
+horizontal_alignment = 1
+vertical_alignment = 1

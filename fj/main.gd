@@ -22,11 +22,3 @@ func _make_deck(color:G.PColor) -> void:
 		card_factory.create_fj_card("weapon_%d" % i, color, deck)
 	
 	deck.shuffle()
-
-
-
-func _input(event):
-	if event.is_action_pressed("space"):
-		var card = $CardManager/RDeck.get_top_cards(1)[0]
-		$CardManager/RDeck.remove_card(card)
-		$CardManager/RVS1.add_card(card)

@@ -1,7 +1,5 @@
 class_name Deck
-extends Pile
-
-@export var color:G.PColor
+extends Slot
 
 func _ready():
 	super._ready()

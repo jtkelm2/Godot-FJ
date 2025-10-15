@@ -1,7 +1,7 @@
-[gd_scene load_steps=15 format=3 uid="uid://dlljip2w188d7"]
+[gd_scene load_steps=16 format=3 uid="uid://dlljip2w188d7"]
 
 [ext_resource type="Script" uid="uid://c3j0jktqgr4ei" path="res://fj/main.gd" id="1_jk3xc"]
-[ext_resource type="Texture2D" uid="uid://d3400k65yf8en" path="res://fj/assets/images/playmat_guides.png" id="2_y82j6"]
+[ext_resource type="Texture2D" uid="uid://vtf8o1we105k" path="res://fj/assets/images/playmat.png" id="2_p4kxw"]
 [ext_resource type="Script" uid="uid://clqgq1n7v0ar" path="res://addons/card-framework/card_manager.gd" id="4_ia6cn"]
 [ext_resource type="PackedScene" uid="uid://msus1asv826p" path="res://fj/scenes/deck.tscn" id="5_jk3xc"]
 [ext_resource type="PackedScene" uid="uid://c28b0w0q07vwt" path="res://fj/fj_card_factory.tscn" id="5_xn5p6"]
@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://hnsy76nhwsfq" path="res://fj/assets/images/slots/kill_slot.png" id="12_a003i"]
 [ext_resource type="Texture2D" uid="uid://rk5u6nco7wxc" path="res://fj/assets/images/slots/fancy_dim.png" id="13_r1e0s"]
 [ext_resource type="Texture2D" uid="uid://ceag7tvsbj3h8" path="res://fj/assets/images/slots/discard.png" id="14_py3mm"]
+[ext_resource type="PackedScene" uid="uid://c25bwreodnx0t" path="res://fj/scenes/player_switch_ui.tscn" id="15_0we2d"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_jk3xc")
@@ -21,7 +22,8 @@ script = ExtResource("1_jk3xc")
 [node name="TextureRect" type="TextureRect" parent="."]
 offset_right = 1920.0
 offset_bottom = 1080.0
-texture = ExtResource("2_y82j6")
+texture = ExtResource("2_p4kxw")
+metadata/_edit_lock_ = true
 
 [node name="CardManager" type="Control" parent="."]
 layout_mode = 3
@@ -61,6 +63,8 @@ offset_left = 1000.0
 offset_top = 144.0
 offset_right = 1040.0
 offset_bottom = 250.0
+slot_owner = 1
+zone_type = 7
 
 [node name="RDeck" parent="CardManager" instance=ExtResource("5_jk3xc")]
 layout_mode = 1
@@ -68,6 +72,7 @@ offset_left = 840.0
 offset_top = 144.0
 offset_right = 880.0
 offset_bottom = 250.0
+zone_type = 7
 
 [node name="RedHiddenSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
 layout_mode = 1
@@ -78,6 +83,7 @@ offset_left = 881.0
 offset_top = 365.0
 offset_right = 881.0
 offset_bottom = 365.0
+zone_type = 2
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedHiddenSlot1"]
 layout_mode = 0
@@ -114,6 +120,7 @@ offset_left = 881.0
 offset_top = 511.0
 offset_right = 881.0
 offset_bottom = 511.0
+zone_type = 2
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedHiddenSlot2"]
 layout_mode = 0
@@ -150,6 +157,7 @@ offset_left = 1041.0
 offset_top = 365.0
 offset_right = 1041.0
 offset_bottom = 365.0
+slot_owner = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueDistantSlot1"]
 layout_mode = 0
@@ -168,6 +176,8 @@ offset_left = 961.0
 offset_top = 365.0
 offset_right = 961.0
 offset_bottom = 365.0
+slot_owner = 1
+zone_type = 2
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueHiddenSlot1"]
 layout_mode = 0
@@ -186,6 +196,7 @@ offset_left = 1041.0
 offset_top = 511.0
 offset_right = 1041.0
 offset_bottom = 511.0
+slot_owner = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueDistantSlot2"]
 layout_mode = 0
@@ -204,6 +215,8 @@ offset_left = 961.0
 offset_top = 511.0
 offset_right = 961.0
 offset_bottom = 511.0
+slot_owner = 1
+zone_type = 2
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueHiddenSlot2"]
 layout_mode = 0
@@ -219,6 +232,7 @@ offset_left = 760.0
 offset_top = 146.0
 offset_right = 800.0
 offset_bottom = 252.0
+zone_type = 8
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedRefresh"]
 layout_mode = 1
@@ -241,6 +255,8 @@ offset_left = 1080.0
 offset_top = 146.0
 offset_right = 1120.0
 offset_bottom = 252.0
+slot_owner = 1
+zone_type = 8
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueRefresh"]
 layout_mode = 1
@@ -266,6 +282,7 @@ offset_left = 560.0
 offset_top = 292.0
 offset_right = 560.0
 offset_bottom = 292.0
+zone_type = 4
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedEquipmentSlot1"]
 layout_mode = 1
@@ -291,6 +308,7 @@ offset_left = 640.0
 offset_top = 292.0
 offset_right = 640.0
 offset_bottom = 292.0
+zone_type = 4
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedEquipmentSlot2"]
 layout_mode = 1
@@ -316,6 +334,8 @@ offset_left = 1201.0
 offset_top = 292.0
 offset_right = 1201.0
 offset_bottom = 292.0
+slot_owner = 1
+zone_type = 4
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueEquipmentSlot1"]
 layout_mode = 1
@@ -341,6 +361,8 @@ offset_left = 1281.0
 offset_top = 292.0
 offset_right = 1281.0
 offset_bottom = 292.0
+slot_owner = 1
+zone_type = 4
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueEquipmentSlot2"]
 layout_mode = 1
@@ -366,6 +388,7 @@ offset_left = 560.0
 offset_top = 511.0
 offset_right = 560.0
 offset_bottom = 511.0
+zone_type = 5
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedWeaponSlot"]
 layout_mode = 1
@@ -391,6 +414,7 @@ offset_left = 640.0
 offset_top = 511.0
 offset_right = 640.0
 offset_bottom = 511.0
+zone_type = 5
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedKillSlot"]
 layout_mode = 1
@@ -416,6 +440,8 @@ offset_left = 1281.0
 offset_top = 511.0
 offset_right = 1281.0
 offset_bottom = 511.0
+slot_owner = 1
+zone_type = 5
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueWeaponSlot"]
 layout_mode = 1
@@ -441,6 +467,8 @@ offset_left = 1201.0
 offset_top = 511.0
 offset_right = 1201.0
 offset_bottom = 511.0
+slot_owner = 1
+zone_type = 6
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueKillSlot"]
 layout_mode = 1
@@ -463,6 +491,7 @@ offset_left = 480.0
 offset_top = 730.0
 offset_right = 520.0
 offset_bottom = 836.0
+zone_type = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot1"]
 layout_mode = 1
@@ -485,6 +514,7 @@ offset_left = 560.0
 offset_top = 730.0
 offset_right = 600.0
 offset_bottom = 836.0
+zone_type = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot2"]
 layout_mode = 1
@@ -507,6 +537,7 @@ offset_left = 640.0
 offset_top = 730.0
 offset_right = 680.0
 offset_bottom = 836.0
+zone_type = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot3"]
 layout_mode = 1
@@ -529,6 +560,7 @@ offset_left = 720.0
 offset_top = 730.0
 offset_right = 760.0
 offset_bottom = 836.0
+zone_type = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot4"]
 layout_mode = 1
@@ -551,6 +583,8 @@ offset_left = 1121.0
 offset_top = 730.0
 offset_right = 1161.0
 offset_bottom = 836.0
+slot_owner = 1
+zone_type = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot4"]
 layout_mode = 1
@@ -573,6 +607,8 @@ offset_left = 1201.0
 offset_top = 730.0
 offset_right = 1241.0
 offset_bottom = 836.0
+slot_owner = 1
+zone_type = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot3"]
 layout_mode = 1
@@ -595,6 +631,8 @@ offset_left = 1281.0
 offset_top = 730.0
 offset_right = 1321.0
 offset_bottom = 836.0
+slot_owner = 1
+zone_type = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot2"]
 layout_mode = 1
@@ -617,6 +655,8 @@ offset_left = 1361.0
 offset_top = 730.0
 offset_right = 1401.0
 offset_bottom = 836.0
+slot_owner = 1
+zone_type = 1
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot1"]
 layout_mode = 1
@@ -639,6 +679,8 @@ offset_left = 1240.0
 offset_top = 73.0
 offset_right = 1280.0
 offset_bottom = 179.0
+slot_owner = 1
+zone_type = 9
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/BlueDiscardSlot"]
 layout_mode = 1
@@ -661,6 +703,7 @@ offset_left = 600.0
 offset_top = 73.0
 offset_right = 640.0
 offset_bottom = 179.0
+zone_type = 9
 
 [node name="TextureRect" type="TextureRect" parent="CardManager/RedDiscardSlot"]
 layout_mode = 1
@@ -676,3 +719,5 @@ offset_bottom = 438.0
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("14_py3mm")
 metadata/_edit_lock_ = true
+
+[node name="PlayerSwitchUI" parent="." instance=ExtResource("15_0we2d")]
