@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://1q7a1hxn6sq0"]
+
+[ext_resource type="Script" uid="uid://l4yq83m0wd5r" path="res://fj/scenes/slot.gd" id="1_yyha8"]
+
+[node name="Slot" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_yyha8")
+metadata/_custom_type_script = "uid://6ams8uvg43gu"

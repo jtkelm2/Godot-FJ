@@ -1,0 +1,8 @@
+{
+  "name": "major_20",
+  "big_name": "Judgement",
+  "value": "20",
+  "type": "Equipment/Weapon",
+  "text": "While equipped: You may discard this to wield it as a weapon.\nAs a weapon: Discards after one use.",
+  "front_image": "named_21.png"
+}

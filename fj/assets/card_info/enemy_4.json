@@ -1,0 +1,8 @@
+{
+  "name": "enemy_4",
+  "big_name": "",
+  "value": "4",
+  "type": "Skeleton",
+  "text": "On placement: Draw another card underneath this.",
+  "front_image": "nameless_24.png"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "major_1",
+  "big_name": "The Magician",
+  "value": "",
+  "type": "Event",
+  "text": "On resolve: Look at the top 3 cards of the deck, and resolve one of them. Place the other 2 cards in the refresh pile.",
+  "front_image": "named_2.png"
+}

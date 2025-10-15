@@ -1,0 +1,8 @@
+{
+  "name": "major_13",
+  "big_name": "Death",
+  "value": "",
+  "type": "Event",
+  "text": "On resolve: Discard all adjacent action cards. Your Action Phase ends now.",
+  "front_image": "named_14.png"
+}

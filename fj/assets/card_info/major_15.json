@@ -1,0 +1,8 @@
+{
+  "name": "major_15",
+  "big_name": "The Devil",
+  "value": "15",
+  "type": "Boss",
+  "text": "After death: Once per Action Phase, you may declare a number. If the other player has at least that much HP, steal it from them. If they do not, you die!",
+  "front_image": "named_16.png"
+}

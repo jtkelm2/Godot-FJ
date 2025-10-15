@@ -1,0 +1,8 @@
+{
+  "name": "bad_role_8",
+  "big_name": "Evil",
+  "value": "",
+  "type": "Phoenix",
+  "text": "You cannot give HP.\nAt the end of each Refresh Phase, take 1 damage.\nIf this kills you: Revive to d20 HP. The other player permanently loses the abilities and traits of their role card.",
+  "front_image": "named_38.png"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "bad_role_9",
+  "big_name": "Evil",
+  "value": "",
+  "type": "Leo",
+  "text": "Your HP cap starts at 9.\nWhenever you die, reduce your HP cap by 1 then revive to full HP.",
+  "front_image": "named_39.png"
+}

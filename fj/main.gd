@@ -1,0 +1,32 @@
+extends Node
+
+@onready var card_manager = $CardManager
+@onready var card_factory = $CardManager/FjCardFactory
+
+func _ready():
+	_make_deck(G.PColor.Red)
+	_make_deck(G.PColor.Blue)
+
+func _make_deck(color:G.PColor) -> void:
+	var deck:Pile = $CardManager/RDeck if color == G.PColor.Red else $CardManager/BDeck
+	
+	for i in range(1,22):
+		card_factory.create_fj_card("major_%d" % i, color, deck)
+	
+	for i in range(1,15):
+		for j in range(0,2):
+			card_factory.create_fj_card("enemy_%d" % i, color, deck)
+	
+	for i in range(1,11):
+		card_factory.create_fj_card("food_%d" % i, color, deck)
+		card_factory.create_fj_card("weapon_%d" % i, color, deck)
+	
+	deck.shuffle()
+
+
+
+func _input(event):
+	if event.is_action_pressed("space"):
+		var card = $CardManager/RDeck.get_top_cards(1)[0]
+		$CardManager/RDeck.remove_card(card)
+		$CardManager/RVS1.add_card(card)

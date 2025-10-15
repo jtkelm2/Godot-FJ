@@ -1,0 +1,8 @@
+{
+  "name": "major_10",
+  "big_name": "The Wheel of Fortune",
+  "value": "",
+  "type": "Event",
+  "text": "On resolve: Roll a d20. Set your HP equal to the result.",
+  "front_image": "named_11.png"
+}

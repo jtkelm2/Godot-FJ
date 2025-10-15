@@ -1,0 +1,8 @@
+{
+  "name": "major_14",
+  "big_name": "Temperance",
+  "value": "14",
+  "type": "Boss",
+  "text": "On kill: Heal 5.\nAfter death: At any point, you may give any amount of your own HP to the other player.",
+  "front_image": "named_15.png"
+}

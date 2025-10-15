@@ -1,0 +1,8 @@
+{
+  "name": "major_8",
+  "big_name": "Strength",
+  "value": "8",
+  "type": "Equipment/Weapon",
+  "text": "While equipped: You may discard this to wield it as a weapon.\nAs a weapon: Every time this kills an enemy: Discard the enemy, then the other player rolls a d20 and declares the result (Evil may lie). If the result is 10 or less, place a counter on this. For Good only, this has -1 level per counter on it.",
+  "front_image": "named_9.png"
+}

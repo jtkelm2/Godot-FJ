@@ -1,0 +1,8 @@
+{
+  "name": "major_18",
+  "big_name": "The Moon",
+  "value": "18",
+  "type": "Boss",
+  "text": "After death: At the start of each Refresh Phase, record your HP. Until next Refresh Phase, your HP may not deviate more than 10 from that amount.",
+  "front_image": "named_19.png"
+}

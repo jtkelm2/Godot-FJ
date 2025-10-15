@@ -1,0 +1,8 @@
+{
+  "name": "enemy_3",
+  "big_name": "",
+  "value": "3",
+  "type": "Enemy",
+  "text": "If you kill this with a weapon: Discard this and your kill pile.",
+  "front_image": "nameless_23.png"
+}

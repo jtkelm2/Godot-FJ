@@ -1,0 +1,678 @@
+[gd_scene load_steps=15 format=3 uid="uid://dlljip2w188d7"]
+
+[ext_resource type="Script" uid="uid://c3j0jktqgr4ei" path="res://fj/main.gd" id="1_jk3xc"]
+[ext_resource type="Texture2D" uid="uid://d3400k65yf8en" path="res://fj/assets/images/playmat_guides.png" id="2_y82j6"]
+[ext_resource type="Script" uid="uid://clqgq1n7v0ar" path="res://addons/card-framework/card_manager.gd" id="4_ia6cn"]
+[ext_resource type="PackedScene" uid="uid://msus1asv826p" path="res://fj/scenes/deck.tscn" id="5_jk3xc"]
+[ext_resource type="PackedScene" uid="uid://c28b0w0q07vwt" path="res://fj/fj_card_factory.tscn" id="5_xn5p6"]
+[ext_resource type="Script" uid="uid://dj46jo3lfbclo" path="res://addons/card-framework/hand.gd" id="6_obgvf"]
+[ext_resource type="PackedScene" uid="uid://1q7a1hxn6sq0" path="res://fj/scenes/slot.tscn" id="7_p4kxw"]
+[ext_resource type="Texture2D" uid="uid://dyxxotuvlrp7m" path="res://fj/assets/images/slots/combined.png" id="8_0we2d"]
+[ext_resource type="Texture2D" uid="uid://c7pb4ky3dla1w" path="res://fj/assets/images/slots/refresh.png" id="9_p4kxw"]
+[ext_resource type="Texture2D" uid="uid://dmdkaq3gw8axg" path="res://fj/assets/images/slots/equipment.png" id="10_0we2d"]
+[ext_resource type="Texture2D" uid="uid://xe4wso5p7m2x" path="res://fj/assets/images/slots/weapon_slot.png" id="11_2qea7"]
+[ext_resource type="Texture2D" uid="uid://hnsy76nhwsfq" path="res://fj/assets/images/slots/kill_slot.png" id="12_a003i"]
+[ext_resource type="Texture2D" uid="uid://rk5u6nco7wxc" path="res://fj/assets/images/slots/fancy_dim.png" id="13_r1e0s"]
+[ext_resource type="Texture2D" uid="uid://ceag7tvsbj3h8" path="res://fj/assets/images/slots/discard.png" id="14_py3mm"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_jk3xc")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_right = 1920.0
+offset_bottom = 1080.0
+texture = ExtResource("2_y82j6")
+
+[node name="CardManager" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("4_ia6cn")
+card_size = Vector2(85, 146)
+card_factory_scene = ExtResource("5_xn5p6")
+metadata/_custom_type_script = "uid://clqgq1n7v0ar"
+
+[node name="RHand" type="Control" parent="CardManager"]
+anchors_preset = 0
+offset_left = 600.0
+offset_top = 881.0
+offset_right = 600.0
+offset_bottom = 881.0
+script = ExtResource("6_obgvf")
+max_hand_size = 6
+max_hand_spread = 340
+metadata/_custom_type_script = "uid://dj46jo3lfbclo"
+
+[node name="BHand" type="Control" parent="CardManager"]
+anchors_preset = 0
+offset_left = 1240.0
+offset_top = 881.0
+offset_right = 1240.0
+offset_bottom = 881.0
+script = ExtResource("6_obgvf")
+max_hand_size = 6
+max_hand_spread = 340
+metadata/_custom_type_script = "uid://dj46jo3lfbclo"
+
+[node name="BDeck" parent="CardManager" instance=ExtResource("5_jk3xc")]
+layout_mode = 1
+offset_left = 1000.0
+offset_top = 144.0
+offset_right = 1040.0
+offset_bottom = 250.0
+
+[node name="RDeck" parent="CardManager" instance=ExtResource("5_jk3xc")]
+layout_mode = 1
+offset_left = 840.0
+offset_top = 144.0
+offset_right = 880.0
+offset_bottom = 250.0
+
+[node name="RedHiddenSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 881.0
+offset_top = 365.0
+offset_right = 881.0
+offset_bottom = 365.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedHiddenSlot1"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="RedDistantSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 801.0
+offset_top = 365.0
+offset_right = 801.0
+offset_bottom = 365.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedDistantSlot1"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="RedHiddenSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 881.0
+offset_top = 511.0
+offset_right = 881.0
+offset_bottom = 511.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedHiddenSlot2"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="RedDistantSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 801.0
+offset_top = 511.0
+offset_right = 801.0
+offset_bottom = 511.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedDistantSlot2"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="BlueDistantSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 1041.0
+offset_top = 365.0
+offset_right = 1041.0
+offset_bottom = 365.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueDistantSlot1"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="BlueHiddenSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 961.0
+offset_top = 365.0
+offset_right = 961.0
+offset_bottom = 365.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueHiddenSlot1"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="BlueDistantSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 1041.0
+offset_top = 511.0
+offset_right = 1041.0
+offset_bottom = 511.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueDistantSlot2"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="BlueHiddenSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 961.0
+offset_top = 511.0
+offset_right = 961.0
+offset_bottom = 511.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueHiddenSlot2"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="RedRefresh" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 760.0
+offset_top = 146.0
+offset_right = 800.0
+offset_bottom = 252.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedRefresh"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("9_p4kxw")
+metadata/_edit_lock_ = true
+
+[node name="BlueRefresh" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 1080.0
+offset_top = 146.0
+offset_right = 1120.0
+offset_bottom = 252.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueRefresh"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("9_p4kxw")
+metadata/_edit_lock_ = true
+
+[node name="RedEquipmentSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 560.0
+offset_top = 292.0
+offset_right = 560.0
+offset_bottom = 292.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedEquipmentSlot1"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -12.912001
+anchor_top = -3.062
+anchor_right = -12.912001
+anchor_bottom = -3.062
+offset_left = 1032.9601
+offset_top = 447.052
+offset_right = 1192.9601
+offset_bottom = 739.052
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("10_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="RedEquipmentSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 640.0
+offset_top = 292.0
+offset_right = 640.0
+offset_bottom = 292.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedEquipmentSlot2"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -12.912001
+anchor_top = -3.062
+anchor_right = -12.912001
+anchor_bottom = -3.062
+offset_left = 1032.9601
+offset_top = 447.052
+offset_right = 1192.9601
+offset_bottom = 739.052
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("10_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="BlueEquipmentSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 1201.0
+offset_top = 292.0
+offset_right = 1201.0
+offset_bottom = 292.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueEquipmentSlot1"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -12.912001
+anchor_top = -3.062
+anchor_right = -12.912001
+anchor_bottom = -3.062
+offset_left = 1032.9601
+offset_top = 447.052
+offset_right = 1192.9601
+offset_bottom = 739.052
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("10_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="BlueEquipmentSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 1281.0
+offset_top = 292.0
+offset_right = 1281.0
+offset_bottom = 292.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueEquipmentSlot2"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -12.912001
+anchor_top = -3.062
+anchor_right = -12.912001
+anchor_bottom = -3.062
+offset_left = 1032.9601
+offset_top = 447.052
+offset_right = 1192.9601
+offset_bottom = 739.052
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("10_0we2d")
+metadata/_edit_lock_ = true
+
+[node name="RedWeaponSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 560.0
+offset_top = 511.0
+offset_right = 560.0
+offset_bottom = 511.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedWeaponSlot"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -12.912001
+anchor_top = -3.062
+anchor_right = -12.912001
+anchor_bottom = -3.062
+offset_left = 1032.9601
+offset_top = 447.052
+offset_right = 1192.9601
+offset_bottom = 739.052
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("11_2qea7")
+metadata/_edit_lock_ = true
+
+[node name="RedKillSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 640.0
+offset_top = 511.0
+offset_right = 640.0
+offset_bottom = 511.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedKillSlot"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -12.912001
+anchor_top = -3.062
+anchor_right = -12.912001
+anchor_bottom = -3.062
+offset_left = 1032.9601
+offset_top = 447.052
+offset_right = 1192.9601
+offset_bottom = 739.052
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("12_a003i")
+metadata/_edit_lock_ = true
+
+[node name="BlueWeaponSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 1281.0
+offset_top = 511.0
+offset_right = 1281.0
+offset_bottom = 511.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueWeaponSlot"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -12.912001
+anchor_top = -3.062
+anchor_right = -12.912001
+anchor_bottom = -3.062
+offset_left = 1032.9601
+offset_top = 447.052
+offset_right = 1192.9601
+offset_bottom = 739.052
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("11_2qea7")
+metadata/_edit_lock_ = true
+
+[node name="BlueKillSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.0
+anchor_bottom = 3.65
+offset_left = 1201.0
+offset_top = 511.0
+offset_right = 1201.0
+offset_bottom = 511.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueKillSlot"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -12.912001
+anchor_top = -3.062
+anchor_right = -12.912001
+anchor_bottom = -3.062
+offset_left = 1032.9601
+offset_top = 447.052
+offset_right = 1192.9601
+offset_bottom = 739.052
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("12_a003i")
+metadata/_edit_lock_ = true
+
+[node name="RedManipulationSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 480.0
+offset_top = 730.0
+offset_right = 520.0
+offset_bottom = 836.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot1"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("13_r1e0s")
+metadata/_edit_lock_ = true
+
+[node name="RedManipulationSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 560.0
+offset_top = 730.0
+offset_right = 600.0
+offset_bottom = 836.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot2"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("13_r1e0s")
+metadata/_edit_lock_ = true
+
+[node name="RedManipulationSlot3" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 640.0
+offset_top = 730.0
+offset_right = 680.0
+offset_bottom = 836.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot3"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("13_r1e0s")
+metadata/_edit_lock_ = true
+
+[node name="RedManipulationSlot4" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 720.0
+offset_top = 730.0
+offset_right = 760.0
+offset_bottom = 836.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot4"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("13_r1e0s")
+metadata/_edit_lock_ = true
+
+[node name="BlueManipulationSlot4" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 1121.0
+offset_top = 730.0
+offset_right = 1161.0
+offset_bottom = 836.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot4"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("13_r1e0s")
+metadata/_edit_lock_ = true
+
+[node name="BlueManipulationSlot3" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 1201.0
+offset_top = 730.0
+offset_right = 1241.0
+offset_bottom = 836.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot3"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("13_r1e0s")
+metadata/_edit_lock_ = true
+
+[node name="BlueManipulationSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 1281.0
+offset_top = 730.0
+offset_right = 1321.0
+offset_bottom = 836.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot2"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("13_r1e0s")
+metadata/_edit_lock_ = true
+
+[node name="BlueManipulationSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 1361.0
+offset_top = 730.0
+offset_right = 1401.0
+offset_bottom = 836.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot1"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("13_r1e0s")
+metadata/_edit_lock_ = true
+
+[node name="BlueDiscardSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 1240.0
+offset_top = 73.0
+offset_right = 1280.0
+offset_bottom = 179.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueDiscardSlot"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("14_py3mm")
+metadata/_edit_lock_ = true
+
+[node name="RedDiscardSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+layout_mode = 1
+offset_left = 600.0
+offset_top = 73.0
+offset_right = 640.0
+offset_bottom = 179.0
+
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedDiscardSlot"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -5.5000005
+anchor_top = -1.0
+anchor_right = -5.5000005
+anchor_bottom = -1.0
+offset_left = 440.00003
+offset_top = 146.0
+offset_right = 600.0
+offset_bottom = 438.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("14_py3mm")
+metadata/_edit_lock_ = true

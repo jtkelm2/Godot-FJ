@@ -1,0 +1,8 @@
+{
+  "name": "good_role_3",
+  "big_name": "Good",
+  "value": "",
+  "type": "Mutineer",
+  "text": "At the start of the game, discard this.\nAs a Last Resort, you may attack the other player. They are treated as an enemy with level equal to their HP plus their weapon sharpness.",
+  "front_image": "named_25.png"
+}

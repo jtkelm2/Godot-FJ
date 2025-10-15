@@ -1,0 +1,8 @@
+{
+  "name": "guards_2",
+  "big_name": "",
+  "value": "9",
+  "type": "Enemy",
+  "text": "You cannot run while this is on your field.\nOn kill: Refresh this.\nOn placement: If this has nothing beneath it, draw another card beneath this.",
+  "front_image": "nameless_36.png"
+}

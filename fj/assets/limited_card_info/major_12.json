@@ -1,0 +1,8 @@
+{
+  "name": "major_12",
+  "big_name": "The Hanged Man",
+  "value": "",
+  "type": "Event",
+  "text": "On resolve: Deal 5 damage to the other player, and heal yourself for 7. Put this into the refresh pile.",
+  "front_image": "named_13.png"
+}

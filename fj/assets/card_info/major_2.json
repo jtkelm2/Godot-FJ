@@ -1,0 +1,8 @@
+{
+  "name": "major_2",
+  "big_name": "The High Priestess",
+  "value": "",
+  "type": "Event",
+  "text": "On resolve: Name up to 2 cards. Then, look at the cards in the refresh pile. For each card in the pile that you named, choose:\n Heal 7 HP\n Deal 7 damage to the other player\n Force the other player to discard a piece of equipment (or confirm they have none)",
+  "front_image": "named_3.png"
+}

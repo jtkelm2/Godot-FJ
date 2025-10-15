@@ -1,0 +1,8 @@
+{
+  "name": "food_9",
+  "big_name": "",
+  "value": "",
+  "type": "Bellyfiller",
+  "text": "On resolve: Equip this instead of eating it.\nWhile equipped: At the end of each Refresh Phase, heal 3 HP then place a counter on this. (This doesnt count as eating.) If this has three counters on it, discard this.",
+  "front_image": "nameless_9.png"
+}

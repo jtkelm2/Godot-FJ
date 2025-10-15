@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3 uid="uid://msus1asv826p"]
+
+[ext_resource type="Script" uid="uid://mgdwaw4s34no" path="res://fj/scenes/deck.gd" id="1_f3303"]
+[ext_resource type="Texture2D" uid="uid://do6i80vmxx588" path="res://fj/assets/images/slots/deck_slot.png" id="2_l1p4u"]
+
+[node name="Deck" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_f3303")
+stack_display_gap = 4
+max_stack_display = 10
+card_face_up = false
+metadata/_custom_type_script = "uid://l4yq83m0wd5r"
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.042000003
+anchor_bottom = 0.135
+offset_right = -40.640007
+offset_bottom = -105.8
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_l1p4u")

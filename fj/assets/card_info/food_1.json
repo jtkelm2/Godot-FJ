@@ -1,0 +1,8 @@
+{
+  "name": "food_1",
+  "big_name": "",
+  "value": "5",
+  "type": "Food?",
+  "text": "On resolve: After eating, receive d10 damage.",
+  "front_image": "nameless_1.png"
+}

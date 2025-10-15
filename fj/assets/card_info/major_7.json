@@ -1,0 +1,8 @@
+{
+  "name": "major_7",
+  "big_name": "The Chariot",
+  "value": "",
+  "type": "Event/Equipment",
+  "text": "On resolve: Take 7 damage.\nWhile equipped: You may discard this to prevent any single instance of damage.",
+  "front_image": "named_8.png"
+}

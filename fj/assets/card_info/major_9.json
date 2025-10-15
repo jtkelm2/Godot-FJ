@@ -1,0 +1,8 @@
+{
+  "name": "major_9",
+  "big_name": "The Hermit",
+  "value": "",
+  "type": "Event",
+  "text": "You may choose to: Give the other player 1HP.\nThen, if you are Good, discard a piece of equipment and heal d10 HP. If you are Evil, take d20 damage.",
+  "front_image": "named_10.png"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "bad_role_4",
+  "big_name": "Evil",
+  "value": "",
+  "type": "Corruption",
+  "text": "Heal 6HP per turn at the end of your Refresh Phase.\nWhenever you would heal by any other means, instead take that much damage.",
+  "front_image": "named_34.png"
+}
