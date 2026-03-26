@@ -17,12 +17,16 @@ config/features=PackedStringArray("4.5", "Forward Plus")
 [autoload]
 
 G="*res://fj/scenes/G.tscn"
+Signals="*res://fj/scenes/Signals.tscn"
+
+[debug]
+
+gdscript/warnings/standalone_ternary=0
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/mode=4
 window/stretch/mode="viewport"
 
 [dotnet]

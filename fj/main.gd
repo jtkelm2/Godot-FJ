@@ -4,11 +4,13 @@ extends Node
 @onready var card_factory = $CardManager/FjCardFactory
 
 func _ready():
-	_make_deck(G.PColor.Red)
-	_make_deck(G.PColor.Blue)
+	$PhaseLabel/Label.text = $PhaseManager.current_phase
+	$PhaseButton.item_selected.connect(func(idx): $PhaseManager.change_phase($PhaseButton.get_item_text(idx)))
+	_make_deck(G.Red)
+	_make_deck(G.Blue)
 
 func _make_deck(color:G.PColor) -> void:
-	var deck:Pile = $CardManager/RDeck if color == G.PColor.Red else $CardManager/BDeck
+	var deck:Pile = $CardManager/RDeck if color == G.Red else $CardManager/BDeck
 	
 	for i in range(1,22):
 		card_factory.create_fj_card("major_%d" % i, color, deck)
@@ -22,3 +24,7 @@ func _make_deck(color:G.PColor) -> void:
 		card_factory.create_fj_card("weapon_%d" % i, color, deck)
 	
 	deck.shuffle()
+
+func _unhandled_input(event):
+	if event is InputEventMouseButton and event.pressed:
+		Signals.empty_click.emit()

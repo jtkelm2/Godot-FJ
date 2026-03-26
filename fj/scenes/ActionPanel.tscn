@@ -1,0 +1,76 @@
+[gd_scene load_steps=2 format=3 uid="uid://dy4436dh32gm2"]
+
+[ext_resource type="Script" uid="uid://b54v2ljqqpewk" path="res://fj/scenes/action_panel.gd" id="1_tmvp3"]
+
+[node name="ActionPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1490.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_tmvp3")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 430.0
+offset_bottom = 1080.0
+pivot_offset = Vector2(215, 540)
+color = Color(0.18039216, 0.2, 0.21568628, 1)
+
+[node name="ReferenceRect" type="ReferenceRect" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -122.5
+offset_top = 39.0
+offset_right = 122.5
+offset_bottom = 477.0
+grow_horizontal = 2
+pivot_offset = Vector2(123, 219)
+border_color = Color(0, 0, 0, 1)
+border_width = 2.0
+editor_only = false
+
+[node name="TextureRect" type="TextureRect" parent="ReferenceRect"]
+layout_mode = 0
+offset_right = 245.5
+offset_bottom = 438.0
+expand_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 93.0
+offset_top = 543.0
+offset_right = 338.0
+offset_bottom = 986.0
+pivot_offset = Vector2(123, 222)
+alignment = 1
+
+[node name="Button" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Button2" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 93.0
+offset_top = 489.0
+offset_right = 338.0
+offset_bottom = 529.0
+alignment = 1
+
+[node name="PreviousButton" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "^"
+
+[node name="NextButton" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "V"
