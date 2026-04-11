@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b54v2ljqqpewk" path="res://fj/scenes/action_panel.gd" id="1_tmvp3"]
 
-[node name="ActionPanel" type="Control"]
+[node name="InfoPanel" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -38,39 +38,73 @@ editor_only = false
 layout_mode = 0
 offset_right = 245.5
 offset_bottom = 438.0
+visible = false
 expand_mode = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 93.0
-offset_top = 543.0
-offset_right = 338.0
-offset_bottom = 986.0
-pivot_offset = Vector2(123, 222)
-alignment = 1
+offset_left = 20.0
+offset_top = 500.0
+offset_right = 410.0
+offset_bottom = 1060.0
+theme_override_constants/separation = 8
 
-[node name="Button" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
+[node name="HPSection" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="Button2" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
+[node name="HPTitle" type="Label" parent="VBoxContainer/HPSection"]
+layout_mode = 2
+text = "HP: "
+
+[node name="HPValue" type="Label" parent="VBoxContainer/HPSection"]
+layout_mode = 2
+text = "20 / 20"
+
+[node name="WeaponSection" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
-layout_mode = 0
-offset_left = 93.0
-offset_top = 489.0
-offset_right = 338.0
-offset_bottom = 529.0
-alignment = 1
-
-[node name="PreviousButton" type="Button" parent="HBoxContainer"]
-custom_minimum_size = Vector2(50, 0)
+[node name="WeaponTitle" type="Label" parent="VBoxContainer/WeaponSection"]
 layout_mode = 2
-text = "^"
+text = "Weapons:"
 
-[node name="NextButton" type="Button" parent="HBoxContainer"]
-custom_minimum_size = Vector2(50, 0)
+[node name="WeaponValue" type="Label" parent="VBoxContainer/WeaponSection"]
 layout_mode = 2
-text = "V"
+text = "No weapons"
+autowrap_mode = 2
+
+[node name="PriorityLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="PromptLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+visible = false
+text = ""
+autowrap_mode = 2
+horizontal_alignment = 1
+
+[node name="TextOptions" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="NotifyLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+visible = false
+theme_override_colors/font_color = Color(0.8, 0.8, 0.5, 1)
+text = ""
+autowrap_mode = 2
+
+[node name="GameResultLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+visible = false
+theme_override_font_sizes/font_size = 24
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1

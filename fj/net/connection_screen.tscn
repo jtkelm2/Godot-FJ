@@ -1,0 +1,99 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://fj/net/connection_screen.gd" id="1"]
+
+[node name="ConnectionScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.1, 0.18, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Fool's Journey"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 16)
+
+[node name="HostRow" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HostLabel" type="Label" parent="CenterContainer/VBoxContainer/HostRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Host:"
+
+[node name="HostInput" type="LineEdit" parent="CenterContainer/VBoxContainer/HostRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 0)
+text = "127.0.0.1"
+
+[node name="PortRow" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PortLabel" type="Label" parent="CenterContainer/VBoxContainer/PortRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Port:"
+
+[node name="PortInput" type="LineEdit" parent="CenterContainer/VBoxContainer/PortRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 0)
+text = "9000"
+
+[node name="TransportRow" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TransportLabel" type="Label" parent="CenterContainer/VBoxContainer/TransportRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "Transport:"
+
+[node name="TransportSelector" type="OptionButton" parent="CenterContainer/VBoxContainer/TransportRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 0)
+
+[node name="Spacer2" type="Control" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+
+[node name="ConnectButton" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 40)
+text = "Connect"
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = ""
+horizontal_alignment = 1

@@ -1,81 +1,35 @@
 class_name FJHand
 extends Hand
 
-@export var color: G.PColor
-#var fog_overlay: ColorRect = null
+## The server wire name for this hand (e.g. "red_hand"), set by StateRenderer.
+var wire_name: String = ""
+
+## The semantic role, set by StateRenderer.
+var semantic_role: String = ""
+
+## The prompt option dict to echo back when this hand is clicked during a prompt.
+var prompt_option: Dictionary = {}
+
+## Whether this hand is highlighted as a valid prompt choice.
+var _highlighted: bool = false
 
 
-func _ready() -> void:
-	super._ready()
-	
-	#_create_fog_overlay()
-	#
-	#G.player_switched.connect(_on_player_switched)
-	#
-	#_update_visibility()
+func set_highlighted(enabled: bool) -> void:
+	_highlighted = enabled
+	if enabled:
+		modulate = Color(1.2, 1.2, 0.6, 1.0)
+	else:
+		modulate = Color.WHITE
+		prompt_option = {}
 
 
-#func _create_fog_overlay() -> void:
-	#fog_overlay = ColorRect.new()
-	#fog_overlay.name = "HandFogOverlay"
-	#fog_overlay.color = Color(0, 0, 0, 0.7)  # Semi-transparent black
-	#fog_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	#fog_overlay.z_index = 5000  # Above cards
-	#fog_overlay.visible = false
-	#
-	## Size to cover the entire hand area
-	#fog_overlay.custom_minimum_size = Vector2(max_hand_spread, 300)
-	#fog_overlay.size = Vector2(max_hand_spread, 300)
-	#fog_overlay.position = Vector2(-max_hand_spread / 2, -150)
-	#
-	#add_child(fog_overlay)
-#
-#
-#func _on_player_switched(_new_player: G.PColor) -> void:
-	#_update_visibility()
-#
-#
-#func _update_visibility() -> void:
-	#var viewing_player = G.current_player
-	#
-	## Update fog overlay
-	#var show_fog = VisibilityManager.should_show_fog_overlay(
-		#hand_owner,
-		#VisibilityManager.ZoneType.HAND,
-		#viewing_player
-	#)
-	#if fog_overlay:
-		#fog_overlay.visible = show_fog
-	#
-	## Update all cards in hand
-	#for card in _held_cards:
-		#if card is FJCard:
-			#var should_show_front = VisibilityManager.should_show_front(
-				#hand_owner,
-				#VisibilityManager.ZoneType.HAND,
-				#viewing_player
-			#)
-			#card.show_front = should_show_front
-			#
-			## Disable interaction with opponent's hand
-			#var can_interact = VisibilityManager.can_interact_with_zone(
-				#hand_owner,
-				#VisibilityManager.ZoneType.HAND,
-				#viewing_player
-			#)
-			#card.can_be_interacted_with = can_interact
-
-
-# Override to update visibility when cards are added
-func add_card(card: Card, index: int = -1) -> void:
-	super.add_card(card, index)
-	if card is FJCard:
-		_add_fj_card(card)
-
-func _add_fj_card(card: FJCard) -> void:
-	card.show_card() if color == card.color else card.hide_card()
-
-# Override to update visibility when cards are removed
-func remove_card(card: Card) -> bool:
-	var result = super.remove_card(card)
+func get_cards() -> Array[FJCard]:
+	var result: Array[FJCard]
+	result.assign(_held_cards)
 	return result
+
+
+func clear_all_cards() -> void:
+	for card in _held_cards.duplicate():
+		remove_card(card)
+		card.queue_free()
