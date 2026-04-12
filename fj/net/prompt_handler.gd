@@ -4,18 +4,16 @@ var state_renderer  # StateRenderer
 var _active: bool = false
 var _text_buttons: Array[Button] = []
 var _highlighted_cards: Array[FJCard] = []
-var _highlighted_containers: Array = []  # CardContainer instances
+var _highlighted_views: Array = []  # Array[SlotView]
 var _button_container: Node
 
 
 func initialize(p_state_renderer: Node, button_container: Node) -> void:
 	state_renderer = p_state_renderer
 	_button_container = button_container
-	Signals.card_clicked.connect(_on_card_clicked)
-	Signals.slot_clicked.connect(_on_slot_clicked)
 
 
-func handle_prompt(text: String, options: Array) -> void:
+func handle_prompt(_text: String, options: Array) -> void:
 	clear_prompt()
 	_active = true
 
@@ -42,10 +40,9 @@ func clear_prompt() -> void:
 			card.set_highlighted(false)
 	_highlighted_cards.clear()
 
-	for container in _highlighted_containers:
-		if is_instance_valid(container):
-			container.set_highlighted(false)
-	_highlighted_containers.clear()
+	for view in _highlighted_views:
+		view.set_highlighted(false)
+	_highlighted_views.clear()
 
 	for btn in _text_buttons:
 		if is_instance_valid(btn):
@@ -57,24 +54,16 @@ func _highlight_card_option(option: Dictionary) -> void:
 	var slot_wire: String = option.get("slot", "")
 	var index: int = option.get("index", -1)
 
-	var container: CardContainer = state_renderer.wire_to_container.get(slot_wire)
-	if container == null:
-		# Check multi-containers (equipment)
-		var multi: Array = state_renderer.wire_to_multi_container.get(slot_wire, [])
-		if not multi.is_empty():
-			# For multi-container, index 0 -> first slot, index 1 -> second slot, etc.
-			if index < multi.size():
-				container = multi[index]
-				index = 0  # Each sub-slot has at most 1 card
-		if container == null:
-			push_warning("PromptHandler: no container for wire '%s'" % slot_wire)
-			return
-
-	if index < 0 or index >= container.get_card_count():
-		push_warning("PromptHandler: card index %d out of range for wire '%s' (has %d)" % [index, slot_wire, container.get_card_count()])
+	var view = state_renderer.get_slot_view(slot_wire)
+	if view == null:
+		push_warning("PromptHandler: no view for wire '%s'" % slot_wire)
 		return
 
-	var card: Card = container._held_cards[index]
+	var card = view.get_card_at(index)
+	if card == null:
+		push_warning("PromptHandler: card index %d not found in wire '%s'" % [index, slot_wire])
+		return
+
 	if card is FJCard:
 		var fj_card := card as FJCard
 		fj_card.prompt_option = option
@@ -84,35 +73,24 @@ func _highlight_card_option(option: Dictionary) -> void:
 
 func _highlight_slot_option(option: Dictionary) -> void:
 	var slot_wire: String = option.get("name", "")
-	var container: CardContainer = state_renderer.wire_to_container.get(slot_wire)
-	if container == null:
-		push_warning("PromptHandler: no container for slot wire '%s'" % slot_wire)
+	var view = state_renderer.get_slot_view(slot_wire)
+	if view == null:
+		push_warning("PromptHandler: no view for slot wire '%s'" % slot_wire)
 		return
-
-	if container is Slot:
-		(container as Slot).prompt_option = option
-		(container as Slot).set_highlighted(true)
-		_highlighted_containers.append(container)
-	elif container is FJHand:
-		(container as FJHand).prompt_option = option
-		(container as FJHand).set_highlighted(true)
-		_highlighted_containers.append(container)
+	view.prompt_option = option
+	view.set_highlighted(true)
+	_highlighted_views.append(view)
 
 
 func _highlight_weapon_slot_option(option: Dictionary) -> void:
-	# Weapon slots map through wire_to_container via ws_0_weapon role
 	var ws_wire: String = option.get("name", "")
-	# The weapon slot's container might be mapped under its wire name
-	# Try the catalog to find which weapon slot container this corresponds to
-	var container: CardContainer = state_renderer.wire_to_container.get(ws_wire)
-	if container:
-		if container is Slot:
-			(container as Slot).prompt_option = option
-			(container as Slot).set_highlighted(true)
-			_highlighted_containers.append(container)
-	else:
-		Signals.weapon_slot_clicked.emit(ws_wire)
-		push_warning("PromptHandler: no container for weapon_slot wire '%s'" % ws_wire)
+	var view = state_renderer.get_slot_view(ws_wire)
+	if view == null:
+		push_warning("PromptHandler: no view for weapon_slot wire '%s'" % ws_wire)
+		return
+	view.prompt_option = option
+	view.set_highlighted(true)
+	_highlighted_views.append(view)
 
 
 func _create_text_button(option: Dictionary) -> void:
@@ -121,26 +99,38 @@ func _create_text_button(option: Dictionary) -> void:
 	btn.text = text
 	btn.custom_minimum_size = Vector2(160, 40)
 	btn.pressed.connect(func(): _select_option(option))
-
-	# Add to the scene -- the InfoPanel will provide a container for these
 	_button_container.add_child(btn)
 	_text_buttons.append(btn)
 
 
-func _on_card_clicked(card: FJCard) -> void:
+## All board-click hit-testing happens here. We bypass Godot's UI input routing
+## to avoid fighting with the card-framework's internal Control hierarchy.
+func _input(event: InputEvent) -> void:
 	if not _active:
 		return
-	if card.prompt_option.is_empty():
+	if not (event is InputEventMouseButton):
 		return
-	_select_option(card.prompt_option)
+	var mouse_event := event as InputEventMouseButton
+	if not mouse_event.pressed or mouse_event.button_index != MOUSE_BUTTON_LEFT:
+		return
 
+	var pos: Vector2 = mouse_event.position
+	var card_size: Vector2 = state_renderer.card_factory.card_size
 
-func _on_slot_clicked(slot: Slot) -> void:
-	if not _active:
-		return
-	if slot.prompt_option.is_empty():
-		return
-	_select_option(slot.prompt_option)
+	# Check highlighted cards first (they can overlap slot regions).
+	for card in _highlighted_cards:
+		if is_instance_valid(card) and Rect2(card.global_position, card.card_size).has_point(pos):
+			_select_option(card.prompt_option)
+			get_viewport().set_input_as_handled()
+			return
+
+	# Check highlighted slot views (treat each physical container as a card-sized region).
+	for view in _highlighted_views:
+		for container in view.containers:
+			if Rect2(container.global_position, card_size).has_point(pos):
+				_select_option(view.prompt_option)
+				get_viewport().set_input_as_handled()
+				return
 
 
 func _select_option(option: Dictionary) -> void:

@@ -7,20 +7,13 @@ var wire_name: String = ""
 ## The semantic role, set by StateRenderer.
 var semantic_role: String = ""
 
-## The prompt option dict to echo back when this hand is clicked during a prompt.
-var prompt_option: Dictionary = {}
-
 ## Whether this hand is highlighted as a valid prompt choice.
 var _highlighted: bool = false
 
 
 func set_highlighted(enabled: bool) -> void:
 	_highlighted = enabled
-	if enabled:
-		modulate = Color(1.2, 1.2, 0.6, 1.0)
-	else:
-		modulate = Color.WHITE
-		prompt_option = {}
+	modulate = Color(1.2, 1.2, 0.6, 1.0) if enabled else Color.WHITE
 
 
 func get_cards() -> Array[FJCard]:

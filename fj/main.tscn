@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dlljip2w188d7"]
 
-[ext_resource type="Script" uid="uid://c3j0jktqgr4ei" path="res://fj/main.gd" id="1_jk3xc"]
+[ext_resource type="Script" uid="uid://ceai1yk7135uq" path="res://fj/main.gd" id="1_jk3xc"]
 [ext_resource type="Texture2D" uid="uid://vtf8o1we105k" path="res://fj/assets/images/playmat.png" id="2_p4kxw"]
 [ext_resource type="Script" uid="uid://clqgq1n7v0ar" path="res://addons/card-framework/card_manager.gd" id="3_p4kxw"]
 [ext_resource type="Script" uid="uid://cfrohfivyhn4c" path="res://fj/scenes/fj_hand.gd" id="5_0we2d"]
@@ -16,16 +16,17 @@
 [ext_resource type="Texture2D" uid="uid://ceag7tvsbj3h8" path="res://fj/assets/images/slots/discard.png" id="14_py3mm"]
 [ext_resource type="PackedScene" uid="uid://dy4436dh32gm2" path="res://fj/scenes/ActionPanel.tscn" id="17_bp1u1"]
 
-[node name="Main" type="Node"]
+[node name="Main" type="Node" unique_id=1006329699]
 script = ExtResource("1_jk3xc")
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1203408848]
 offset_right = 1920.0
 offset_bottom = 1080.0
+mouse_filter = 2
 texture = ExtResource("2_p4kxw")
 metadata/_edit_lock_ = true
 
-[node name="CardManager" type="Control" parent="."]
+[node name="CardManager" type="Control" parent="." unique_id=58338382]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
@@ -35,7 +36,7 @@ card_size = Vector2(85, 146)
 card_factory_scene = ExtResource("5_xn5p6")
 metadata/_custom_type_script = "uid://clqgq1n7v0ar"
 
-[node name="RHand" type="Control" parent="CardManager"]
+[node name="RHand" type="Control" parent="CardManager" unique_id=945831400]
 anchors_preset = 0
 offset_left = 600.0
 offset_top = 881.0
@@ -46,7 +47,7 @@ max_hand_size = 6
 max_hand_spread = 340
 metadata/_custom_type_script = "uid://cfrohfivyhn4c"
 
-[node name="BHand" type="Control" parent="CardManager"]
+[node name="BHand" type="Control" parent="CardManager" unique_id=1457920498]
 anchors_preset = 0
 offset_left = 1240.0
 offset_top = 881.0
@@ -57,21 +58,21 @@ max_hand_size = 6
 max_hand_spread = 340
 metadata/_custom_type_script = "uid://cfrohfivyhn4c"
 
-[node name="BDeck" parent="CardManager" instance=ExtResource("5_jk3xc")]
+[node name="BDeck" parent="CardManager" unique_id=1252117789 instance=ExtResource("5_jk3xc")]
 layout_mode = 1
 offset_left = 1000.0
 offset_top = 144.0
 offset_right = 1040.0
 offset_bottom = 250.0
 
-[node name="RDeck" parent="CardManager" instance=ExtResource("5_jk3xc")]
+[node name="RDeck" parent="CardManager" unique_id=1837645988 instance=ExtResource("5_jk3xc")]
 layout_mode = 1
 offset_left = 840.0
 offset_top = 144.0
 offset_right = 880.0
 offset_bottom = 250.0
 
-[node name="RedHiddenSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedHiddenSlot1" parent="CardManager" unique_id=1123886731 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -81,7 +82,7 @@ offset_top = 365.0
 offset_right = 881.0
 offset_bottom = 365.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedHiddenSlot1"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedHiddenSlot1" unique_id=1552398478]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -89,7 +90,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="RedDistantSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedDistantSlot1" parent="CardManager" unique_id=589488059 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -99,7 +100,7 @@ offset_top = 365.0
 offset_right = 801.0
 offset_bottom = 365.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedDistantSlot1"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedDistantSlot1" unique_id=902871357]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -107,7 +108,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="RedHiddenSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedHiddenSlot2" parent="CardManager" unique_id=472961696 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -117,7 +118,7 @@ offset_top = 511.0
 offset_right = 881.0
 offset_bottom = 511.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedHiddenSlot2"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedHiddenSlot2" unique_id=237288199]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -125,7 +126,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="RedDistantSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedDistantSlot2" parent="CardManager" unique_id=1759115432 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -135,7 +136,7 @@ offset_top = 511.0
 offset_right = 801.0
 offset_bottom = 511.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedDistantSlot2"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedDistantSlot2" unique_id=2085865857]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -143,7 +144,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="BlueDistantSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueDistantSlot1" parent="CardManager" unique_id=529129602 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -153,7 +154,7 @@ offset_top = 365.0
 offset_right = 1041.0
 offset_bottom = 365.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueDistantSlot1"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueDistantSlot1" unique_id=1519133503]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -161,7 +162,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="BlueHiddenSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueHiddenSlot1" parent="CardManager" unique_id=532694742 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -171,7 +172,7 @@ offset_top = 365.0
 offset_right = 961.0
 offset_bottom = 365.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueHiddenSlot1"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueHiddenSlot1" unique_id=1025977550]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -179,7 +180,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="BlueDistantSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueDistantSlot2" parent="CardManager" unique_id=473386056 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -189,7 +190,7 @@ offset_top = 511.0
 offset_right = 1041.0
 offset_bottom = 511.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueDistantSlot2"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueDistantSlot2" unique_id=1607848395]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -197,7 +198,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="BlueHiddenSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueHiddenSlot2" parent="CardManager" unique_id=938284127 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -207,7 +208,7 @@ offset_top = 511.0
 offset_right = 961.0
 offset_bottom = 511.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueHiddenSlot2"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueHiddenSlot2" unique_id=920063367]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -215,14 +216,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("8_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="RedRefresh" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedRefresh" parent="CardManager" unique_id=921064096 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 760.0
 offset_top = 146.0
 offset_right = 800.0
 offset_bottom = 252.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedRefresh"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedRefresh" unique_id=453577351]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -237,14 +238,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("9_p4kxw")
 metadata/_edit_lock_ = true
 
-[node name="BlueRefresh" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueRefresh" parent="CardManager" unique_id=1442676764 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 1080.0
 offset_top = 146.0
 offset_right = 1120.0
 offset_bottom = 252.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueRefresh"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueRefresh" unique_id=748714249]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -259,7 +260,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("9_p4kxw")
 metadata/_edit_lock_ = true
 
-[node name="RedEquipmentSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedEquipmentSlot1" parent="CardManager" unique_id=1463171320 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -269,7 +270,7 @@ offset_top = 292.0
 offset_right = 560.0
 offset_bottom = 292.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedEquipmentSlot1"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedEquipmentSlot1" unique_id=324235541]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -12.912001
@@ -284,7 +285,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("10_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="RedEquipmentSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedEquipmentSlot2" parent="CardManager" unique_id=1184359099 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -294,7 +295,7 @@ offset_top = 292.0
 offset_right = 640.0
 offset_bottom = 292.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedEquipmentSlot2"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedEquipmentSlot2" unique_id=1462758152]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -12.912001
@@ -309,7 +310,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("10_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="BlueEquipmentSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueEquipmentSlot1" parent="CardManager" unique_id=1920171465 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -319,7 +320,7 @@ offset_top = 292.0
 offset_right = 1201.0
 offset_bottom = 292.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueEquipmentSlot1"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueEquipmentSlot1" unique_id=812882334]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -12.912001
@@ -334,7 +335,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("10_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="BlueEquipmentSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueEquipmentSlot2" parent="CardManager" unique_id=1759632034 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -344,7 +345,7 @@ offset_top = 292.0
 offset_right = 1281.0
 offset_bottom = 292.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueEquipmentSlot2"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueEquipmentSlot2" unique_id=1017113313]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -12.912001
@@ -359,7 +360,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("10_0we2d")
 metadata/_edit_lock_ = true
 
-[node name="RedWeaponSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedWeaponSlot" parent="CardManager" unique_id=1365346009 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -369,7 +370,7 @@ offset_top = 511.0
 offset_right = 560.0
 offset_bottom = 511.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedWeaponSlot"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedWeaponSlot" unique_id=99506208]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -12.912001
@@ -384,7 +385,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("11_2qea7")
 metadata/_edit_lock_ = true
 
-[node name="RedKillSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedKillSlot" parent="CardManager" unique_id=58913075 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -394,7 +395,7 @@ offset_top = 511.0
 offset_right = 640.0
 offset_bottom = 511.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedKillSlot"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedKillSlot" unique_id=2036700452]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -12.912001
@@ -409,7 +410,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("12_a003i")
 metadata/_edit_lock_ = true
 
-[node name="BlueWeaponSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueWeaponSlot" parent="CardManager" unique_id=412215072 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -419,7 +420,7 @@ offset_top = 511.0
 offset_right = 1281.0
 offset_bottom = 511.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueWeaponSlot"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueWeaponSlot" unique_id=913152302]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -12.912001
@@ -434,7 +435,7 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("11_2qea7")
 metadata/_edit_lock_ = true
 
-[node name="BlueKillSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueKillSlot" parent="CardManager" unique_id=291866238 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 2.0
@@ -444,7 +445,7 @@ offset_top = 511.0
 offset_right = 1201.0
 offset_bottom = 511.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueKillSlot"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueKillSlot" unique_id=2012566507]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -12.912001
@@ -459,14 +460,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("12_a003i")
 metadata/_edit_lock_ = true
 
-[node name="RedManipulationSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedSidebar1" parent="CardManager" unique_id=1281240655 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 480.0
 offset_top = 730.0
 offset_right = 520.0
 offset_bottom = 836.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot1"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedSidebar1" unique_id=968370854]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -481,14 +482,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("13_r1e0s")
 metadata/_edit_lock_ = true
 
-[node name="RedManipulationSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedSidebar2" parent="CardManager" unique_id=1043253228 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 560.0
 offset_top = 730.0
 offset_right = 600.0
 offset_bottom = 836.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot2"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedSidebar2" unique_id=106420063]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -503,14 +504,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("13_r1e0s")
 metadata/_edit_lock_ = true
 
-[node name="RedManipulationSlot3" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedSidebar3" parent="CardManager" unique_id=523543225 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 640.0
 offset_top = 730.0
 offset_right = 680.0
 offset_bottom = 836.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot3"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedSidebar3" unique_id=937320221]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -525,14 +526,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("13_r1e0s")
 metadata/_edit_lock_ = true
 
-[node name="RedManipulationSlot4" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedSidebar4" parent="CardManager" unique_id=1789339979 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 720.0
 offset_top = 730.0
 offset_right = 760.0
 offset_bottom = 836.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedManipulationSlot4"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedSidebar4" unique_id=35448518]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -547,14 +548,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("13_r1e0s")
 metadata/_edit_lock_ = true
 
-[node name="BlueManipulationSlot4" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueSidebar4" parent="CardManager" unique_id=1881351738 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 1121.0
 offset_top = 730.0
 offset_right = 1161.0
 offset_bottom = 836.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot4"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueSidebar4" unique_id=1034438715]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -569,14 +570,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("13_r1e0s")
 metadata/_edit_lock_ = true
 
-[node name="BlueManipulationSlot3" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueSidebar3" parent="CardManager" unique_id=1120029462 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 1201.0
 offset_top = 730.0
 offset_right = 1241.0
 offset_bottom = 836.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot3"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueSidebar3" unique_id=251334263]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -591,14 +592,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("13_r1e0s")
 metadata/_edit_lock_ = true
 
-[node name="BlueManipulationSlot2" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueSidebar2" parent="CardManager" unique_id=1731538003 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 1281.0
 offset_top = 730.0
 offset_right = 1321.0
 offset_bottom = 836.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot2"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueSidebar2" unique_id=1658672273]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -613,14 +614,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("13_r1e0s")
 metadata/_edit_lock_ = true
 
-[node name="BlueManipulationSlot1" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueSidebar1" parent="CardManager" unique_id=1354550903 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 1361.0
 offset_top = 730.0
 offset_right = 1401.0
 offset_bottom = 836.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueManipulationSlot1"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueSidebar1" unique_id=1347423839]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -635,14 +636,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("13_r1e0s")
 metadata/_edit_lock_ = true
 
-[node name="BlueDiscardSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="BlueDiscardSlot" parent="CardManager" unique_id=870773466 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 1240.0
 offset_top = 73.0
 offset_right = 1280.0
 offset_bottom = 179.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/BlueDiscardSlot"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/BlueDiscardSlot" unique_id=1094045751]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -657,14 +658,14 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("14_py3mm")
 metadata/_edit_lock_ = true
 
-[node name="RedDiscardSlot" parent="CardManager" instance=ExtResource("7_p4kxw")]
+[node name="RedDiscardSlot" parent="CardManager" unique_id=940110001 instance=ExtResource("7_p4kxw")]
 layout_mode = 1
 offset_left = 600.0
 offset_top = 73.0
 offset_right = 640.0
 offset_bottom = 179.0
 
-[node name="TextureRect" type="TextureRect" parent="CardManager/RedDiscardSlot"]
+[node name="TextureRect" type="TextureRect" parent="CardManager/RedDiscardSlot" unique_id=412415996]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -5.5000005
@@ -679,4 +680,10 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("14_py3mm")
 metadata/_edit_lock_ = true
 
-[node name="InfoPanel" parent="." instance=ExtResource("17_bp1u1")]
+[node name="GuardDeck" parent="CardManager" unique_id=1187202817 instance=ExtResource("5_jk3xc")]
+layout_mode = 1
+offset_left = 920.0
+offset_right = 960.0
+offset_bottom = 106.0
+
+[node name="InfoPanel" parent="." unique_id=1446756036 instance=ExtResource("17_bp1u1")]

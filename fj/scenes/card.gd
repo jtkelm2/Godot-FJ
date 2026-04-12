@@ -31,13 +31,6 @@ func set_highlighted(enabled: bool) -> void:
 		prompt_option = {}
 
 
-## Override: click-only, no dragging. Emit card_clicked signal.
+## Override so cards never drag; PromptHandler does its own hit-testing.
 func _handle_mouse_pressed() -> void:
-	if _highlighted:
-		Signals.card_clicked.emit(self)
-
-
-func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if _highlighted:
-			Signals.card_clicked.emit(self)
+	pass
