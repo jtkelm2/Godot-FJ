@@ -2,6 +2,7 @@ extends Control
 
 @onready var hp_label: Label = $VBoxContainer/HPSection/HPValue
 @onready var weapon_label: Label = $VBoxContainer/WeaponSection/WeaponValue
+@onready var phase_label: Label = $VBoxContainer/PhaseLabel
 @onready var priority_label: Label = $VBoxContainer/PriorityLabel
 @onready var prompt_label: Label = $VBoxContainer/PromptLabel
 @onready var text_options: VBoxContainer = $VBoxContainer/TextOptions
@@ -14,14 +15,21 @@ func update_hp(hp: int) -> void:
 	hp_label.text = "%d / 20" % hp
 
 
-func update_weapons(weapons: Array, opp_weapons: Array) -> void:
+func update_weapons(weapons: Array) -> void:
 	var lines: PackedStringArray = []
 	for w in weapons:
 		var card_name: String = w.get("card", "none") if w.get("card") else "empty"
-		lines.append("You: %s (S:%d K:%d)" % [card_name, w.get("sharpness", 0), w.get("kills", 0)])
-	for w in opp_weapons:
-		lines.append("Opp: ??? (S:%d K:%d)" % [w.get("sharpness", 0), w.get("kills", 0)])
+		lines.append("%s (S:%d K:%d)" % [card_name, w.get("sharpness", 0), w.get("kills", 0)])
 	weapon_label.text = "\n".join(lines) if not lines.is_empty() else "No weapons"
+
+
+func update_phase(phase) -> void:
+	if phase == null or (phase is String and phase.is_empty()):
+		phase_label.text = ""
+		phase_label.visible = false
+	else:
+		phase_label.text = str(phase)
+		phase_label.visible = true
 
 
 func update_priority(priority: String) -> void:

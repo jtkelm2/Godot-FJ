@@ -20,25 +20,39 @@ func _ready() -> void:
 	prompt_handler.name = "PromptHandler"
 	add_child(prompt_handler)
 
-	GameSession.catalog_ready.connect(_on_catalog_ready)
+	# Pull: the handshake is already done when we arrive.
+	state_renderer.initialize(GameSession.catalog, card_manager, card_factory)
+	prompt_handler.initialize(state_renderer, $InfoPanel/VBoxContainer/TextOptions)
+	info_panel.show_notify("You are %s (%s)" % [GameSession.my_role, GameSession.my_side])
+	if GameSession.log:
+		GameSession.log.log_event("board_initialized", {
+			"my_role": GameSession.my_role,
+			"my_side": GameSession.my_side,
+		})
+
+	# Replay any state/prompt that arrived between handshake and scene load.
+	if not GameSession.latest_view.is_empty():
+		_on_state_updated(GameSession.latest_view)
+	if not GameSession.pending_prompt.is_empty():
+		_on_prompt_arrived(
+			GameSession.pending_prompt.get("text", ""),
+			GameSession.pending_prompt.get("options", []),
+		)
+
+	# Push: subscribe to future updates.
 	GameSession.state_updated.connect(_on_state_updated)
 	GameSession.prompt_arrived.connect(_on_prompt_arrived)
 	GameSession.notify_received.connect(_on_notify_received)
 	GameSession.session_ended.connect(_on_session_ended)
 
 
-func _on_catalog_ready(catalog: RefCounted) -> void:
-	state_renderer.initialize(catalog, card_manager, card_factory)
-	prompt_handler.initialize(state_renderer)
-
-
 func _on_state_updated(view: Dictionary) -> void:
 	state_renderer.render_state(view)
 
-	# Update info panel
 	info_panel.update_hp(view.get("hp", 0))
-	info_panel.update_weapons(view.get("weapons", []), view.get("opp_weapons", []))
+	info_panel.update_weapons(view.get("weapons", []))
 	info_panel.update_priority(view.get("priority", ""))
+	info_panel.update_phase(view.get("current_phase"))
 
 	var game_result = view.get("game_result")
 	if game_result != null:

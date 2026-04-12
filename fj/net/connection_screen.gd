@@ -15,6 +15,7 @@ func _ready() -> void:
 	NetworkTransport.connected.connect(_on_connected)
 	NetworkTransport.connection_error.connect(_on_connection_error)
 	NetworkTransport.disconnected.connect(_on_disconnected)
+	GameSession.handshake_complete.connect(_on_handshake_complete)
 
 
 func _on_connect_pressed() -> void:
@@ -44,7 +45,11 @@ func _on_connect_pressed() -> void:
 
 
 func _on_connected() -> void:
-	status_label.text = "Connected!"
+	status_label.text = "Connected. Waiting for server..."
+
+
+func _on_handshake_complete() -> void:
+	status_label.text = "Joining game as %s (%s)..." % [GameSession.my_role, GameSession.my_side]
 	get_tree().change_scene_to_file("res://fj/main.tscn")
 
 

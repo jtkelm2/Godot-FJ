@@ -131,6 +131,7 @@ func _tag_container(container: CardContainer, wire_name: String, role: String) -
 func render_state(view: Dictionary) -> void:
 	var slots_data: Dictionary = view.get("slots", {})
 
+	# Reconcile slots that ARE in the state
 	for wire_name in slots_data:
 		var value = slots_data[wire_name]
 
@@ -141,6 +142,17 @@ func render_state(view: Dictionary) -> void:
 			var containers: Array = wire_to_multi_container[wire_name]
 			_reconcile_multi_container(containers, value, wire_name)
 		# else: unmapped wire name (e.g. shared slots), skip silently
+
+	# Clear containers that are mapped but ABSENT from the state (fog-of-war hidden)
+	for wire_name in wire_to_container:
+		if not slots_data.has(wire_name):
+			var container: CardContainer = wire_to_container[wire_name]
+			_reconcile_facedown_count(container, 0, wire_name)
+	for wire_name in wire_to_multi_container:
+		if not slots_data.has(wire_name):
+			var containers: Array = wire_to_multi_container[wire_name]
+			for c in containers:
+				_reconcile_facedown_count(c, 0, wire_name)
 
 
 func _reconcile_container(container: CardContainer, value: Variant, wire_name: String) -> void:

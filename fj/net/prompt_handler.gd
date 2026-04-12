@@ -5,10 +5,12 @@ var _active: bool = false
 var _text_buttons: Array[Button] = []
 var _highlighted_cards: Array[FJCard] = []
 var _highlighted_containers: Array = []  # CardContainer instances
+var _button_container: Node
 
 
-func initialize(p_state_renderer: Node) -> void:
+func initialize(p_state_renderer: Node, button_container: Node) -> void:
 	state_renderer = p_state_renderer
+	_button_container = button_container
 	Signals.card_clicked.connect(_on_card_clicked)
 	Signals.slot_clicked.connect(_on_slot_clicked)
 
@@ -121,13 +123,7 @@ func _create_text_button(option: Dictionary) -> void:
 	btn.pressed.connect(func(): _select_option(option))
 
 	# Add to the scene -- the InfoPanel will provide a container for these
-	var button_parent := get_node_or_null("../InfoPanel/TextOptions")
-	if button_parent:
-		button_parent.add_child(btn)
-	else:
-		# Fallback: add as a child of self
-		add_child(btn)
-
+	_button_container.add_child(btn)
 	_text_buttons.append(btn)
 
 
@@ -151,5 +147,7 @@ func _select_option(option: Dictionary) -> void:
 	if not _active:
 		return
 	_active = false
+	if GameSession.log:
+		GameSession.log.log_event("player_selected_option", option)
 	GameSession.respond(option)
 	clear_prompt()
