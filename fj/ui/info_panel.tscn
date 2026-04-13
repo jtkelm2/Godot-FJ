@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://b1o3sgkcbc22f"]
+
+[ext_resource type="Script" uid="uid://jrdve3p5q1b4" path="res://fj/ui/info_panel.gd" id="1_info"]
+
+[node name="InfoPanel" type="ColorRect" unique_id=1107139533]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -192.0
+offset_top = -540.0
+offset_right = 192.0
+offset_bottom = 540.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.2388615, 0.30142733, 0.33954227, 0.7764706)
+script = ExtResource("1_info")
+
+[node name="Backdrop" type="VBoxContainer" parent="." unique_id=1483117894]
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -176.0
+offset_top = 16.0
+offset_right = 176.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+
+[node name="Preview" type="Control" parent="Backdrop" unique_id=892944539]
+custom_minimum_size = Vector2(350, 500)
+layout_mode = 2
+
+[node name="PreviewImage" type="TextureRect" parent="Backdrop/Preview" unique_id=909357818]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 3
+stretch_mode = 5
+
+[node name="HPRow" type="HBoxContainer" parent="Backdrop" unique_id=736860513]
+layout_mode = 2
+alignment = 1
+
+[node name="HPLabel" type="Label" parent="Backdrop/HPRow" unique_id=689427681]
+layout_mode = 2
+text = "HP: "
+
+[node name="HPValue" type="Label" parent="Backdrop/HPRow" unique_id=963190510]
+layout_mode = 2
+text = "20 / 20"
+
+[node name="PhaseLabel" type="Label" parent="Backdrop" unique_id=643608773]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
+horizontal_alignment = 1
+
+[node name="PriorityLabel" type="Label" parent="Backdrop" unique_id=1773798513]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="VBox" type="VBoxContainer" parent="Backdrop" unique_id=1205250982]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Backdrop/VBox" unique_id=346177210]
+layout_mode = 2
+
+[node name="PromptLabel" type="Label" parent="Backdrop/VBox" unique_id=1371720564]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="TextOptions" type="VBoxContainer" parent="Backdrop/VBox" unique_id=1590110857]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HSeparator2" type="HSeparator" parent="Backdrop/VBox" unique_id=1237928066]
+layout_mode = 2
+
+[node name="NotifyLabel" type="Label" parent="Backdrop" unique_id=1089699890]
+visible = false
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.5, 1)
+autowrap_mode = 2
+
+[node name="GameResultLabel" type="Label" parent="Backdrop" unique_id=278958367]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1

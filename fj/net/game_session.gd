@@ -1,20 +1,24 @@
 extends Node
 
+## Protocol state machine and single source of truth for the board's view of
+## the game. Speaks to NetworkTransport on the wire side; exposes a tiny API
+## to the UI side:
+##
+##   - `latest_view`, `pending_prompt`, `catalog`, `my_side`, `my_role` — state.
+##   - `changed`           — something the UI needs to re-render has changed.
+##   - `notify_received`   — a pulse-style side-channel message for toasts.
+##   - `handshake_complete` — fires once when ready to load the board scene.
+##   - `respond(option)`   — send a response to the outstanding prompt.
+
 const CatalogDataScript = preload("res://fj/net/catalog_data.gd")
 const SessionLogScript = preload("res://fj/net/session_log.gd")
 
 enum SessionState { DISCONNECTED, AWAITING_CATALOG, AWAITING_ROLE, IN_GAME, GAME_OVER }
 
-## Fires once when both catalog and role_assignment have been received.
 signal handshake_complete
-
-## Ongoing game updates (subscribe after handshake).
-signal state_updated(view: Dictionary)
-signal prompt_arrived(text: String, options: Array)
+signal changed
 signal notify_received(text: String)
-signal session_ended(result: Variant)
 
-## Authoritative session state - readable directly by GameBoard on _ready().
 var state: SessionState = SessionState.DISCONNECTED
 var catalog = null  # CatalogData
 var my_role: String = ""
@@ -46,9 +50,10 @@ func _on_disconnected() -> void:
 		log.log_event("disconnected", {"previous_state": SessionState.keys()[state]})
 		log.save_to_file()
 		log = null
-	if state == SessionState.IN_GAME or state == SessionState.GAME_OVER:
-		session_ended.emit(null)
+	var was_in_game := state == SessionState.IN_GAME or state == SessionState.GAME_OVER
 	state = SessionState.DISCONNECTED
+	if was_in_game:
+		changed.emit()
 
 
 func _on_message_received(msg: Dictionary) -> void:
@@ -76,35 +81,27 @@ func _handle_catalog(msg: Dictionary) -> void:
 	if state != SessionState.AWAITING_CATALOG:
 		push_warning("GameSession: received catalog in unexpected state %s" % SessionState.keys()[state])
 		return
-
 	catalog = CatalogDataScript.new()
 	catalog.parse_from(msg)
 	state = SessionState.AWAITING_ROLE
 
 
 func _handle_state(msg: Dictionary) -> void:
-	if state != SessionState.IN_GAME:
+	if state != SessionState.IN_GAME and state != SessionState.GAME_OVER:
 		push_warning("GameSession: received state in unexpected state %s" % SessionState.keys()[state])
 		return
-
-	var view: Dictionary = msg.get("view", {})
-	latest_view = view
-	state_updated.emit(view)
-
-	var game_result = view.get("game_result")
-	if game_result != null:
+	latest_view = msg.get("view", {})
+	if latest_view.get("game_result") != null:
 		state = SessionState.GAME_OVER
+	changed.emit()
 
 
 func _handle_prompt(msg: Dictionary) -> void:
 	if state != SessionState.IN_GAME:
 		push_warning("GameSession: received prompt in unexpected state %s" % SessionState.keys()[state])
 		return
-
-	var text: String = msg.get("text", "")
-	var options: Array = msg.get("options", [])
-	pending_prompt = {"text": text, "options": options}
-	prompt_arrived.emit(text, options)
+	pending_prompt = {"text": msg.get("text", ""), "options": msg.get("options", [])}
+	changed.emit()
 
 
 func _handle_notify(msg: Dictionary) -> void:
@@ -112,9 +109,6 @@ func _handle_notify(msg: Dictionary) -> void:
 	match kind:
 		"role_assignment":
 			_handle_role_assignment(msg)
-		"info":
-			var text: String = msg.get("text", "")
-			notify_received.emit(text)
 		_:
 			var text: String = msg.get("text", "")
 			if not text.is_empty():
@@ -126,7 +120,6 @@ func _handle_role_assignment(msg: Dictionary) -> void:
 	my_side = msg.get("side", "")
 	if catalog:
 		catalog.my_color = my_side
-
 	if state == SessionState.AWAITING_ROLE:
 		state = SessionState.IN_GAME
 		handshake_complete.emit()
@@ -139,10 +132,10 @@ func _handle_close() -> void:
 		log.log_event("session_closed")
 		log.save_to_file()
 	state = SessionState.GAME_OVER
-	session_ended.emit(null)
+	changed.emit()
 
 
-# --- Outgoing methods (called by GameBoard layer) ---
+# --- Outgoing ---
 
 func _send(msg: Dictionary) -> void:
 	if log:
@@ -151,6 +144,7 @@ func _send(msg: Dictionary) -> void:
 
 
 func respond(option: Dictionary) -> void:
+	# Clear first so any re-entrant signal/handler sees an empty prompt.
 	pending_prompt = {}
 	_send({"type": "response", "option": option})
 

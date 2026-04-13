@@ -1,0 +1,783 @@
+[gd_scene format=3 uid="uid://dn75fqvii0tpt"]
+
+[ext_resource type="Script" uid="uid://c42uj37qr7e4k" path="res://fj/ui/board.gd" id="1_board"]
+[ext_resource type="Script" uid="uid://djtm67gix0yve" path="res://fj/ui/simple_slot.gd" id="2_simple"]
+[ext_resource type="Script" uid="uid://bswtfjq6yg1qg" path="res://fj/ui/slot_field.gd" id="3_field"]
+[ext_resource type="PackedScene" uid="uid://b1o3sgkcbc22f" path="res://fj/ui/info_panel.tscn" id="4_info"]
+[ext_resource type="Texture2D" uid="uid://vtf8o1we105k" path="res://fj/assets/images/playmat.png" id="5_mat"]
+[ext_resource type="Texture2D" uid="uid://dyxxotuvlrp7m" path="res://fj/assets/images/slots/combined.png" id="6_combined"]
+[ext_resource type="Texture2D" uid="uid://c7pb4ky3dla1w" path="res://fj/assets/images/slots/refresh.png" id="7_refresh"]
+[ext_resource type="Texture2D" uid="uid://ceag7tvsbj3h8" path="res://fj/assets/images/slots/discard.png" id="8_discard"]
+[ext_resource type="Texture2D" uid="uid://dmdkaq3gw8axg" path="res://fj/assets/images/slots/equipment.png" id="9_equip"]
+[ext_resource type="Texture2D" uid="uid://xe4wso5p7m2x" path="res://fj/assets/images/slots/weapon_slot.png" id="10_weapon"]
+[ext_resource type="Texture2D" uid="uid://hnsy76nhwsfq" path="res://fj/assets/images/slots/kill_slot.png" id="11_kill"]
+[ext_resource type="Texture2D" uid="uid://rk5u6nco7wxc" path="res://fj/assets/images/slots/fancy_dim.png" id="12_sidebar"]
+
+[node name="Board" type="Control" unique_id=1388573265]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_board")
+
+[node name="Playmat" type="TextureRect" parent="." unique_id=1090381988]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_mat")
+
+[node name="GuardDeck" type="Control" parent="." unique_id=568328282]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 920.0
+offset_right = 1005.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+owner_side = "SHARED"
+role = "guard_deck"
+
+[node name="Art" type="TextureRect" parent="GuardDeck" unique_id=1568018009]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedDiscard" type="Control" parent="." unique_id=1942984986]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 600.0
+offset_top = 73.0
+offset_right = 685.0
+offset_bottom = 219.0
+script = ExtResource("2_simple")
+owner_side = "RED"
+role = "discard"
+
+[node name="Art" type="TextureRect" parent="RedDiscard" unique_id=1957987969]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_discard")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueDiscard" type="Control" parent="." unique_id=1752007346]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 1240.0
+offset_top = 73.0
+offset_right = 1325.0
+offset_bottom = 219.0
+script = ExtResource("2_simple")
+owner_side = "BLUE"
+role = "discard"
+
+[node name="Art" type="TextureRect" parent="BlueDiscard" unique_id=1625865870]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_discard")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedRefresh" type="Control" parent="." unique_id=1030816670]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 760.0
+offset_top = 146.0
+offset_right = 845.0
+offset_bottom = 292.0
+script = ExtResource("2_simple")
+owner_side = "RED"
+role = "refresh"
+
+[node name="Art" type="TextureRect" parent="RedRefresh" unique_id=841375452]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_refresh")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueRefresh" type="Control" parent="." unique_id=119404122]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 1080.0
+offset_top = 146.0
+offset_right = 1165.0
+offset_bottom = 292.0
+script = ExtResource("2_simple")
+owner_side = "BLUE"
+role = "refresh"
+
+[node name="Art" type="TextureRect" parent="BlueRefresh" unique_id=882618503]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_refresh")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedDeck" type="Control" parent="." unique_id=1593629216]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 840.0
+offset_top = 146.0
+offset_right = 925.0
+offset_bottom = 292.0
+script = ExtResource("2_simple")
+owner_side = "RED"
+role = "deck"
+
+[node name="Art" type="TextureRect" parent="RedDeck" unique_id=729095980]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueDeck" type="Control" parent="." unique_id=929140882]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 1000.0
+offset_top = 146.0
+offset_right = 1085.0
+offset_bottom = 292.0
+script = ExtResource("2_simple")
+owner_side = "BLUE"
+role = "deck"
+
+[node name="Art" type="TextureRect" parent="BlueDeck" unique_id=576276477]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedEquipment" type="Control" parent="." unique_id=956768204]
+anchors_preset = 0
+offset_left = 560.0
+offset_top = 292.0
+offset_right = 725.0
+offset_bottom = 438.0
+script = ExtResource("3_field")
+owner_side = "RED"
+role = "equipment"
+
+[node name="Equip1" type="Control" parent="RedEquipment" unique_id=705186708]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_right = 85.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="RedEquipment/Equip1" unique_id=376193766]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Equip2" type="Control" parent="RedEquipment" unique_id=2087992293]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 80.0
+offset_right = 165.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="RedEquipment/Equip2" unique_id=2141559693]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueEquipment" type="Control" parent="." unique_id=1378076099]
+anchors_preset = 0
+offset_left = 1201.0
+offset_top = 292.0
+offset_right = 1366.0
+offset_bottom = 438.0
+script = ExtResource("3_field")
+owner_side = "BLUE"
+role = "equipment"
+
+[node name="Equip1" type="Control" parent="BlueEquipment" unique_id=1633729012]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_right = 85.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="BlueEquipment/Equip1" unique_id=2032893123]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Equip2" type="Control" parent="BlueEquipment" unique_id=1008235866]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 80.0
+offset_right = 165.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="BlueEquipment/Equip2" unique_id=1688239397]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedActionTopDistant" type="Control" parent="." unique_id=904436301]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 801.0
+offset_top = 365.0
+offset_right = 886.0
+offset_bottom = 511.0
+script = ExtResource("2_simple")
+owner_side = "RED"
+role = "action_field_top_distant"
+
+[node name="Art" type="TextureRect" parent="RedActionTopDistant" unique_id=1953353511]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedActionTopHidden" type="Control" parent="." unique_id=934647082]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 881.0
+offset_top = 365.0
+offset_right = 966.0
+offset_bottom = 511.0
+script = ExtResource("2_simple")
+owner_side = "RED"
+role = "action_field_top_hidden"
+
+[node name="Art" type="TextureRect" parent="RedActionTopHidden" unique_id=1172535963]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueActionTopHidden" type="Control" parent="." unique_id=57557001]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 961.0
+offset_top = 365.0
+offset_right = 1046.0
+offset_bottom = 511.0
+script = ExtResource("2_simple")
+owner_side = "BLUE"
+role = "action_field_top_hidden"
+
+[node name="Art" type="TextureRect" parent="BlueActionTopHidden" unique_id=1156354518]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueActionTopDistant" type="Control" parent="." unique_id=134725547]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 1041.0
+offset_top = 365.0
+offset_right = 1126.0
+offset_bottom = 511.0
+script = ExtResource("2_simple")
+owner_side = "BLUE"
+role = "action_field_top_distant"
+
+[node name="Art" type="TextureRect" parent="BlueActionTopDistant" unique_id=1487040554]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedActionBottomDistant" type="Control" parent="." unique_id=1833986044]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 801.0
+offset_top = 511.0
+offset_right = 886.0
+offset_bottom = 657.0
+script = ExtResource("2_simple")
+owner_side = "RED"
+role = "action_field_bottom_distant"
+
+[node name="Art" type="TextureRect" parent="RedActionBottomDistant" unique_id=362149847]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedActionBottomHidden" type="Control" parent="." unique_id=1563761606]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 881.0
+offset_top = 511.0
+offset_right = 966.0
+offset_bottom = 657.0
+script = ExtResource("2_simple")
+owner_side = "RED"
+role = "action_field_bottom_hidden"
+
+[node name="Art" type="TextureRect" parent="RedActionBottomHidden" unique_id=1245441816]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueActionBottomHidden" type="Control" parent="." unique_id=1186847856]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 961.0
+offset_top = 511.0
+offset_right = 1046.0
+offset_bottom = 657.0
+script = ExtResource("2_simple")
+owner_side = "BLUE"
+role = "action_field_bottom_hidden"
+
+[node name="Art" type="TextureRect" parent="BlueActionBottomHidden" unique_id=69370473]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueActionBottomDistant" type="Control" parent="." unique_id=1809033386]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 1041.0
+offset_top = 511.0
+offset_right = 1126.0
+offset_bottom = 657.0
+script = ExtResource("2_simple")
+owner_side = "BLUE"
+role = "action_field_bottom_distant"
+
+[node name="Art" type="TextureRect" parent="BlueActionBottomDistant" unique_id=1338237571]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedWeapon" type="Control" parent="." unique_id=118469110]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 560.0
+offset_top = 511.0
+offset_right = 645.0
+offset_bottom = 657.0
+script = ExtResource("2_simple")
+owner_side = "RED"
+role = "ws_0_weapon"
+
+[node name="Art" type="TextureRect" parent="RedWeapon" unique_id=1192535998]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_weapon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedKill" type="Control" parent="." unique_id=1488804781]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 640.0
+offset_top = 511.0
+offset_right = 725.0
+offset_bottom = 657.0
+script = ExtResource("2_simple")
+owner_side = "RED"
+role = "ws_0_killstack"
+
+[node name="Art" type="TextureRect" parent="RedKill" unique_id=492396421]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_kill")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueKill" type="Control" parent="." unique_id=202125695]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 1201.0
+offset_top = 511.0
+offset_right = 1286.0
+offset_bottom = 657.0
+script = ExtResource("2_simple")
+owner_side = "BLUE"
+role = "ws_0_killstack"
+
+[node name="Art" type="TextureRect" parent="BlueKill" unique_id=760278402]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_kill")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueWeapon" type="Control" parent="." unique_id=1525369453]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 1281.0
+offset_top = 511.0
+offset_right = 1366.0
+offset_bottom = 657.0
+script = ExtResource("2_simple")
+owner_side = "BLUE"
+role = "ws_0_weapon"
+
+[node name="Art" type="TextureRect" parent="BlueWeapon" unique_id=683436979]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_weapon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedSidebar" type="Control" parent="." unique_id=107024590]
+anchors_preset = 0
+offset_left = 480.0
+offset_top = 730.0
+offset_right = 805.0
+offset_bottom = 876.0
+script = ExtResource("3_field")
+owner_side = "RED"
+role = "sidebar"
+
+[node name="S1" type="Control" parent="RedSidebar" unique_id=323278752]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_right = 85.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="RedSidebar/S1" unique_id=1875038331]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S2" type="Control" parent="RedSidebar" unique_id=1688575312]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 80.0
+offset_right = 165.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="RedSidebar/S2" unique_id=2081054862]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S3" type="Control" parent="RedSidebar" unique_id=455307223]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 160.0
+offset_right = 245.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="RedSidebar/S3" unique_id=728415424]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S4" type="Control" parent="RedSidebar" unique_id=14459427]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 240.0
+offset_right = 325.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="RedSidebar/S4" unique_id=1053003667]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueSidebar" type="Control" parent="." unique_id=873082522]
+anchors_preset = 0
+offset_left = 1121.0
+offset_top = 730.0
+offset_right = 1446.0
+offset_bottom = 876.0
+script = ExtResource("3_field")
+owner_side = "BLUE"
+role = "sidebar"
+
+[node name="S1" type="Control" parent="BlueSidebar" unique_id=1793287957]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_right = 85.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="BlueSidebar/S1" unique_id=529136329]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S2" type="Control" parent="BlueSidebar" unique_id=454223854]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 80.0
+offset_right = 165.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="BlueSidebar/S2" unique_id=14436009]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S3" type="Control" parent="BlueSidebar" unique_id=1842772212]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 160.0
+offset_right = 245.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="BlueSidebar/S3" unique_id=800105900]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S4" type="Control" parent="BlueSidebar" unique_id=654718489]
+custom_minimum_size = Vector2(85, 146)
+anchors_preset = 0
+offset_left = 240.0
+offset_right = 325.0
+offset_bottom = 146.0
+script = ExtResource("2_simple")
+
+[node name="Art" type="TextureRect" parent="BlueSidebar/S4" unique_id=1807803181]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedHand" type="Control" parent="." unique_id=165919360]
+custom_minimum_size = Vector2(340, 146)
+anchors_preset = 0
+offset_left = 430.0
+offset_top = 881.0
+offset_right = 770.0
+offset_bottom = 1027.0
+script = ExtResource("2_simple")
+offset = Vector2(51, 0)
+owner_side = "RED"
+role = "hand"
+
+[node name="BlueHand" type="Control" parent="." unique_id=47853971]
+custom_minimum_size = Vector2(340, 146)
+anchors_preset = 0
+offset_left = 1070.0
+offset_top = 881.0
+offset_right = 1410.0
+offset_bottom = 1027.0
+script = ExtResource("2_simple")
+offset = Vector2(51, 0)
+owner_side = "BLUE"
+role = "hand"
+
+[node name="InfoPanel" parent="." unique_id=1948672800 instance=ExtResource("4_info")]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -448.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 0
+color = Color(0.24137047, 0.2991241, 0.348668, 0.7764706)

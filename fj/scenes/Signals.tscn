@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://eol3tylgggcd"]
-
-[ext_resource type="Script" uid="uid://dj21r7tfpqys5" path="res://fj/scenes/signals.gd" id="1_2n3ls"]
-
-[node name="Signals" type="Node"]
-script = ExtResource("1_2n3ls")

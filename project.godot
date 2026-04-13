@@ -20,8 +20,6 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
-G="*res://fj/scenes/G.tscn"
-Signals="*res://fj/scenes/Signals.tscn"
 McpInteractionServer="*uid://bewxly5q2kera"
 NetworkTransport="*res://fj/net/network_transport.gd"
 GameSession="*res://fj/net/game_session.gd"
@@ -35,10 +33,6 @@ gdscript/warnings/standalone_ternary=0
 window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="viewport"
-
-[dotnet]
-
-project/assembly_name="CardFramework"
 
 [input]
 

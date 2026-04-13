@@ -50,7 +50,7 @@ func _on_connected() -> void:
 
 func _on_handshake_complete() -> void:
 	status_label.text = "Joining game as %s (%s)..." % [GameSession.my_role, GameSession.my_side]
-	get_tree().change_scene_to_file("res://fj/main.tscn")
+	get_tree().change_scene_to_file("res://fj/ui/board.tscn")
 
 
 func _on_connection_error(err: String) -> void:
