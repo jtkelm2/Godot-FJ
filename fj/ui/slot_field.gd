@@ -24,6 +24,8 @@ func _ready() -> void:
 			_child_slots.append(child)
 			child.card_clicked.connect(_on_child_card_clicked_signal)
 			child.slot_clicked.connect(_on_child_slot_clicked_signal)
+			child.card_hovered.connect(_on_child_card_hovered_signal)
+			child.card_unhovered.connect(_on_child_card_unhovered_signal)
 
 
 func count() -> int:
@@ -92,6 +94,19 @@ func _on_child_card_clicked_signal(child: Slot, local_idx: int) -> void:
 
 func _on_child_slot_clicked_signal(_child: Slot) -> void:
 	_emit_slot_clicked_once()
+
+
+func _on_child_card_hovered_signal(child: Slot, local_idx: int) -> void:
+	var global_idx := 0
+	for s in _child_slots:
+		if s == child:
+			emit_signal("card_hovered", self, global_idx + local_idx)
+			return
+		global_idx += s.count()
+
+
+func _on_child_card_unhovered_signal(_child: Slot) -> void:
+	emit_signal("card_unhovered", self)
 
 
 func _emit_slot_clicked_once() -> void:

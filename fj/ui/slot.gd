@@ -16,6 +16,8 @@ extends Control
 
 signal slot_clicked(slot: Slot)
 signal card_clicked(slot: Slot, index: int)
+signal card_hovered(slot: Slot, index: int)
+signal card_unhovered(slot: Slot)
 
 @export var owner_side: String = ""  # "RED" | "BLUE" | "SHARED" (absolute; Board translates via my_side)
 @export var role: String = ""
@@ -58,8 +60,11 @@ func set_highlight(_on: bool) -> void:
 # --- Signal choreography (called by subclass when it adds a card) ---
 
 func _attach_card(card: Card) -> void:
-	# A new Card entered this slot. Wire its click to our re-emission helper.
+	# A new Card entered this slot. Wire its click and hover to re-emit
+	# helpers that translate to (slot, index)-aware signals.
 	card.clicked.connect(_on_child_card_clicked.bind(card))
+	card.mouse_entered.connect(_on_child_card_hovered.bind(card))
+	card.mouse_exited.connect(_on_child_card_unhovered)
 
 
 func _on_child_card_clicked(card: Card) -> void:
@@ -70,6 +75,16 @@ func _on_child_card_clicked(card: Card) -> void:
 	# response clears pending_prompt, so the subsequent slot_clicked no-ops.
 	card_clicked.emit(self, idx)
 	slot_clicked.emit(self)
+
+
+func _on_child_card_hovered(card: Card) -> void:
+	var idx := _index_of(card)
+	if idx >= 0:
+		card_hovered.emit(self, idx)
+
+
+func _on_child_card_unhovered() -> void:
+	card_unhovered.emit(self)
 
 
 func _on_slot_gui_input(event: InputEvent) -> void:

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dn75fqvii0tpt"]
 
 [ext_resource type="Script" uid="uid://c42uj37qr7e4k" path="res://fj/ui/board.gd" id="1_board"]
-[ext_resource type="Script" uid="uid://djtm67gix0yve" path="res://fj/ui/simple_slot.gd" id="2_simple"]
+[ext_resource type="PackedScene" path="res://fj/ui/simple_slot.tscn" id="2_simple"]
 [ext_resource type="Script" uid="uid://bswtfjq6yg1qg" path="res://fj/ui/slot_field.gd" id="3_field"]
 [ext_resource type="PackedScene" uid="uid://b1o3sgkcbc22f" path="res://fj/ui/info_panel.tscn" id="4_info"]
 [ext_resource type="Texture2D" uid="uid://vtf8o1we105k" path="res://fj/assets/images/playmat.png" id="5_mat"]
@@ -13,7 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://hnsy76nhwsfq" path="res://fj/assets/images/slots/kill_slot.png" id="11_kill"]
 [ext_resource type="Texture2D" uid="uid://rk5u6nco7wxc" path="res://fj/assets/images/slots/fancy_dim.png" id="12_sidebar"]
 
-[node name="Board" type="Control" unique_id=1388573265]
+[node name="Board" type="Control" unique_id=1738933084]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,7 +22,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_board")
 
-[node name="Playmat" type="TextureRect" parent="." unique_id=1090381988]
+[node name="Background" type="TextureRect" parent="." unique_id=1028153573]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,17 +32,254 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("5_mat")
 
-[node name="GuardDeck" type="Control" parent="." unique_id=568328282]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 920.0
-offset_right = 1005.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
+[node name="GameArea" type="HBoxContainer" parent="." unique_id=1155759411]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -464.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="RedHalf" type="VBoxContainer" parent="GameArea" unique_id=610877590]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="RedDeckRow" type="HBoxContainer" parent="GameArea/RedHalf" unique_id=469931936]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="RedDiscard" parent="GameArea/RedHalf/RedDeckRow" unique_id=536927702 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+owner_side = "RED"
+role = "discard"
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedDeckRow/RedDiscard" unique_id=805097606]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_discard")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedRefresh" parent="GameArea/RedHalf/RedDeckRow" unique_id=2041108938 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+owner_side = "RED"
+role = "refresh"
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedDeckRow/RedRefresh" unique_id=1610334636]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_refresh")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedDeck" parent="GameArea/RedHalf/RedDeckRow" unique_id=215255192 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+owner_side = "RED"
+role = "deck"
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedDeckRow/RedDeck" unique_id=1397252890]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedEquipment" type="HBoxContainer" parent="GameArea/RedHalf" unique_id=1808725658]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+script = ExtResource("3_field")
+owner_side = "RED"
+role = "equipment"
+
+[node name="Eq1" parent="GameArea/RedHalf/RedEquipment" unique_id=114151663 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedEquipment/Eq1" unique_id=567243184]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Eq2" parent="GameArea/RedHalf/RedEquipment" unique_id=1261281554 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedEquipment/Eq2" unique_id=980326348]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedWepKill" type="HBoxContainer" parent="GameArea/RedHalf" unique_id=409414573]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="RedWeapon" parent="GameArea/RedHalf/RedWepKill" unique_id=2065914904 instance=ExtResource("2_simple")]
+layout_mode = 2
+owner_side = "RED"
+role = "ws_0_weapon"
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedWepKill/RedWeapon" unique_id=271934744]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_weapon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedKill" parent="GameArea/RedHalf/RedWepKill" unique_id=792303889 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+owner_side = "RED"
+role = "ws_0_killstack"
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedWepKill/RedKill" unique_id=117774313]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_kill")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedSidebar" type="HBoxContainer" parent="GameArea/RedHalf" unique_id=129067237]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+script = ExtResource("3_field")
+owner_side = "RED"
+role = "sidebar"
+
+[node name="S1" parent="GameArea/RedHalf/RedSidebar" unique_id=722994833 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedSidebar/S1" unique_id=1700405540]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S2" parent="GameArea/RedHalf/RedSidebar" unique_id=1025260738 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedSidebar/S2" unique_id=1026728704]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S3" parent="GameArea/RedHalf/RedSidebar" unique_id=581243024 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedSidebar/S3" unique_id=492619113]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S4" parent="GameArea/RedHalf/RedSidebar" unique_id=153520618 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="GameArea/RedHalf/RedSidebar/S4" unique_id=1873745385]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedHand" parent="GameArea/RedHalf" unique_id=706103404 instance=ExtResource("2_simple")]
+custom_minimum_size = Vector2(360, 146)
+layout_mode = 2
+size_flags_horizontal = 4
+offset = Vector2(48, 0)
+owner_side = "RED"
+role = "hand"
+
+[node name="CenterColumn" type="VBoxContainer" parent="GameArea" unique_id=1261729993]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="GuardDeck" parent="GameArea/CenterColumn" unique_id=1945149268 instance=ExtResource("2_simple")]
+layout_mode = 2
+size_flags_horizontal = 4
+max_display = 5
 owner_side = "SHARED"
 role = "guard_deck"
 
-[node name="Art" type="TextureRect" parent="GuardDeck" unique_id=1568018009]
+[node name="Art" type="TextureRect" parent="GameArea/CenterColumn/GuardDeck" unique_id=1889914466]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -54,18 +291,22 @@ texture = ExtResource("6_combined")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RedDiscard" type="Control" parent="." unique_id=1942984986]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 600.0
-offset_top = 73.0
-offset_right = 685.0
-offset_bottom = 219.0
-script = ExtResource("2_simple")
-owner_side = "RED"
-role = "discard"
+[node name="ActionField" type="VBoxContainer" parent="GameArea/CenterColumn" unique_id=135351858]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
 
-[node name="Art" type="TextureRect" parent="RedDiscard" unique_id=1957987969]
+[node name="ActionTopRow" type="HBoxContainer" parent="GameArea/CenterColumn/ActionField" unique_id=1775451985]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="RedDistantTop" parent="GameArea/CenterColumn/ActionField/ActionTopRow" unique_id=1392791226 instance=ExtResource("2_simple")]
+layout_mode = 2
+owner_side = "RED"
+role = "action_field_top_distant"
+
+[node name="Art" type="TextureRect" parent="GameArea/CenterColumn/ActionField/ActionTopRow/RedDistantTop" unique_id=1250772340]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -73,22 +314,33 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("8_discard")
+texture = ExtResource("6_combined")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BlueDiscard" type="Control" parent="." unique_id=1752007346]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 1240.0
-offset_top = 73.0
-offset_right = 1325.0
-offset_bottom = 219.0
-script = ExtResource("2_simple")
+[node name="RedHiddenTop" parent="GameArea/CenterColumn/ActionField/ActionTopRow" unique_id=1030587032 instance=ExtResource("2_simple")]
+layout_mode = 2
+owner_side = "RED"
+role = "action_field_top_hidden"
+
+[node name="Art" type="TextureRect" parent="GameArea/CenterColumn/ActionField/ActionTopRow/RedHiddenTop" unique_id=1258042844]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueHiddenTop" parent="GameArea/CenterColumn/ActionField/ActionTopRow" unique_id=2132568253 instance=ExtResource("2_simple")]
+layout_mode = 2
 owner_side = "BLUE"
-role = "discard"
+role = "action_field_top_hidden"
 
-[node name="Art" type="TextureRect" parent="BlueDiscard" unique_id=1625865870]
+[node name="Art" type="TextureRect" parent="GameArea/CenterColumn/ActionField/ActionTopRow/BlueHiddenTop" unique_id=950739289]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -96,22 +348,137 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("8_discard")
+texture = ExtResource("6_combined")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RedRefresh" type="Control" parent="." unique_id=1030816670]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 760.0
-offset_top = 146.0
-offset_right = 845.0
-offset_bottom = 292.0
-script = ExtResource("2_simple")
+[node name="BlueDistantTop" parent="GameArea/CenterColumn/ActionField/ActionTopRow" unique_id=675121713 instance=ExtResource("2_simple")]
+layout_mode = 2
+owner_side = "BLUE"
+role = "action_field_top_distant"
+
+[node name="Art" type="TextureRect" parent="GameArea/CenterColumn/ActionField/ActionTopRow/BlueDistantTop" unique_id=1350548470]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ActionBotRow" type="HBoxContainer" parent="GameArea/CenterColumn/ActionField" unique_id=1083011094]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="RedDistantBot" parent="GameArea/CenterColumn/ActionField/ActionBotRow" unique_id=1758400857 instance=ExtResource("2_simple")]
+layout_mode = 2
 owner_side = "RED"
+role = "action_field_bottom_distant"
+
+[node name="Art" type="TextureRect" parent="GameArea/CenterColumn/ActionField/ActionBotRow/RedDistantBot" unique_id=177064422]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedHiddenBot" parent="GameArea/CenterColumn/ActionField/ActionBotRow" unique_id=1467930740 instance=ExtResource("2_simple")]
+layout_mode = 2
+owner_side = "RED"
+role = "action_field_bottom_hidden"
+
+[node name="Art" type="TextureRect" parent="GameArea/CenterColumn/ActionField/ActionBotRow/RedHiddenBot" unique_id=1874810801]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueHiddenBot" parent="GameArea/CenterColumn/ActionField/ActionBotRow" unique_id=777185369 instance=ExtResource("2_simple")]
+layout_mode = 2
+owner_side = "BLUE"
+role = "action_field_bottom_hidden"
+
+[node name="Art" type="TextureRect" parent="GameArea/CenterColumn/ActionField/ActionBotRow/BlueHiddenBot" unique_id=881742526]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueDistantBot" parent="GameArea/CenterColumn/ActionField/ActionBotRow" unique_id=478842611 instance=ExtResource("2_simple")]
+layout_mode = 2
+owner_side = "BLUE"
+role = "action_field_bottom_distant"
+
+[node name="Art" type="TextureRect" parent="GameArea/CenterColumn/ActionField/ActionBotRow/BlueDistantBot" unique_id=1930452855]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueHalf" type="VBoxContainer" parent="GameArea" unique_id=721643251]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BlueDeckRow" type="HBoxContainer" parent="GameArea/BlueHalf" unique_id=172193590]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="BlueDeck" parent="GameArea/BlueHalf/BlueDeckRow" unique_id=601057466 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+owner_side = "BLUE"
+role = "deck"
+
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueDeckRow/BlueDeck" unique_id=361448417]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueRefresh" parent="GameArea/BlueHalf/BlueDeckRow" unique_id=140608479 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+owner_side = "BLUE"
 role = "refresh"
 
-[node name="Art" type="TextureRect" parent="RedRefresh" unique_id=841375452]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueDeckRow/BlueRefresh" unique_id=304667276]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -123,18 +490,13 @@ texture = ExtResource("7_refresh")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BlueRefresh" type="Control" parent="." unique_id=119404122]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 1080.0
-offset_top = 146.0
-offset_right = 1165.0
-offset_bottom = 292.0
-script = ExtResource("2_simple")
+[node name="BlueDiscard" parent="GameArea/BlueHalf/BlueDeckRow" unique_id=514971692 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
 owner_side = "BLUE"
-role = "refresh"
+role = "discard"
 
-[node name="Art" type="TextureRect" parent="BlueRefresh" unique_id=882618503]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueDeckRow/BlueDiscard" unique_id=1663011087]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -142,123 +504,22 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("7_refresh")
+texture = ExtResource("8_discard")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RedDeck" type="Control" parent="." unique_id=1593629216]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 840.0
-offset_top = 146.0
-offset_right = 925.0
-offset_bottom = 292.0
-script = ExtResource("2_simple")
-owner_side = "RED"
-role = "deck"
-
-[node name="Art" type="TextureRect" parent="RedDeck" unique_id=729095980]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BlueDeck" type="Control" parent="." unique_id=929140882]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 1000.0
-offset_top = 146.0
-offset_right = 1085.0
-offset_bottom = 292.0
-script = ExtResource("2_simple")
-owner_side = "BLUE"
-role = "deck"
-
-[node name="Art" type="TextureRect" parent="BlueDeck" unique_id=576276477]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="RedEquipment" type="Control" parent="." unique_id=956768204]
-anchors_preset = 0
-offset_left = 560.0
-offset_top = 292.0
-offset_right = 725.0
-offset_bottom = 438.0
-script = ExtResource("3_field")
-owner_side = "RED"
-role = "equipment"
-
-[node name="Equip1" type="Control" parent="RedEquipment" unique_id=705186708]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_right = 85.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
-
-[node name="Art" type="TextureRect" parent="RedEquipment/Equip1" unique_id=376193766]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("9_equip")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Equip2" type="Control" parent="RedEquipment" unique_id=2087992293]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 80.0
-offset_right = 165.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
-
-[node name="Art" type="TextureRect" parent="RedEquipment/Equip2" unique_id=2141559693]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("9_equip")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BlueEquipment" type="Control" parent="." unique_id=1378076099]
-anchors_preset = 0
-offset_left = 1201.0
-offset_top = 292.0
-offset_right = 1366.0
-offset_bottom = 438.0
+[node name="BlueEquipment" type="HBoxContainer" parent="GameArea/BlueHalf" unique_id=241700032]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
 script = ExtResource("3_field")
 owner_side = "BLUE"
 role = "equipment"
 
-[node name="Equip1" type="Control" parent="BlueEquipment" unique_id=1633729012]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_right = 85.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
+[node name="Eq1" parent="GameArea/BlueHalf/BlueEquipment" unique_id=500275467 instance=ExtResource("2_simple")]
+layout_mode = 2
 
-[node name="Art" type="TextureRect" parent="BlueEquipment/Equip1" unique_id=2032893123]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueEquipment/Eq1" unique_id=135844345]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -270,15 +531,10 @@ texture = ExtResource("9_equip")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Equip2" type="Control" parent="BlueEquipment" unique_id=1008235866]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 80.0
-offset_right = 165.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
+[node name="Eq2" parent="GameArea/BlueHalf/BlueEquipment" unique_id=1137675163 instance=ExtResource("2_simple")]
+layout_mode = 2
 
-[node name="Art" type="TextureRect" parent="BlueEquipment/Equip2" unique_id=1688239397]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueEquipment/Eq2" unique_id=565547014]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -290,225 +546,18 @@ texture = ExtResource("9_equip")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RedActionTopDistant" type="Control" parent="." unique_id=904436301]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 801.0
-offset_top = 365.0
-offset_right = 886.0
-offset_bottom = 511.0
-script = ExtResource("2_simple")
-owner_side = "RED"
-role = "action_field_top_distant"
+[node name="BlueWepKill" type="HBoxContainer" parent="GameArea/BlueHalf" unique_id=24332190]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
 
-[node name="Art" type="TextureRect" parent="RedActionTopDistant" unique_id=1953353511]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="RedActionTopHidden" type="Control" parent="." unique_id=934647082]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 881.0
-offset_top = 365.0
-offset_right = 966.0
-offset_bottom = 511.0
-script = ExtResource("2_simple")
-owner_side = "RED"
-role = "action_field_top_hidden"
-
-[node name="Art" type="TextureRect" parent="RedActionTopHidden" unique_id=1172535963]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BlueActionTopHidden" type="Control" parent="." unique_id=57557001]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 961.0
-offset_top = 365.0
-offset_right = 1046.0
-offset_bottom = 511.0
-script = ExtResource("2_simple")
+[node name="BlueKill" parent="GameArea/BlueHalf/BlueWepKill" unique_id=2140534559 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
 owner_side = "BLUE"
-role = "action_field_top_hidden"
-
-[node name="Art" type="TextureRect" parent="BlueActionTopHidden" unique_id=1156354518]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BlueActionTopDistant" type="Control" parent="." unique_id=134725547]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 1041.0
-offset_top = 365.0
-offset_right = 1126.0
-offset_bottom = 511.0
-script = ExtResource("2_simple")
-owner_side = "BLUE"
-role = "action_field_top_distant"
-
-[node name="Art" type="TextureRect" parent="BlueActionTopDistant" unique_id=1487040554]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="RedActionBottomDistant" type="Control" parent="." unique_id=1833986044]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 801.0
-offset_top = 511.0
-offset_right = 886.0
-offset_bottom = 657.0
-script = ExtResource("2_simple")
-owner_side = "RED"
-role = "action_field_bottom_distant"
-
-[node name="Art" type="TextureRect" parent="RedActionBottomDistant" unique_id=362149847]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="RedActionBottomHidden" type="Control" parent="." unique_id=1563761606]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 881.0
-offset_top = 511.0
-offset_right = 966.0
-offset_bottom = 657.0
-script = ExtResource("2_simple")
-owner_side = "RED"
-role = "action_field_bottom_hidden"
-
-[node name="Art" type="TextureRect" parent="RedActionBottomHidden" unique_id=1245441816]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BlueActionBottomHidden" type="Control" parent="." unique_id=1186847856]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 961.0
-offset_top = 511.0
-offset_right = 1046.0
-offset_bottom = 657.0
-script = ExtResource("2_simple")
-owner_side = "BLUE"
-role = "action_field_bottom_hidden"
-
-[node name="Art" type="TextureRect" parent="BlueActionBottomHidden" unique_id=69370473]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BlueActionBottomDistant" type="Control" parent="." unique_id=1809033386]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 1041.0
-offset_top = 511.0
-offset_right = 1126.0
-offset_bottom = 657.0
-script = ExtResource("2_simple")
-owner_side = "BLUE"
-role = "action_field_bottom_distant"
-
-[node name="Art" type="TextureRect" parent="BlueActionBottomDistant" unique_id=1338237571]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_combined")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="RedWeapon" type="Control" parent="." unique_id=118469110]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 560.0
-offset_top = 511.0
-offset_right = 645.0
-offset_bottom = 657.0
-script = ExtResource("2_simple")
-owner_side = "RED"
-role = "ws_0_weapon"
-
-[node name="Art" type="TextureRect" parent="RedWeapon" unique_id=1192535998]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("10_weapon")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="RedKill" type="Control" parent="." unique_id=1488804781]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 640.0
-offset_top = 511.0
-offset_right = 725.0
-offset_bottom = 657.0
-script = ExtResource("2_simple")
-owner_side = "RED"
 role = "ws_0_killstack"
 
-[node name="Art" type="TextureRect" parent="RedKill" unique_id=492396421]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueWepKill/BlueKill" unique_id=1016289643]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -520,41 +569,12 @@ texture = ExtResource("11_kill")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BlueKill" type="Control" parent="." unique_id=202125695]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 1201.0
-offset_top = 511.0
-offset_right = 1286.0
-offset_bottom = 657.0
-script = ExtResource("2_simple")
-owner_side = "BLUE"
-role = "ws_0_killstack"
-
-[node name="Art" type="TextureRect" parent="BlueKill" unique_id=760278402]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("11_kill")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BlueWeapon" type="Control" parent="." unique_id=1525369453]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 1281.0
-offset_top = 511.0
-offset_right = 1366.0
-offset_bottom = 657.0
-script = ExtResource("2_simple")
+[node name="BlueWeapon" parent="GameArea/BlueHalf/BlueWepKill" unique_id=1840514164 instance=ExtResource("2_simple")]
+layout_mode = 2
 owner_side = "BLUE"
 role = "ws_0_weapon"
 
-[node name="Art" type="TextureRect" parent="BlueWeapon" unique_id=683436979]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueWepKill/BlueWeapon" unique_id=1345353584]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -566,113 +586,18 @@ texture = ExtResource("10_weapon")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RedSidebar" type="Control" parent="." unique_id=107024590]
-anchors_preset = 0
-offset_left = 480.0
-offset_top = 730.0
-offset_right = 805.0
-offset_bottom = 876.0
-script = ExtResource("3_field")
-owner_side = "RED"
-role = "sidebar"
-
-[node name="S1" type="Control" parent="RedSidebar" unique_id=323278752]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_right = 85.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
-
-[node name="Art" type="TextureRect" parent="RedSidebar/S1" unique_id=1875038331]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("12_sidebar")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="S2" type="Control" parent="RedSidebar" unique_id=1688575312]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 80.0
-offset_right = 165.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
-
-[node name="Art" type="TextureRect" parent="RedSidebar/S2" unique_id=2081054862]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("12_sidebar")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="S3" type="Control" parent="RedSidebar" unique_id=455307223]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 160.0
-offset_right = 245.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
-
-[node name="Art" type="TextureRect" parent="RedSidebar/S3" unique_id=728415424]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("12_sidebar")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="S4" type="Control" parent="RedSidebar" unique_id=14459427]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 240.0
-offset_right = 325.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
-
-[node name="Art" type="TextureRect" parent="RedSidebar/S4" unique_id=1053003667]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("12_sidebar")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BlueSidebar" type="Control" parent="." unique_id=873082522]
-anchors_preset = 0
-offset_left = 1121.0
-offset_top = 730.0
-offset_right = 1446.0
-offset_bottom = 876.0
+[node name="BlueSidebar" type="HBoxContainer" parent="GameArea/BlueHalf" unique_id=379386768]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
 script = ExtResource("3_field")
 owner_side = "BLUE"
 role = "sidebar"
 
-[node name="S1" type="Control" parent="BlueSidebar" unique_id=1793287957]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_right = 85.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
+[node name="S1" parent="GameArea/BlueHalf/BlueSidebar" unique_id=557874342 instance=ExtResource("2_simple")]
+layout_mode = 2
 
-[node name="Art" type="TextureRect" parent="BlueSidebar/S1" unique_id=529136329]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueSidebar/S1" unique_id=889749252]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -684,15 +609,10 @@ texture = ExtResource("12_sidebar")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="S2" type="Control" parent="BlueSidebar" unique_id=454223854]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 80.0
-offset_right = 165.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
+[node name="S2" parent="GameArea/BlueHalf/BlueSidebar" unique_id=986086208 instance=ExtResource("2_simple")]
+layout_mode = 2
 
-[node name="Art" type="TextureRect" parent="BlueSidebar/S2" unique_id=14436009]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueSidebar/S2" unique_id=709916567]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -704,15 +624,10 @@ texture = ExtResource("12_sidebar")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="S3" type="Control" parent="BlueSidebar" unique_id=1842772212]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 160.0
-offset_right = 245.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
+[node name="S3" parent="GameArea/BlueHalf/BlueSidebar" unique_id=1614134911 instance=ExtResource("2_simple")]
+layout_mode = 2
 
-[node name="Art" type="TextureRect" parent="BlueSidebar/S3" unique_id=800105900]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueSidebar/S3" unique_id=248182367]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -724,15 +639,10 @@ texture = ExtResource("12_sidebar")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="S4" type="Control" parent="BlueSidebar" unique_id=654718489]
-custom_minimum_size = Vector2(85, 146)
-anchors_preset = 0
-offset_left = 240.0
-offset_right = 325.0
-offset_bottom = 146.0
-script = ExtResource("2_simple")
+[node name="S4" parent="GameArea/BlueHalf/BlueSidebar" unique_id=1687524307 instance=ExtResource("2_simple")]
+layout_mode = 2
 
-[node name="Art" type="TextureRect" parent="BlueSidebar/S4" unique_id=1807803181]
+[node name="Art" type="TextureRect" parent="GameArea/BlueHalf/BlueSidebar/S4" unique_id=1481330286]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -744,31 +654,15 @@ texture = ExtResource("12_sidebar")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RedHand" type="Control" parent="." unique_id=165919360]
-custom_minimum_size = Vector2(340, 146)
-anchors_preset = 0
-offset_left = 430.0
-offset_top = 881.0
-offset_right = 770.0
-offset_bottom = 1027.0
-script = ExtResource("2_simple")
-offset = Vector2(51, 0)
-owner_side = "RED"
-role = "hand"
-
-[node name="BlueHand" type="Control" parent="." unique_id=47853971]
-custom_minimum_size = Vector2(340, 146)
-anchors_preset = 0
-offset_left = 1070.0
-offset_top = 881.0
-offset_right = 1410.0
-offset_bottom = 1027.0
-script = ExtResource("2_simple")
-offset = Vector2(51, 0)
+[node name="BlueHand" parent="GameArea/BlueHalf" unique_id=954392720 instance=ExtResource("2_simple")]
+custom_minimum_size = Vector2(360, 146)
+layout_mode = 2
+size_flags_horizontal = 4
+offset = Vector2(48, 0)
 owner_side = "BLUE"
 role = "hand"
 
-[node name="InfoPanel" parent="." unique_id=1948672800 instance=ExtResource("4_info")]
+[node name="InfoPanel" parent="." unique_id=901187375 instance=ExtResource("4_info")]
 layout_mode = 1
 anchors_preset = 11
 anchor_left = 1.0
@@ -780,4 +674,3 @@ offset_top = 0.0
 offset_right = 0.0
 offset_bottom = 0.0
 grow_horizontal = 0
-color = Color(0.24137047, 0.2991241, 0.348668, 0.7764706)

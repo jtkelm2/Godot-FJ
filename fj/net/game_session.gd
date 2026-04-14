@@ -24,6 +24,10 @@ var catalog = null  # CatalogData
 var my_role: String = ""
 var my_side: String = ""
 var latest_view: Dictionary = {}
+## Events that arrived with the most recent state push (cleared by Board after
+## it consumes them). Advisory: the view is authoritative, but events let the
+## UI animate transitions.
+var latest_events: Array = []
 var pending_prompt: Dictionary = {}
 var log = null  # SessionLog
 
@@ -40,6 +44,7 @@ func _on_connected() -> void:
 	my_role = ""
 	my_side = ""
 	latest_view = {}
+	latest_events = []
 	pending_prompt = {}
 	log = SessionLogScript.new()
 	log.log_event("connected")
@@ -91,6 +96,7 @@ func _handle_state(msg: Dictionary) -> void:
 		push_warning("GameSession: received state in unexpected state %s" % SessionState.keys()[state])
 		return
 	latest_view = msg.get("view", {})
+	latest_events = msg.get("events", [])
 	if latest_view.get("game_result") != null:
 		state = SessionState.GAME_OVER
 	changed.emit()
