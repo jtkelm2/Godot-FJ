@@ -1,5 +1,6 @@
+@tool
 class_name WeaponSlot
-extends Container
+extends PassiveContainer
 
 ## A first-class weapon slot: a composite that owns a `holster` slot (the
 ## equipped weapon card) and a `killstack` slot (defeated enemies). Dealt
@@ -53,19 +54,9 @@ var killstack_wire: String = ""
 @onready var _sharpness_label: Label = get_node_or_null("Sharpness") as Label
 
 
-## This composite is a plain Control (no layout coupling), so it doesn't
-## auto-size from its children the way a Container does. Forward the
-## combined minimum of any Container children so parent containers size
-## our row correctly.
-func _get_minimum_size() -> Vector2:
-	var result := Vector2.ZERO
-	for child in get_children():
-		if child is Container:
-			result = result.max((child as Container).get_combined_minimum_size())
-	return result
-
-
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
 	holster = get_node_or_null(holster_path) as Slot
 	killstack = get_node_or_null(killstack_path) as Slot
 	if holster == null or killstack == null:
