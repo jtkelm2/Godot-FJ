@@ -44,7 +44,7 @@ func disconnect_from_server() -> void:
 
 
 func send_message(msg: Dictionary) -> void:
-	var json_str := JSON.stringify(msg) + "\n"
+	var json_str := _stringify(msg) + "\n"
 	var data := json_str.to_utf8_buffer()
 
 	match _transport_type:
@@ -54,6 +54,39 @@ func send_message(msg: Dictionary) -> void:
 		TransportType.WEBSOCKET:
 			if _ws_peer and _is_connected:
 				_ws_peer.send_text(json_str)
+
+
+## Variant-typed JSON serializer. `JSON.stringify` emits every numeric value
+## as a float (e.g. `0` → `"0.0"`), which breaks the protocol's exact-echo
+## rule for response options (§4.4). This walker emits ints as ints and only
+## emits the `.0…` form when a value genuinely isn't whole.
+static func _stringify(value: Variant) -> String:
+	match typeof(value):
+		TYPE_NIL:
+			return "null"
+		TYPE_BOOL:
+			return "true" if value else "false"
+		TYPE_INT:
+			return str(value)
+		TYPE_FLOAT:
+			var f: float = value
+			if is_finite(f) and abs(f) < 1e16 and f == floor(f):
+				return str(int(f))
+			return String.num(f)
+		TYPE_STRING, TYPE_STRING_NAME:
+			return JSON.stringify(value)
+		TYPE_DICTIONARY:
+			var parts: PackedStringArray = []
+			for k in (value as Dictionary):
+				parts.append(JSON.stringify(str(k)) + ":" + _stringify(value[k]))
+			return "{" + ",".join(parts) + "}"
+		TYPE_ARRAY:
+			var parts: PackedStringArray = []
+			for v in (value as Array):
+				parts.append(_stringify(v))
+			return "[" + ",".join(parts) + "]"
+		_:
+			return JSON.stringify(value)
 
 
 func _process(_delta: float) -> void:

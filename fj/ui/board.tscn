@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://xe4wso5p7m2x" path="res://fj/assets/images/slots/weapon_slot.png" id="10_weapon"]
 [ext_resource type="Texture2D" uid="uid://hnsy76nhwsfq" path="res://fj/assets/images/slots/kill_slot.png" id="11_kill"]
 [ext_resource type="Texture2D" uid="uid://rk5u6nco7wxc" path="res://fj/assets/images/slots/fancy_dim.png" id="12_sidebar"]
+[ext_resource type="Script" path="res://fj/ui/weapon_slot.gd" id="13_wslot"]
 
 [node name="Board" type="Control" unique_id=1738933084]
 layout_mode = 3
@@ -154,6 +155,9 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_constants/separation = 6
 alignment = 1
+script = ExtResource("13_wslot")
+owner_side = "RED"
+ws_role = "ws_0"
 
 [node name="RedWeapon" parent="GameArea/RedHalf/RedWepKill" unique_id=2065914904 instance=ExtResource("2_simple")]
 layout_mode = 2
@@ -550,6 +554,9 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_constants/separation = 6
 alignment = 1
+script = ExtResource("13_wslot")
+owner_side = "BLUE"
+ws_role = "ws_0"
 
 [node name="BlueKill" parent="GameArea/BlueHalf/BlueWepKill" unique_id=2140534559 instance=ExtResource("2_simple")]
 layout_mode = 2

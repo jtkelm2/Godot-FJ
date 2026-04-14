@@ -26,8 +26,23 @@ func apply_to(slot: Slot, slot_data) -> void:
 	slot.clear()
 	if slot_data is Array:
 		_populate_visible(slot, slot_data)
-	elif slot_data is float:
+	elif slot_data is int or slot_data is float:
 		_populate_facedown(slot, int(slot_data))
+
+
+## Reconcile a WeaponSlot's holster + killstack from a `view.weapons[]` entry:
+##   {"name": "red_ws_0", "card": <name>|null, "sharpness": int, "kills": int}
+## The holster shows the equipped weapon (faceup) or stays empty; the
+## killstack shows `kills` facedown placeholders; sharpness is set on the
+## composite.
+func apply_to_weapon_slot(ws: WeaponSlot, entry: Dictionary) -> void:
+	if ws.holster == null or ws.killstack == null:
+		return
+	var card_name = entry.get("card")
+	var holster_data: Array = [str(card_name)] if card_name != null else []
+	apply_to(ws.holster, holster_data)
+	apply_to(ws.killstack, int(entry.get("kills", 0)))
+	ws.set_sharpness(int(entry.get("sharpness", 0)))
 
 
 func _populate_visible(slot: Slot, names: Array) -> void:

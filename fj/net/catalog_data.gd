@@ -16,6 +16,14 @@ var shared_slots: Dictionary = {}    # role -> wire_name
 var self_weapon_slots: Dictionary = {}
 var opponent_weapon_slots: Dictionary = {}
 
+## Routes a self-side regular slot wire (e.g. "red_ws_0_weapon") back to its
+## owning weapon slot. Each entry is keyed by the interior slot's wire and
+## carries the parent weapon slot's wire plus which interior position it is:
+##   { "ws_wire": "red_ws_0", "kind": "holster" | "killstack" }
+## Built once during parse_from. Empty for opponent-owned weapons (they're
+## hidden information per protocol §3.2).
+var self_weapon_interior_slots: Dictionary = {}
+
 ## Set externally from the role_assignment notify, not inferred from catalog.
 var my_color: String = ""
 
@@ -52,6 +60,18 @@ func parse_from(msg: Dictionary) -> void:
 					self_weapon_slots[role] = wire_name
 				"opponent":
 					opponent_weapon_slots[role] = wire_name
+
+	# Build the interior-slot routing table for self-side weapons. For each
+	# self weapon slot ws_N, find the regular slots ws_N_weapon (holster) and
+	# ws_N_killstack and record their parent ws wire + which interior they are.
+	for ws_role in self_weapon_slots:
+		var ws_wire: String = self_weapon_slots[ws_role]
+		var holster_wire: String = self_slots.get(ws_role + "_weapon", "")
+		var killstack_wire: String = self_slots.get(ws_role + "_killstack", "")
+		if not holster_wire.is_empty():
+			self_weapon_interior_slots[holster_wire] = {"ws_wire": ws_wire, "kind": "holster"}
+		if not killstack_wire.is_empty():
+			self_weapon_interior_slots[killstack_wire] = {"ws_wire": ws_wire, "kind": "killstack"}
 
 
 
