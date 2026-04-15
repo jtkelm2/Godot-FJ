@@ -1,4 +1,4 @@
-extends ColorRect
+extends PanelContainer
 
 ## Side-anchored panel. Root is a ColorRect so `color` is the backdrop tint.
 ## Dumb view — doesn't read GameSession directly. Board calls set_side(my_side)

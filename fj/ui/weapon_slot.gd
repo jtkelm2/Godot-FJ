@@ -1,6 +1,5 @@
-@tool
 class_name WeaponSlot
-extends PassiveContainer
+extends Node
 
 ## A first-class weapon slot: a composite that owns a `holster` slot (the
 ## equipped weapon card) and a `killstack` slot (defeated enemies). Dealt
@@ -55,8 +54,6 @@ var killstack_wire: String = ""
 
 
 func _ready() -> void:
-	if Engine.is_editor_hint():
-		return
 	holster = get_node_or_null(holster_path) as Slot
 	killstack = get_node_or_null(killstack_path) as Slot
 	if holster == null or killstack == null:

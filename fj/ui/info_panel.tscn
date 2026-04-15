@@ -1,144 +1,115 @@
 [gd_scene format=3 uid="uid://b1o3sgkcbc22f"]
 
+[ext_resource type="StyleBox" uid="uid://bvo7md183hget" path="res://info_panel_theme.tres" id="1_1b8jb"]
 [ext_resource type="Script" uid="uid://jrdve3p5q1b4" path="res://fj/ui/info_panel.gd" id="1_info"]
+[ext_resource type="LabelSettings" uid="uid://b5skpbbqle4n7" path="res://big_text_theme.tres" id="3_vj6a0"]
 
-[node name="InfoPanel" type="ColorRect" unique_id=1107139533]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -192.0
-offset_top = -540.0
-offset_right = 192.0
-offset_bottom = 540.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.2388615, 0.30142733, 0.33954227, 0.7764706)
-script = ExtResource("1_info")
-
-[node name="Backdrop" type="VBoxContainer" parent="." unique_id=1483117894]
-layout_mode = 1
-anchors_preset = 13
-anchor_left = 0.5
-anchor_right = 0.5
+[node name="InfoPanel" type="PanelContainer" unique_id=1408668161]
+anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = -176.0
-offset_top = 16.0
-offset_right = 176.0
-offset_bottom = -16.0
-grow_horizontal = 2
+offset_right = 364.0
 grow_vertical = 2
+theme_override_styles/panel = ExtResource("1_1b8jb")
+script = ExtResource("1_info")
+theme_override_styles/panel = ExtResource("1_1b8jb")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=179250702]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="Backdrop" type="VBoxContainer" parent="MarginContainer" unique_id=1483117894]
+layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Preview" type="Control" parent="Backdrop" unique_id=892944539]
+[node name="PanelContainer" type="PanelContainer" parent="MarginContainer/Backdrop" unique_id=968668720]
+layout_mode = 2
+
+[node name="Preview" type="VBoxContainer" parent="MarginContainer/Backdrop/PanelContainer" unique_id=1774314769]
 custom_minimum_size = Vector2(350, 500)
 layout_mode = 2
 
-[node name="PreviewImage" type="TextureRect" parent="Backdrop/Preview" unique_id=909357818]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="PreviewImage" type="TextureRect" parent="MarginContainer/Backdrop/PanelContainer/Preview" unique_id=909357818]
+custom_minimum_size = Vector2(350, 500)
+layout_mode = 2
 mouse_filter = 2
 expand_mode = 3
 stretch_mode = 5
 
-[node name="ArrowUp" type="Label" parent="Backdrop/Preview"]
-visible = false
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -16.0
-offset_top = -28.0
-offset_right = 16.0
-offset_bottom = -2.0
-mouse_filter = 2
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/Backdrop/PanelContainer/Preview" unique_id=1303472123]
+layout_mode = 2
+alignment = 1
+
+[node name="ArrowUp" type="Label" parent="MarginContainer/Backdrop/PanelContainer/Preview/HBoxContainer" unique_id=463550977]
+layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 22
 text = "▲"
+label_settings = ExtResource("3_vj6a0")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ArrowDown" type="Label" parent="Backdrop/Preview"]
-visible = false
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -16.0
-offset_top = 2.0
-offset_right = 16.0
-offset_bottom = 28.0
-mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 22
+[node name="ArrowDown" type="Label" parent="MarginContainer/Backdrop/PanelContainer/Preview/HBoxContainer" unique_id=223112271]
+layout_mode = 2
 text = "▼"
-horizontal_alignment = 1
-vertical_alignment = 1
+label_settings = ExtResource("3_vj6a0")
 
-[node name="HPRow" type="HBoxContainer" parent="Backdrop" unique_id=736860513]
+[node name="HPRow" type="HBoxContainer" parent="MarginContainer/Backdrop" unique_id=736860513]
 layout_mode = 2
 alignment = 1
 
-[node name="HPLabel" type="Label" parent="Backdrop/HPRow" unique_id=689427681]
+[node name="HPLabel" type="Label" parent="MarginContainer/Backdrop/HPRow" unique_id=689427681]
 layout_mode = 2
 text = "HP: "
+label_settings = ExtResource("3_vj6a0")
 
-[node name="HPValue" type="Label" parent="Backdrop/HPRow" unique_id=963190510]
+[node name="HPValue" type="Label" parent="MarginContainer/Backdrop/HPRow" unique_id=963190510]
 layout_mode = 2
 text = "20 / 20"
+label_settings = ExtResource("3_vj6a0")
 
-[node name="PhaseLabel" type="Label" parent="Backdrop" unique_id=643608773]
-visible = false
+[node name="PhaseLabel" type="Label" parent="MarginContainer/Backdrop" unique_id=643608773]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 horizontal_alignment = 1
 
-[node name="PriorityLabel" type="Label" parent="Backdrop" unique_id=1773798513]
+[node name="PriorityLabel" type="Label" parent="MarginContainer/Backdrop" unique_id=1773798513]
 layout_mode = 2
 horizontal_alignment = 1
 
-[node name="VBox" type="VBoxContainer" parent="Backdrop" unique_id=1205250982]
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/Backdrop" unique_id=1205250982]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="Backdrop/VBox" unique_id=346177210]
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/Backdrop/VBox" unique_id=346177210]
 layout_mode = 2
 
-[node name="PromptLabel" type="Label" parent="Backdrop/VBox" unique_id=1371720564]
+[node name="PromptLabel" type="Label" parent="MarginContainer/Backdrop/VBox" unique_id=1371720564]
 custom_minimum_size = Vector2(10, 10)
 layout_mode = 2
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="TextOptions" type="VBoxContainer" parent="Backdrop/VBox" unique_id=1590110857]
+[node name="TextOptions" type="VBoxContainer" parent="MarginContainer/Backdrop/VBox" unique_id=1590110857]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="HSeparator2" type="HSeparator" parent="Backdrop/VBox" unique_id=1237928066]
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/Backdrop/VBox" unique_id=1237928066]
 layout_mode = 2
 
-[node name="NotifyLabel" type="Label" parent="Backdrop" unique_id=1089699890]
-visible = false
+[node name="NotifyLabel" type="Label" parent="MarginContainer/Backdrop" unique_id=1089699890]
 custom_minimum_size = Vector2(10, 10)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.8, 0.5, 1)
 autowrap_mode = 2
 
-[node name="GameResultLabel" type="Label" parent="Backdrop" unique_id=278958367]
-visible = false
+[node name="GameResultLabel" type="Label" parent="MarginContainer/Backdrop" unique_id=278958367]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
