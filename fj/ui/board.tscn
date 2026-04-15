@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://xe4wso5p7m2x" path="res://fj/assets/images/slots/weapon_slot.png" id="10_weapon"]
 [ext_resource type="Texture2D" uid="uid://hnsy76nhwsfq" path="res://fj/assets/images/slots/kill_slot.png" id="11_kill"]
 [ext_resource type="Texture2D" uid="uid://rk5u6nco7wxc" path="res://fj/assets/images/slots/fancy_dim.png" id="12_sidebar"]
+[ext_resource type="Theme" uid="uid://cafkndgiy1n2u" path="res://themes/blue_info_theme.tres" id="14_o1pvx"]
 
 [node name="Board" type="Control" unique_id=1738933084]
 layout_mode = 3
@@ -665,3 +666,4 @@ role = "hand"
 
 [node name="InfoPanel" parent="HBoxContainer" unique_id=901187375 instance=ExtResource("4_info")]
 layout_mode = 2
+theme = ExtResource("14_o1pvx")

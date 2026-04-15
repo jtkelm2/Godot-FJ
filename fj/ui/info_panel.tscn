@@ -1,17 +1,19 @@
 [gd_scene format=3 uid="uid://b1o3sgkcbc22f"]
 
-[ext_resource type="StyleBox" uid="uid://bvo7md183hget" path="res://info_panel_theme.tres" id="1_1b8jb"]
 [ext_resource type="Script" uid="uid://jrdve3p5q1b4" path="res://fj/ui/info_panel.gd" id="1_info"]
-[ext_resource type="LabelSettings" uid="uid://b5skpbbqle4n7" path="res://big_text_theme.tres" id="3_vj6a0"]
+[ext_resource type="Theme" uid="uid://bjdknkpbxalb6" path="res://themes/red_info_theme.tres" id="2_vj6a0"]
+[ext_resource type="LabelSettings" uid="uid://b5skpbbqle4n7" path="res://resources/big_text.tres" id="3_vj6a0"]
+[ext_resource type="Theme" uid="uid://cafkndgiy1n2u" path="res://themes/blue_info_theme.tres" id="3_xspmf"]
+[ext_resource type="Texture2D" uid="uid://bv08mgtbxi2um" path="res://fj/assets/images/cards/named_1.png" id="4_xspmf"]
 
 [node name="InfoPanel" type="PanelContainer" unique_id=1408668161]
 anchors_preset = 9
 anchor_bottom = 1.0
 offset_right = 364.0
 grow_vertical = 2
-theme_override_styles/panel = ExtResource("1_1b8jb")
 script = ExtResource("1_info")
-theme_override_styles/panel = ExtResource("1_1b8jb")
+red_theme = ExtResource("2_vj6a0")
+blue_theme = ExtResource("3_xspmf")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=179250702]
 layout_mode = 2
@@ -28,17 +30,22 @@ size_flags_vertical = 3
 layout_mode = 2
 
 [node name="Preview" type="VBoxContainer" parent="MarginContainer/Backdrop/PanelContainer" unique_id=1774314769]
-custom_minimum_size = Vector2(350, 500)
 layout_mode = 2
 
-[node name="PreviewImage" type="TextureRect" parent="MarginContainer/Backdrop/PanelContainer/Preview" unique_id=909357818]
-custom_minimum_size = Vector2(350, 500)
+[node name="PreviewFrame" type="MarginContainer" parent="MarginContainer/Backdrop/PanelContainer/Preview" unique_id=1704875842]
+custom_minimum_size = Vector2(350, 600)
+layout_mode = 2
+theme_override_constants/margin_top = 13
+
+[node name="PreviewImage" type="TextureRect" parent="MarginContainer/Backdrop/PanelContainer/Preview/PreviewFrame" unique_id=909357818]
 layout_mode = 2
 mouse_filter = 2
-expand_mode = 3
+texture = ExtResource("4_xspmf")
+expand_mode = 1
 stretch_mode = 5
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/Backdrop/PanelContainer/Preview" unique_id=1303472123]
+custom_minimum_size = Vector2(0, 31)
 layout_mode = 2
 alignment = 1
 

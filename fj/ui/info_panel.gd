@@ -5,9 +5,9 @@ extends PanelContainer
 ## set_side(my_side) once at init to tint the backdrop; side-based positioning
 ## is the board's job (it move_child's this panel to left or right).
 
-const TINT_RED := Color(0.42, 0.12, 0.16, 0.78)
-const TINT_BLUE := Color(0.12, 0.18, 0.42, 0.78)
-const TINT_NEUTRAL := Color(0.24, 0.30, 0.34, 0.78)
+## Side-specific Theme resources
+@export var red_theme: Theme
+@export var blue_theme: Theme
 
 signal text_option_selected(option: Dictionary)
 
@@ -18,7 +18,7 @@ signal text_option_selected(option: Dictionary)
 @onready var _text_options_box: VBoxContainer = $MarginContainer/Backdrop/VBox/TextOptions
 @onready var _notify_label: Label = $MarginContainer/Backdrop/NotifyLabel
 @onready var _game_result: Label = $MarginContainer/Backdrop/GameResultLabel
-@onready var _preview: TextureRect = $MarginContainer/Backdrop/PanelContainer/Preview/PreviewImage
+@onready var _preview: TextureRect = $MarginContainer/Backdrop/PanelContainer/Preview/PreviewFrame/PreviewImage
 @onready var _arrow_up: Label = $MarginContainer/Backdrop/PanelContainer/Preview/HBoxContainer/ArrowUp
 @onready var _arrow_down: Label = $MarginContainer/Backdrop/PanelContainer/Preview/HBoxContainer/ArrowDown
 
@@ -30,14 +30,13 @@ var _preview_slot = null  # Slot
 var _preview_index: int = -1
 
 
-## Tint the backdrop to match the local player's side. Positioning (which
-## side of the board the panel sits on) is handled by Board's `move_child`
-## on the outer row — not here.
+## Swap in the theme for the local player's side. Positioning (which side of
+## the board the panel sits on) is handled by Board's `move_child` on the
+## outer row — not here.
 func set_side(side: String) -> void:
 	match side:
-		"RED":  self_modulate = TINT_RED
-		"BLUE": self_modulate = TINT_BLUE
-		_:      self_modulate = TINT_NEUTRAL
+		"RED":  theme = red_theme
+		"BLUE": theme = blue_theme
 
 
 func update_view(view: Dictionary, my_side: String) -> void:
