@@ -12,7 +12,8 @@ extends Control
 ## the Slot emits `card_clicked(self, index)` followed by `slot_clicked(self)`.
 ## Clicks on the slot's empty area emit only `slot_clicked(self)`.
 ##
-## `set_highlight(on)` is visual-only; subclasses override.
+## `set_highlight(level)` is visual-only; subclasses override. `level` is a
+## `Highlight.Level` (LOWLIGHT / CONTEXT / HIGHLIGHT).
 
 signal slot_clicked(slot: Slot)
 signal card_clicked(slot: Slot, index: int)
@@ -53,7 +54,7 @@ func get_card(_index: int) -> Card:
 	return null
 
 
-func set_highlight(_on: bool) -> void:
+func set_highlight(_level: int) -> void:
 	pass  # default no-op; subclasses override.
 
 

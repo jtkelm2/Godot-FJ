@@ -77,8 +77,8 @@ func _resolve_wires() -> void:
 
 # --- Public API ---
 
-## Composite-level prompt highlight (for `weapon_slot` options). Delegates to
-## the holster's outline.
-func set_highlight(on: bool) -> void:
+## Composite-level prompt decoration (for `weapon_slot` options or context).
+## Delegates to the holster.
+func set_highlight(level: int) -> void:
 	if holster:
-		holster.set_highlight(on)
+		holster.set_highlight(level)

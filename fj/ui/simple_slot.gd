@@ -22,12 +22,14 @@ extends Slot
 
 const HIGHLIGHT_TWEEN_DURATION := 0.5
 const HIGHLIGHT_INITIAL_SCALE := Vector2(1.05, 1.05)
+const _CONTEXT_ARROW_SCENE: PackedScene = preload("res://fj/ui/context_arrow.tscn")
 
 @onready var _highlight: Panel = $SlotHighlight
 @onready var _overflow_badge: Label = $OverflowBadge
 
 var _cards: Array[Card] = []
 var _highlight_tween: Tween = null
+var _context_arrow: Node2D = null
 
 
 func count() -> int:
@@ -64,7 +66,12 @@ func clear() -> void:
 	_cards.clear()
 
 
-func set_highlight(on: bool) -> void:
+func set_highlight(level: int) -> void:
+	_set_pulse_outline(level == Highlight.Level.HIGHLIGHT)
+	_set_context_arrow(level == Highlight.Level.CONTEXT)
+
+
+func _set_pulse_outline(on: bool) -> void:
 	if _highlight_tween and _highlight_tween.is_valid():
 		_highlight_tween.kill()
 	if on:
@@ -76,6 +83,16 @@ func set_highlight(on: bool) -> void:
 		_highlight_tween.tween_property(_highlight, "scale", HIGHLIGHT_INITIAL_SCALE, HIGHLIGHT_TWEEN_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	else:
 		_highlight.visible = false
+
+
+func _set_context_arrow(on: bool) -> void:
+	if on and _context_arrow == null:
+		_context_arrow = _CONTEXT_ARROW_SCENE.instantiate()
+		add_child(_context_arrow)
+		_context_arrow.position = Vector2(size.x * 0.5, size.y)
+	elif not on and _context_arrow != null:
+		_context_arrow.queue_free()
+		_context_arrow = null
 
 
 func _relayout() -> void:

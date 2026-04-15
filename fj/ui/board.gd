@@ -207,50 +207,53 @@ func _full_rebuild() -> void:
 
 ## Populate each registered Slot from the authoritative view.slots. Weapon
 ## interior slots (holsters, killstacks) are regular entries in _slot_by_wire
-## and populate through this same loop.
+## and populate through this same loop. All decorations are cleared here so
+## the prompt highlighter can re-apply from scratch.
 func _rebuild_slot_contents(view: Dictionary) -> void:
 	var slots_data: Dictionary = view.get("slots", {}) if not view.is_empty() else {}
 	for wire in _slot_by_wire:
 		var slot: Slot = _slot_by_wire[wire]
 		_wrangler.apply_to(slot, slots_data.get(wire))
-		slot.set_highlight(false)
+		slot.set_highlight(Highlight.Level.LOWLIGHT)
 		for i in slot.count():
-			slot.get_card(i).set_highlight(false)
+			slot.get_card(i).set_highlight(Highlight.Level.LOWLIGHT)
 
 
-## Decorate a prompt: highlight every selectable option AND every context
-## option (non-selectable, per protocol §3.3 — used for visual reference).
-## Returns the `text` options for the info panel (rendered as buttons).
+## Decorate a prompt: `options[]` entries get HIGHLIGHT (pulsing outline,
+## selectable); `context[]` entries get CONTEXT (pointing arrow, non-
+## selectable, per protocol §3.3 — visual reference only). Returns the
+## `text` options for the info panel (rendered as buttons).
 func _apply_prompt_highlights(prompt: Dictionary) -> Array:
 	var text_options: Array = []
 	for option in prompt.get("options", []):
-		var t := _highlight_option(option)
+		var t := _decorate_option(option, Highlight.Level.HIGHLIGHT)
 		if t == "text":
 			text_options.append(option)
 	for option in prompt.get("context", []):
-		_highlight_option(option)
+		_decorate_option(option, Highlight.Level.CONTEXT)
 	return text_options
 
 
-## Decorate a single Option-shaped dict and return its `type` field so the
-## caller can discriminate text options. Unknown types are ignored silently
-## per protocol (receivers MUST tolerate unknown option types).
-func _highlight_option(option: Dictionary) -> String:
+## Apply `level` to whichever object the Option-shaped dict references.
+## Returns the option's `type` so the caller can discriminate text options.
+## Unknown types are ignored silently per protocol (receivers MUST tolerate
+## unknown option types).
+func _decorate_option(option: Dictionary, level: int) -> String:
 	var t := str(option.get("type", ""))
 	match t:
 		"card":
 			var slot: Slot = _slot_by_wire.get(str(option.get("slot", "")))
 			var idx := int(option.get("index", -1))
 			if slot and idx >= 0 and idx < slot.count():
-				slot.get_card(idx).set_highlight(true)
+				slot.get_card(idx).set_highlight(level)
 		"slot":
 			var slot: Slot = _slot_by_wire.get(str(option.get("name", "")))
 			if slot:
-				slot.set_highlight(true)
+				slot.set_highlight(level)
 		"weapon_slot":
 			var ws: WeaponSlot = _weapon_slots_by_ws_wire.get(str(option.get("name", "")))
 			if ws:
-				ws.set_highlight(true)
+				ws.set_highlight(level)
 	return t
 
 

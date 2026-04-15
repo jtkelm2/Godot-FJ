@@ -5,7 +5,7 @@ extends Control
 ##   - front_texture / back_texture: setters, exposed in editor.
 ##   - is_faceup: true shows front, false shows back.
 ##   - flip(): toggle face.
-##   - set_highlight(bool): purely visual prompt tint.
+##   - set_highlight(Highlight.Level): purely visual prompt decoration.
 ##   - clicked: emitted on left-mouse-down, always (filtering is the Board's job).
 
 signal clicked
@@ -14,6 +14,7 @@ const HIGHLIGHT_PULSE_DURATION := 1.1
 const HIGHLIGHT_PEAK_ALPHA := 0.35
 
 const _SCENE: PackedScene = preload("res://fj/ui/card.tscn")
+const _CONTEXT_ARROW_SCENE: PackedScene = preload("res://fj/ui/context_arrow.tscn")
 
 
 ## Instantiate a Card with the given front/back textures and face-up state.
@@ -34,6 +35,7 @@ static func create(front: Texture2D, back: Texture2D, faceup: bool) -> Card:
 @onready var _tint: ColorRect = $HighlightTint
 
 var _pulse_tween: Tween = null
+var _context_arrow: Node2D = null
 
 
 func _ready() -> void:
@@ -63,7 +65,12 @@ func flip() -> void:
 	set_face(not is_faceup)
 
 
-func set_highlight(on: bool) -> void:
+func set_highlight(level: int) -> void:
+	_set_pulse_tint(level == Highlight.Level.HIGHLIGHT)
+	_set_context_arrow(level == Highlight.Level.CONTEXT)
+
+
+func _set_pulse_tint(on: bool) -> void:
 	if _pulse_tween and _pulse_tween.is_valid():
 		_pulse_tween.kill()
 	if on:
@@ -75,6 +82,16 @@ func set_highlight(on: bool) -> void:
 	else:
 		_tint.visible = false
 		_tint.color.a = 0.0
+
+
+func _set_context_arrow(on: bool) -> void:
+	if on and _context_arrow == null:
+		_context_arrow = _CONTEXT_ARROW_SCENE.instantiate()
+		add_child(_context_arrow)
+		_context_arrow.position = Vector2(size.x * 0.5, size.y)
+	elif not on and _context_arrow != null:
+		_context_arrow.queue_free()
+		_context_arrow = null
 
 
 func _apply_textures() -> void:

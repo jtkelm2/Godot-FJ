@@ -74,9 +74,9 @@ func clear() -> void:
 		s.clear()
 
 
-func set_highlight(on: bool) -> void:
+func set_highlight(level: int) -> void:
 	for s in _child_slots:
-		s.set_highlight(on)
+		s.set_highlight(level)
 
 
 # --- Child signal re-emission ---
