@@ -106,7 +106,11 @@ func _handle_prompt(msg: Dictionary) -> void:
 	if state != SessionState.IN_GAME:
 		push_warning("GameSession: received prompt in unexpected state %s" % SessionState.keys()[state])
 		return
-	pending_prompt = {"text": msg.get("text", ""), "options": msg.get("options", [])}
+	pending_prompt = {
+		"text": msg.get("text", ""),
+		"options": msg.get("options", []),
+		"context": msg.get("context", []),
+	}
 	changed.emit()
 
 

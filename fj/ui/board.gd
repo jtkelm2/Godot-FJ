@@ -8,18 +8,18 @@ extends Control
 ## On every GameSession.changed:
 ##   1. If `latest_events` is non-empty AND we have a previous view, animate
 ##      each event in sequence (EventAnimator) while projecting it onto a
-##      mirror of the previous (slots, weapons) state (EventProjector).
-##   2. Assert the mirror matches the new (view.slots, view.weapons); log
-##      divergence.
+##      mirror of the previous slots state (EventProjector).
+##   2. Assert the mirror matches the new view.slots; log divergence.
 ##   3. Run a full rebuild from the authoritative view (safety net).
 ##
 ## Cards in flight are reparented to a `BoardOverlay` Control so they render
 ## above all slots.
 ##
-## Slots and WeaponSlots are first-class peers — no slot-side code special-
-## cases weapons, no weapon-side code is jury-rigged out of slot helpers.
-## Weapon-related work (data ingestion, click routing, highlights) goes
-## through WeaponSlot's API or `Wrangler.apply_to_weapon_slot`.
+## Weapon interior slots (holsters, killstacks) are first-class entries in
+## the wire protocol's slots dict, so they flow through the same binding and
+## apply_to path as every other slot. WeaponSlot exists only to translate the
+## composite "click this weapon slot" gesture and propagate owner_side/role
+## to its interior Slots at _ready.
 
 const SlotWranglerScript = preload("res://fj/ui/slot_wrangler.gd")
 const ImageResolverScript = preload("res://fj/assets/image_resolver.gd")
@@ -37,14 +37,12 @@ var _image_resolver
 var _animator
 var _overlay: Control
 
-var _slot_by_wire: Dictionary = {}                  # wire_name -> Slot
-var _weapon_slots_by_ws_wire: Dictionary = {}       # ws wire_name -> WeaponSlot
-var _weapon_slots_by_interior_wire: Dictionary = {} # holster/killstack wire -> WeaponSlot
+var _slot_by_wire: Dictionary = {}              # wire_name -> Slot (includes weapon interiors)
+var _weapon_slots_by_ws_wire: Dictionary = {}   # ws wire_name -> WeaponSlot (composite)
 
-## Snapshots from the most recent view we fully applied — starting points
-## for the projector's mirror in the next change pass.
+## Snapshot of the most recent slots dict we fully applied — the starting
+## point for the projector's mirror in the next change pass.
 var _last_applied_slots: Dictionary = {}
-var _last_applied_weapons: Dictionary = {}  # ws_wire -> entry dict
 var _animating: bool = false
 
 
@@ -94,24 +92,18 @@ func _bind_slots() -> void:
 
 func _bind_weapon_slots() -> void:
 	for ws in _find_weapon_slots(self):
-		if not ws.ws_wire.is_empty():
-			_weapon_slots_by_ws_wire[ws.ws_wire] = ws
-			ws.weapon_slot_clicked.connect(_on_weapon_slot_clicked.bind(ws.ws_wire))
-		# Per-card events from the holster/killstack route through here too,
-		# so {type: card} prompts targeting an interior wire work transparently.
-		for interior_wire in ws.interior_wires():
-			_weapon_slots_by_interior_wire[interior_wire] = ws
-		ws.card_clicked.connect(_on_weapon_card_clicked)
-		ws.card_hovered.connect(_on_weapon_card_hovered)
-		ws.card_unhovered.connect(_on_weapon_card_unhovered)
+		if ws.ws_wire.is_empty():
+			continue
+		_weapon_slots_by_ws_wire[ws.ws_wire] = ws
+		ws.weapon_slot_clicked.connect(_on_weapon_slot_clicked.bind(ws.ws_wire))
 
 
-## Walk the tree for Slot nodes, treating SlotField AND WeaponSlot as
-## opaque composites — their interior Slots are private to them.
+## Walk the tree for Slot nodes. Weapon interior slots (holster, killstack)
+## ARE regular first-class slots in the wire protocol, so we don't skip them
+## — they're registered and populated alongside every other slot. SlotField
+## remains an opaque composite (its interior slots are private to it).
 func _find_slots(node: Node, out: Array = []) -> Array:
 	for child in node.get_children():
-		if child is WeaponSlot:
-			continue  # interior slots are owned by the WeaponSlot
 		if child is Slot:
 			out.append(child)
 			if child is SlotField:
@@ -172,39 +164,24 @@ func _change_pass() -> void:
 
 	_full_rebuild()
 	_last_applied_slots = (view.get("slots", {}) as Dictionary).duplicate(true)
-	_last_applied_weapons = _weapons_array_to_dict(view.get("weapons", []))
 	_animating = false
 
 
-## Walk events: project each onto the (slots, weapons) mirror AND play its
-## animation. Assert the mirror matches the authoritative new view at the
-## end; log the diff if it doesn't.
+## Walk events: project each onto the slots mirror AND play its animation.
+## Assert the mirror matches the authoritative new view.slots at the end;
+## log the diff if it doesn't.
 func _run_events(events: Array, new_view: Dictionary) -> void:
-	var projector = EventProjectorScript.new(_last_applied_slots, _last_applied_weapons, GameSession.catalog)
+	var projector = EventProjectorScript.new(_last_applied_slots)
 	for event in events:
 		projector.apply(event)
 		await _animator.play(event)
 		await get_tree().create_timer(EVENT_INTERVAL).timeout
 
-	var new_weapons := _weapons_array_to_dict(new_view.get("weapons", []))
-	var diffs := projector.diff_against(new_view.get("slots", {}), new_weapons)
+	var diffs := projector.diff_against(new_view.get("slots", {}))
 	if not diffs.is_empty():
 		push_warning("Board: events diverged from view. Diffs:\n  %s" % "\n  ".join(diffs))
 		if GameSession.log:
 			GameSession.log.log_event("events_diverged", {"diffs": diffs})
-
-
-## Convert protocol's `view.weapons` array into a wire-keyed dict for the
-## projector and snapshots:
-##   [{"name": "red_ws_0", "card": ..., ...}]
-##   →  {"red_ws_0": {"card": ..., ...}}
-func _weapons_array_to_dict(weapons: Array) -> Dictionary:
-	var out: Dictionary = {}
-	for entry in weapons:
-		var ws_wire := str(entry.get("name", ""))
-		if not ws_wire.is_empty():
-			out[ws_wire] = entry
-	return out
 
 
 # --- Full rebuild (safety-net reconciliation against authoritative view) ---
@@ -224,13 +201,13 @@ func _full_rebuild() -> void:
 	info_panel.preview_card(null, -1)
 
 	_rebuild_slot_contents(view)
-	_rebuild_weapon_slots(view)
 	var text_options := _apply_prompt_highlights(prompt)
 	_update_info_panel(view, prompt, text_options)
 
 
 ## Populate each registered Slot from the authoritative view.slots. Weapon
-## interior slots are NOT here — they're handled by _rebuild_weapon_slots.
+## interior slots (holsters, killstacks) are regular entries in _slot_by_wire
+## and populate through this same loop.
 func _rebuild_slot_contents(view: Dictionary) -> void:
 	var slots_data: Dictionary = view.get("slots", {}) if not view.is_empty() else {}
 	for wire in _slot_by_wire:
@@ -241,50 +218,40 @@ func _rebuild_slot_contents(view: Dictionary) -> void:
 			slot.get_card(i).set_highlight(false)
 
 
-## Populate each registered WeaponSlot from view.weapons.
-func _rebuild_weapon_slots(view: Dictionary) -> void:
-	var weapons_by_wire := _weapons_array_to_dict(view.get("weapons", []))
-	for ws_wire in _weapon_slots_by_ws_wire:
-		var ws: WeaponSlot = _weapon_slots_by_ws_wire[ws_wire]
-		var entry: Dictionary = weapons_by_wire.get(ws_wire, {"card": null, "sharpness": 0, "kills": 0})
-		_wrangler.apply_to_weapon_slot(ws, entry)
-		ws.clear_highlights()
-
-
-## Decorate selectable prompt options. Returns the `text` options collected
-## for the info panel (which renders them as buttons).
+## Decorate a prompt: highlight every selectable option AND every context
+## option (non-selectable, per protocol §3.3 — used for visual reference).
+## Returns the `text` options for the info panel (rendered as buttons).
 func _apply_prompt_highlights(prompt: Dictionary) -> Array:
 	var text_options: Array = []
 	for option in prompt.get("options", []):
-		var t := str(option.get("type", ""))
-		match t:
-			"card":
-				_highlight_card_option(option)
-			"slot":
-				var slot: Slot = _slot_by_wire.get(str(option.get("name", "")))
-				if slot:
-					slot.set_highlight(true)
-			"weapon_slot":
-				var ws: WeaponSlot = _weapon_slots_by_ws_wire.get(str(option.get("name", "")))
-				if ws:
-					ws.set_highlight(true)
-			"text":
-				text_options.append(option)
+		var t := _highlight_option(option)
+		if t == "text":
+			text_options.append(option)
+	for option in prompt.get("context", []):
+		_highlight_option(option)
 	return text_options
 
 
-## A `card` option may target a regular slot or an interior weapon slot;
-## route to whichever owns that wire.
-func _highlight_card_option(option: Dictionary) -> void:
-	var wire := str(option.get("slot", ""))
-	var idx := int(option.get("index", -1))
-	var slot: Slot = _slot_by_wire.get(wire)
-	if slot and idx >= 0 and idx < slot.count():
-		slot.get_card(idx).set_highlight(true)
-		return
-	var ws: WeaponSlot = _weapon_slots_by_interior_wire.get(wire)
-	if ws:
-		ws.set_card_highlight(wire, idx, true)
+## Decorate a single Option-shaped dict and return its `type` field so the
+## caller can discriminate text options. Unknown types are ignored silently
+## per protocol (receivers MUST tolerate unknown option types).
+func _highlight_option(option: Dictionary) -> String:
+	var t := str(option.get("type", ""))
+	match t:
+		"card":
+			var slot: Slot = _slot_by_wire.get(str(option.get("slot", "")))
+			var idx := int(option.get("index", -1))
+			if slot and idx >= 0 and idx < slot.count():
+				slot.get_card(idx).set_highlight(true)
+		"slot":
+			var slot: Slot = _slot_by_wire.get(str(option.get("name", "")))
+			if slot:
+				slot.set_highlight(true)
+		"weapon_slot":
+			var ws: WeaponSlot = _weapon_slots_by_ws_wire.get(str(option.get("name", "")))
+			if ws:
+				ws.set_highlight(true)
+	return t
 
 
 func _update_info_panel(view: Dictionary, prompt: Dictionary, text_options: Array) -> void:
@@ -305,12 +272,6 @@ func _on_slot_slot_clicked(_slot: Slot, wire: String) -> void:
 
 func _on_weapon_slot_clicked(_ws: WeaponSlot, ws_wire: String) -> void:
 	_respond_matching({"type": "weapon_slot", "name": ws_wire})
-
-
-## A card click came from a WeaponSlot's holster or killstack. Route it
-## through the same `card`-option matcher as regular slots.
-func _on_weapon_card_clicked(interior_wire: String, index: int) -> void:
-	_respond_matching({"type": "card", "slot": interior_wire, "index": index})
 
 
 func _on_text_option_selected(option: Dictionary) -> void:
@@ -354,19 +315,4 @@ func _on_slot_card_hovered(slot: Slot, index: int) -> void:
 
 
 func _on_slot_card_unhovered(_slot: Slot) -> void:
-	info_panel.preview_card(null, -1)
-
-
-## A WeaponSlot's interior card was hovered. Resolve the interior Slot to
-## drive the same preview machinery as regular hover.
-func _on_weapon_card_hovered(interior_wire: String, index: int) -> void:
-	var ws: WeaponSlot = _weapon_slots_by_interior_wire.get(interior_wire)
-	if ws == null:
-		return
-	var interior: Slot = ws.holster if interior_wire == ws.holster_wire else ws.killstack
-	if interior:
-		info_panel.preview_card(interior, index)
-
-
-func _on_weapon_card_unhovered() -> void:
 	info_panel.preview_card(null, -1)

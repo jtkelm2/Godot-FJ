@@ -16,19 +16,13 @@ var shared_slots: Dictionary = {}    # role -> wire_name
 var self_weapon_slots: Dictionary = {}
 var opponent_weapon_slots: Dictionary = {}
 
-## Routes a self-side regular slot wire (e.g. "red_ws_0_weapon") back to its
-## owning weapon slot. Each entry is keyed by the interior slot's wire and
-## carries the parent weapon slot's wire plus which interior position it is:
-##   { "ws_wire": "red_ws_0", "kind": "holster" | "killstack" }
-## Built once during parse_from. Empty for opponent-owned weapons (they're
-## hidden information per protocol §3.2).
-var self_weapon_interior_slots: Dictionary = {}
-
-## Forward index of the above: given a weapon slot wire, yields the two
-## interior slot wires that compose it:
+## Forward index: given any weapon slot wire (own or opponent), yields the
+## two interior slot wires that compose it:
 ##   { "holster": "red_ws_0_weapon", "killstack": "red_ws_0_killstack" }
-## So callers never have to concatenate role strings themselves.
-var self_weapon_interiors: Dictionary = {}
+## Covers both sides uniformly — with the killstack-public change, weapon
+## interior slots are now regular first-class slots in the wire protocol, so
+## there's no per-side special-casing.
+var weapon_interiors: Dictionary = {}
 
 ## Set externally from the role_assignment notify, not inferred from catalog.
 var my_color: String = ""
@@ -67,23 +61,21 @@ func parse_from(msg: Dictionary) -> void:
 				"opponent":
 					opponent_weapon_slots[role] = wire_name
 
-	# Build the interior-slot routing tables for self-side weapons. Per
-	# protocol §3.1.2, for a weapon slot role `ws_N` the interior regular
-	# slot roles are `ws_N_weapon` (holster) and `ws_N_killstack`. This is
-	# the one and only place that string convention lives — downstream code
-	# reads the resulting tables by wire name.
+	# Build the interior-slot forward index. Per protocol §3.1.2, for a
+	# weapon slot role `ws_N` the interior slot roles are `ws_N_weapon`
+	# (holster) and `ws_N_killstack`. This is the one and only place that
+	# string convention lives — downstream code reads wire names out.
 	for ws_role in self_weapon_slots:
-		var ws_wire: String = self_weapon_slots[ws_role]
-		var holster_wire: String = self_slots.get(ws_role + "_weapon", "")
-		var killstack_wire: String = self_slots.get(ws_role + "_killstack", "")
-		if not holster_wire.is_empty():
-			self_weapon_interior_slots[holster_wire] = {"ws_wire": ws_wire, "kind": "holster"}
-		if not killstack_wire.is_empty():
-			self_weapon_interior_slots[killstack_wire] = {"ws_wire": ws_wire, "kind": "killstack"}
-		self_weapon_interiors[ws_wire] = {
-			"holster": holster_wire,
-			"killstack": killstack_wire,
-		}
+		_register_weapon_interior(self_weapon_slots[ws_role], ws_role, self_slots)
+	for ws_role in opponent_weapon_slots:
+		_register_weapon_interior(opponent_weapon_slots[ws_role], ws_role, opponent_slots)
+
+
+func _register_weapon_interior(ws_wire: String, ws_role: String, side_slots: Dictionary) -> void:
+	weapon_interiors[ws_wire] = {
+		"holster": side_slots.get(ws_role + "_weapon", ""),
+		"killstack": side_slots.get(ws_role + "_killstack", ""),
+	}
 
 
 

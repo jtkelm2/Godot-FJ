@@ -111,12 +111,13 @@ theme_override_constants/separation = 4
 layout_mode = 2
 
 [node name="NotifyLabel" type="Label" parent="MarginContainer/Backdrop" unique_id=1089699890]
-custom_minimum_size = Vector2(10, 10)
+custom_minimum_size = Vector2(0, 23)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.8, 0.5, 1)
 autowrap_mode = 2
 
 [node name="GameResultLabel" type="Label" parent="MarginContainer/Backdrop" unique_id=278958367]
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1

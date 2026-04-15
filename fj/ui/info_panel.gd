@@ -45,10 +45,8 @@ func update_view(view: Dictionary, my_side: String) -> void:
 	var phase = view.get("current_phase")
 	if phase == null or (phase is String and phase.is_empty()):
 		_phase_label.text = ""
-		_phase_label.visible = false
 	else:
 		_phase_label.text = str(phase)
-		_phase_label.visible = true
 
 	var priority := str(view.get("priority", ""))
 	var mine := (priority == my_side)
@@ -59,7 +57,7 @@ func update_view(view: Dictionary, my_side: String) -> void:
 	if result != null:
 		_show_game_result(result, my_side)
 	else:
-		_game_result.visible = false
+		_game_result.text = ""
 
 
 func update_prompt(text: String, text_options: Array) -> void:
@@ -89,12 +87,11 @@ func show_notify(text: String) -> void:
 	if text.is_empty():
 		return
 	_notify_label.text = text
-	_notify_label.visible = true
 	if _notify_tween and _notify_tween.is_valid():
 		_notify_tween.kill()
 	_notify_tween = create_tween()
 	_notify_tween.tween_interval(6.0)
-	_notify_tween.tween_callback(func(): _notify_label.visible = false)
+	_notify_tween.tween_callback(func(): _notify_label.text = "")
 
 
 ## Set the slot/index the cursor is currently hovering. Pass (null, -1) to
