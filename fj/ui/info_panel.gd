@@ -1,27 +1,26 @@
 extends PanelContainer
 
-## Side-anchored panel. Root is a ColorRect so `color` is the backdrop tint.
-## Dumb view — doesn't read GameSession directly. Board calls set_side(my_side)
-## once at init to choose anchor + tint, then passes the view dict + text
-## options on every rebuild.
+## A layout-peer panel (lives inside the board's outer HBoxContainer, not as
+## an overlay). Dumb view — doesn't read GameSession directly. Board calls
+## set_side(my_side) once at init to tint the backdrop; side-based positioning
+## is the board's job (it move_child's this panel to left or right).
 
-const PANEL_WIDTH := 448.0
 const TINT_RED := Color(0.42, 0.12, 0.16, 0.78)
 const TINT_BLUE := Color(0.12, 0.18, 0.42, 0.78)
 const TINT_NEUTRAL := Color(0.24, 0.30, 0.34, 0.78)
 
 signal text_option_selected(option: Dictionary)
 
-@onready var _hp_value: Label = $Backdrop/HPRow/HPValue
-@onready var _phase_label: Label = $Backdrop/PhaseLabel
-@onready var _priority_label: Label = $Backdrop/PriorityLabel
-@onready var _prompt_label: Label = $Backdrop/VBox/PromptLabel
-@onready var _text_options_box: VBoxContainer = $Backdrop/VBox/TextOptions
-@onready var _notify_label: Label = $Backdrop/NotifyLabel
-@onready var _game_result: Label = $Backdrop/GameResultLabel
-@onready var _preview: TextureRect = $Backdrop/Preview/PreviewImage
-@onready var _arrow_up: Label = $Backdrop/Preview/ArrowUp
-@onready var _arrow_down: Label = $Backdrop/Preview/ArrowDown
+@onready var _hp_value: Label = $MarginContainer/Backdrop/HPRow/HPValue
+@onready var _phase_label: Label = $MarginContainer/Backdrop/PhaseLabel
+@onready var _priority_label: Label = $MarginContainer/Backdrop/PriorityLabel
+@onready var _prompt_label: Label = $MarginContainer/Backdrop/VBox/PromptLabel
+@onready var _text_options_box: VBoxContainer = $MarginContainer/Backdrop/VBox/TextOptions
+@onready var _notify_label: Label = $MarginContainer/Backdrop/NotifyLabel
+@onready var _game_result: Label = $MarginContainer/Backdrop/GameResultLabel
+@onready var _preview: TextureRect = $MarginContainer/Backdrop/PanelContainer/Preview/PreviewImage
+@onready var _arrow_up: Label = $MarginContainer/Backdrop/PanelContainer/Preview/HBoxContainer/ArrowUp
+@onready var _arrow_down: Label = $MarginContainer/Backdrop/PanelContainer/Preview/HBoxContainer/ArrowDown
 
 var _notify_tween: Tween = null
 
@@ -31,35 +30,14 @@ var _preview_slot = null  # Slot
 var _preview_index: int = -1
 
 
-## Reanchor the panel to the correct side and tint the backdrop accordingly.
-## Called once by Board at init; re-callable if you want to flip mid-game.
+## Tint the backdrop to match the local player's side. Positioning (which
+## side of the board the panel sits on) is handled by Board's `move_child`
+## on the outer row — not here.
 func set_side(side: String) -> void:
 	match side:
-		"RED":  color = TINT_RED
-		"BLUE": color = TINT_BLUE
-		_:      color = TINT_NEUTRAL
-
-	# Anchor flush against the player's own side: RED → left, BLUE → right.
-	# Both presets keep the panel full-height with PANEL_WIDTH wide.
-	match side:
-		"RED":
-			anchor_left = 0.0
-			anchor_top = 0.0
-			anchor_right = 0.0
-			anchor_bottom = 1.0
-			offset_left = 0.0
-			offset_top = 0.0
-			offset_right = PANEL_WIDTH
-			offset_bottom = 0.0
-		_:  # BLUE or fallback → right
-			anchor_left = 1.0
-			anchor_top = 0.0
-			anchor_right = 1.0
-			anchor_bottom = 1.0
-			offset_left = -PANEL_WIDTH
-			offset_top = 0.0
-			offset_right = 0.0
-			offset_bottom = 0.0
+		"RED":  self_modulate = TINT_RED
+		"BLUE": self_modulate = TINT_BLUE
+		_:      self_modulate = TINT_NEUTRAL
 
 
 func update_view(view: Dictionary, my_side: String) -> void:

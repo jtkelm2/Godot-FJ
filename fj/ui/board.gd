@@ -28,8 +28,9 @@ const EventProjectorScript = preload("res://fj/net/event_projector.gd")
 
 const EVENT_INTERVAL := 0.05
 
-@onready var info_panel: Control = $InfoPanel
-@onready var game_area: Control = $GameArea
+@onready var info_panel: Control = $HBoxContainer/InfoPanel
+@onready var game_area: Control = $HBoxContainer/GameArea
+@onready var _outer_row: HBoxContainer = $HBoxContainer
 
 var _wrangler
 var _image_resolver
@@ -66,7 +67,7 @@ func _ready() -> void:
 	_animator.initialize(get_tree(), _slot_by_wire, _overlay, info_panel, _image_resolver)
 
 	info_panel.set_side(GameSession.my_side)
-	_position_game_area_for_side(GameSession.my_side)
+	_place_info_panel_for_side(GameSession.my_side)
 	info_panel.text_option_selected.connect(_on_text_option_selected)
 	info_panel.show_notify("You are %s (%s)" % [GameSession.my_role, GameSession.my_side])
 
@@ -127,16 +128,13 @@ func _find_weapon_slots(node: Node, out: Array = []) -> Array:
 	return out
 
 
-## Slide GameArea inward to leave room for the InfoPanel on the player's side.
-func _position_game_area_for_side(side: String) -> void:
-	const PANEL_W := 448.0
-	const MARGIN := 16.0
+## Order the outer row so the InfoPanel sits on the local player's side:
+## RED → left (index 0), BLUE → right (last).
+func _place_info_panel_for_side(side: String) -> void:
 	if side == "RED":
-		game_area.offset_left = PANEL_W + MARGIN
-		game_area.offset_right = -MARGIN
+		_outer_row.move_child(info_panel, 0)
 	else:
-		game_area.offset_left = MARGIN
-		game_area.offset_right = -(PANEL_W + MARGIN)
+		_outer_row.move_child(info_panel, _outer_row.get_child_count() - 1)
 
 
 func _wire_for(catalog, owner_side: String, role: String) -> String:
