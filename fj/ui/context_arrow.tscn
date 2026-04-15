@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bctxarrow0001"]
+
+[node name="ContextArrow" type="Node2D"]
+z_index = 500
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+color = Color(1, 0.85, 0.25, 1)
+polygon = PackedVector2Array(0, 0, 10, 14, 4, 14, 4, 28, -4, 28, -4, 14, -10, 14)
