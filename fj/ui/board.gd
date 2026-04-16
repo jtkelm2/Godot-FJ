@@ -158,16 +158,22 @@ func _change_pass() -> void:
 	var view: Dictionary = GameSession.latest_view
 	var events: Array = GameSession.latest_events.duplicate()
 	GameSession.latest_events = []  # consume
+	
+	if _last_applied_slots.is_empty():
+		_full_rebuild()
+		_last_applied_slots = (view.get("slots", {}) as Dictionary).duplicate(true)
+		_animating = false
+		return
 
 	if not events.is_empty():
 		await _run_events(events, view)
+	
+	if not GameSession.latest_events.is_empty(): # new events arrived while animating old ones
+		return _change_pass()
 
+	_full_rebuild()
+	_last_applied_slots = (view.get("slots", {}) as Dictionary).duplicate(true)
 	_animating = false
-	if not GameSession.latest_events.is_empty():
-		_on_changed()
-	else:
-		_full_rebuild()
-		_last_applied_slots = (view.get("slots", {}) as Dictionary).duplicate(true)
 
 
 ## Walk events: project each onto the slots mirror AND play its animation.
