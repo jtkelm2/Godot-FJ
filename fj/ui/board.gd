@@ -159,12 +159,15 @@ func _change_pass() -> void:
 	var events: Array = GameSession.latest_events.duplicate()
 	GameSession.latest_events = []  # consume
 
-	if not _last_applied_slots.is_empty() and not events.is_empty():
+	if not events.is_empty():
 		await _run_events(events, view)
 
-	_full_rebuild()
-	_last_applied_slots = (view.get("slots", {}) as Dictionary).duplicate(true)
 	_animating = false
+	if not GameSession.latest_events.is_empty():
+		_on_changed()
+	else:
+		_full_rebuild()
+		_last_applied_slots = (view.get("slots", {}) as Dictionary).duplicate(true)
 
 
 ## Walk events: project each onto the slots mirror AND play its animation.
