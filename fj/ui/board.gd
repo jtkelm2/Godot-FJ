@@ -44,6 +44,9 @@ var _weapon_slots_by_ws_wire: Dictionary = {}   # ws wire_name -> WeaponSlot (co
 ## point for the projector's mirror in the next change pass.
 var _last_applied_slots: Dictionary = {}
 var _animating: bool = false
+## One-shot flag: surface the role/alignment toast the first time they
+## appear in a state message (protocol §3.2 — learned after setup).
+var _announced_role: bool = false
 
 
 func _ready() -> void:
@@ -67,10 +70,14 @@ func _ready() -> void:
 	info_panel.set_side(GameSession.my_side)
 	_place_info_panel_for_side(GameSession.my_side)
 	info_panel.text_option_selected.connect(_on_text_option_selected)
-	info_panel.show_notify("You are %s (%s)" % [GameSession.my_role, GameSession.my_side])
+	# Role is revealed later via view.role (protocol §3.2). Announce whatever
+	# we know now; info_panel.update_view keeps the labels in sync as state
+	# messages arrive.
+	info_panel.show_notify("You are %s" % GameSession.my_side)
 
 	GameSession.changed.connect(_on_changed)
 	GameSession.notify_received.connect(info_panel.show_notify)
+	_announced_role = false
 	_on_changed()
 
 
@@ -269,6 +276,12 @@ func _decorate_option(option: Dictionary, level: int) -> String:
 func _update_info_panel(view: Dictionary, prompt: Dictionary, text_options: Array) -> void:
 	if not view.is_empty():
 		info_panel.update_view(view, GameSession.my_side)
+		if not _announced_role and not GameSession.my_role.is_empty():
+			var suffix := ""
+			if not GameSession.my_alignment.is_empty():
+				suffix = " (%s)" % GameSession.my_alignment
+			info_panel.show_notify("You are %s%s" % [GameSession.my_role, suffix])
+			_announced_role = true
 	info_panel.update_prompt(str(prompt.get("text", "")), text_options)
 
 

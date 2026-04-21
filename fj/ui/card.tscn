@@ -1,13 +1,14 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://cjap0a6gv656n"]
 
-[ext_resource type="Script" path="res://fj/ui/card.gd" id="1_card"]
+[ext_resource type="Script" uid="uid://cucabi2lkux43" path="res://fj/ui/card.gd" id="1_card"]
 
-[node name="Card" type="Control"]
+[node name="Card" type="Control" unique_id=1392178505]
 custom_minimum_size = Vector2(85, 146)
-mouse_filter = 0
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1_card")
 
-[node name="Back" type="TextureRect" parent="."]
+[node name="Back" type="TextureRect" parent="." unique_id=158401968]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -18,7 +19,7 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Front" type="TextureRect" parent="."]
+[node name="Front" type="TextureRect" parent="." unique_id=953531159]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,7 +30,7 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="HighlightTint" type="ColorRect" parent="."]
+[node name="HighlightTint" type="ColorRect" parent="." unique_id=1828508051]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -38,4 +39,4 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(1.0, 0.95, 0.4, 0.0)
+color = Color(1, 0.95, 0.4, 0)

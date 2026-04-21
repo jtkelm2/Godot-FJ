@@ -14,6 +14,7 @@ signal text_option_selected(option: Dictionary)
 @onready var _hp_value: Label = $MarginContainer/Backdrop/HPRow/HPValue
 @onready var _phase_label: Label = $MarginContainer/Backdrop/PhaseLabel
 @onready var _priority_label: Label = $MarginContainer/Backdrop/PriorityLabel
+@onready var _role_label: Label = $MarginContainer/Backdrop/RoleLabel
 @onready var _prompt_label: Label = $MarginContainer/Backdrop/VBox/PromptLabel
 @onready var _text_options_box: VBoxContainer = $MarginContainer/Backdrop/VBox/TextOptions
 @onready var _notify_label: Label = $MarginContainer/Backdrop/NotifyLabel
@@ -52,6 +53,17 @@ func update_view(view: Dictionary, my_side: String) -> void:
 	var mine := (priority == my_side)
 	_priority_label.text = "Your turn" if mine else "Opponent's turn"
 	_priority_label.modulate = Color.LIGHT_GREEN if mine else Color(0.7, 0.7, 0.7)
+
+	# role/alignment are null before setup completes (protocol §3.2).
+	var role = view.get("role")
+	var alignment = view.get("alignment")
+	if role != null and not str(role).is_empty():
+		if alignment != null and not str(alignment).is_empty():
+			_role_label.text = "%s — %s" % [str(role), str(alignment)]
+		else:
+			_role_label.text = str(role)
+	else:
+		_role_label.text = ""
 
 	var result = view.get("game_result")
 	if result != null:

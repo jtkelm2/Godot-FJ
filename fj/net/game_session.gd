@@ -4,16 +4,21 @@ extends Node
 ## the game. Speaks to NetworkTransport on the wire side; exposes a tiny API
 ## to the UI side:
 ##
-##   - `latest_view`, `pending_prompt`, `catalog`, `my_side`, `my_role` — state.
+##   - `latest_view`, `pending_prompt`, `catalog`, `my_side`, `my_role`,
+##     `my_alignment` — state.
 ##   - `changed`           — something the UI needs to re-render has changed.
 ##   - `notify_received`   — a pulse-style side-channel message for toasts.
 ##   - `handshake_complete` — fires once when ready to load the board scene.
 ##   - `respond(option)`   — send a response to the outstanding prompt.
+##
+## Per protocol §1.3 and §3.2, `my_side` is derived from the catalog (slot
+## owner tags) while `my_role` / `my_alignment` come from the first `state`
+## message's `view.role` / `view.alignment` after setup completes.
 
 const CatalogDataScript = preload("res://fj/net/catalog_data.gd")
 const SessionLogScript = preload("res://fj/net/session_log.gd")
 
-enum SessionState { DISCONNECTED, AWAITING_CATALOG, AWAITING_ROLE, IN_GAME, GAME_OVER }
+enum SessionState { DISCONNECTED, AWAITING_CATALOG, IN_GAME, GAME_OVER }
 
 signal handshake_complete
 signal changed
@@ -23,6 +28,7 @@ var state: SessionState = SessionState.DISCONNECTED
 var catalog = null  # CatalogData
 var my_role: String = ""
 var my_side: String = ""
+var my_alignment: String = ""
 var latest_view: Dictionary = {}
 ## Events that arrived with the most recent state push (cleared by Board after
 ## it consumes them). Advisory: the view is authoritative, but events let the
@@ -43,6 +49,7 @@ func _on_connected() -> void:
 	catalog = null
 	my_role = ""
 	my_side = ""
+	my_alignment = ""
 	latest_view = {}
 	latest_events = []
 	pending_prompt = {}
@@ -88,7 +95,11 @@ func _handle_catalog(msg: Dictionary) -> void:
 		return
 	catalog = CatalogDataScript.new()
 	catalog.parse_from(msg)
-	state = SessionState.AWAITING_ROLE
+	my_side = catalog.my_color
+	if my_side.is_empty():
+		push_warning("GameSession: catalog had no self-owned slots; cannot determine side")
+	state = SessionState.IN_GAME
+	handshake_complete.emit()
 
 
 func _handle_state(msg: Dictionary) -> void:
@@ -97,6 +108,12 @@ func _handle_state(msg: Dictionary) -> void:
 		return
 	latest_view = msg.get("view", {})
 	latest_events = msg.get("events", [])
+	var view_role = latest_view.get("role")
+	if view_role != null and not str(view_role).is_empty():
+		my_role = str(view_role)
+	var view_alignment = latest_view.get("alignment")
+	if view_alignment != null and not str(view_alignment).is_empty():
+		my_alignment = str(view_alignment)
 	if latest_view.get("game_result") != null:
 		state = SessionState.GAME_OVER
 	changed.emit()
@@ -115,26 +132,11 @@ func _handle_prompt(msg: Dictionary) -> void:
 
 
 func _handle_notify(msg: Dictionary) -> void:
-	var kind: String = msg.get("kind", "")
-	match kind:
-		"role_assignment":
-			_handle_role_assignment(msg)
-		_:
-			var text: String = msg.get("text", "")
-			if not text.is_empty():
-				notify_received.emit(text)
-
-
-func _handle_role_assignment(msg: Dictionary) -> void:
-	my_role = msg.get("role", "")
-	my_side = msg.get("side", "")
-	if catalog:
-		catalog.my_color = my_side
-	if state == SessionState.AWAITING_ROLE:
-		state = SessionState.IN_GAME
-		handshake_complete.emit()
-	else:
-		push_warning("GameSession: role_assignment arrived in unexpected state %s" % SessionState.keys()[state])
+	# Only `info` is structured; anything else is tolerated and ignored unless
+	# it carries a text field (protocol §3.4).
+	var text: String = msg.get("text", "")
+	if not text.is_empty():
+		notify_received.emit(text)
 
 
 func _handle_close() -> void:

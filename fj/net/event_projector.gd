@@ -1,9 +1,10 @@
 extends RefCounted
 
 ## Pure projection of `state.events` onto the previous game state. The
-## previous state is `view.slots` — Dict[wire, Array|int]. Weapon interior
-## slots (holsters, killstacks) are regular entries in `slots` per the wire
-## protocol, so there's no separate weapons branch here.
+## previous state is `view.slots` — Dict[wire, Array|int], where each array
+## entry is a card object {"name": <string>, "counters": <int>} per §3.2.1.
+## Weapon interior slots (holsters, killstacks) are regular entries in
+## `slots` per the wire protocol, so there's no separate weapons branch here.
 ##
 ## `apply(event)` mutates the projection for the event's type.
 ## `diff_against(new_slots)` returns a list of human-readable mismatches.
@@ -45,8 +46,8 @@ func _apply_card_moved(event: Dictionary) -> void:
 	var dst = event.get("dest")
 	var src_idx: int = int(event.get("source_index", 0))
 	var dst_idx: int = int(event.get("dest_index", 0))
-	var moved_name = _take_from(src, src_idx)
-	_place_into(dst, dst_idx, moved_name)
+	var moved_card = _take_from(src, src_idx)
+	_place_into(dst, dst_idx, moved_card)
 
 
 func _apply_slot_transferred(event: Dictionary) -> void:
@@ -79,15 +80,15 @@ func _take_from(wire, idx: int):
 	var sv = _slots[wire]
 	if sv is Array:
 		if idx >= 0 and idx < sv.size():
-			var name = sv[idx]
+			var card = sv[idx]
 			sv.remove_at(idx)
-			return name
+			return card
 	elif sv is int or sv is float:
 		_slots[wire] = max(0, int(sv) - 1)
 	return null
 
 
-func _place_into(wire, idx: int, name) -> void:
+func _place_into(wire, idx: int, card) -> void:
 	if wire == null:
 		return
 	if not _slots.has(wire):
@@ -95,7 +96,7 @@ func _place_into(wire, idx: int, name) -> void:
 		return
 	var dv = _slots[wire]
 	if dv is Array:
-		dv.insert(clamp(idx, 0, dv.size()), name)
+		dv.insert(clamp(idx, 0, dv.size()), card)
 	elif dv is int or dv is float:
 		_slots[wire] = int(dv) + 1
 

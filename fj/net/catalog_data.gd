@@ -24,7 +24,9 @@ var opponent_weapon_slots: Dictionary = {}
 ## there's no per-side special-casing.
 var weapon_interiors: Dictionary = {}
 
-## Set externally from the role_assignment notify, not inferred from catalog.
+## Inferred from catalog: the wire-name prefix of any slot tagged
+## `owner: "self"` ("red" → "RED" or "blue" → "BLUE"). Per protocol §1.3,
+## the catalog's owner tags are the canonical signal for which side we're on.
 var my_color: String = ""
 
 
@@ -43,6 +45,10 @@ func parse_from(msg: Dictionary) -> void:
 			match owner_str:
 				"self":
 					self_slots[role] = wire_name
+					if my_color.is_empty():
+						var prefix: String = wire_name.split("_", true, 1)[0].to_upper()
+						if prefix == "RED" or prefix == "BLUE":
+							my_color = prefix
 				"opponent":
 					opponent_slots[role] = wire_name
 				"shared":

@@ -30,11 +30,14 @@ func apply_to(slot: Slot, slot_data) -> void:
 		_populate_facedown(slot, int(slot_data))
 
 
-func _populate_visible(slot: Slot, names: Array) -> void:
-	# Insert in protocol order: names[0] = top of pile = slot.get_card(0).
+func _populate_visible(slot: Slot, cards: Array) -> void:
+	# Insert in protocol order: cards[0] = top of pile = slot.get_card(0).
+	# Each entry is a card object {"name": <string>, "counters": <int>} per
+	# §3.2.1 of the wire protocol.
 	var back: Texture2D = image_resolver.get_back_for(slot.owner_side)
-	for i in names.size():
-		var card_name := str(names[i])
+	for i in cards.size():
+		var entry = cards[i]
+		var card_name := str(entry.get("name", "")) if entry is Dictionary else ""
 		var front: Texture2D = image_resolver.get_front_texture(card_name)
 		slot.insert(i, Card.create(front, back, true))
 

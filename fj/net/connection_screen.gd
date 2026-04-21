@@ -49,7 +49,9 @@ func _on_connected() -> void:
 
 
 func _on_handshake_complete() -> void:
-	status_label.text = "Joining game as %s (%s)..." % [GameSession.my_role, GameSession.my_side]
+	# Role/alignment aren't known yet — they arrive in the first state after
+	# setup (protocol §3.2). Side is derived from the catalog we just parsed.
+	status_label.text = "Joining game as %s..." % GameSession.my_side
 	get_tree().change_scene_to_file("res://fj/ui/board.tscn")
 
 
