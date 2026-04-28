@@ -24,11 +24,15 @@ class SlotTransferred extends DL:
 
 
 class HPChanged extends DL:
-	## `new` is a reserved identifier in GDScript, so fields are *_hp.
-	## Per protocol §3.2.3 this is only emitted for own HP — target is implicit.
+	## `new` is a reserved identifier in GDScript, so val fields are *_hp.
+	## `target` is included for symmetry — fog-of-war filters this so only the
+	## receiving client's own HP changes are emitted, but the field is part of
+	## the wire schema (§3.2.3).
+	var target: NLEnums.PID
 	var old_hp: int
 	var new_hp: int
-	func _init(o: int, n: int) -> void:
+	func _init(t: NLEnums.PID, o: int, n: int) -> void:
+		target = t
 		old_hp = o
 		new_hp = n
 

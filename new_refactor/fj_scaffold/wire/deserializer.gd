@@ -1,0 +1,272 @@
+## Deserializer: WL Variant dicts → typed NL/WL values.
+##
+## Per `WireLang = DL | WireState | Prompt | Response | WireCatalog`, the
+## sublanguages DL, Prompt, Notify, and Response are produced as NL directly
+## (no separate Wire-prefixed type). Only `state` is materialized into the
+## WL `WireState` (with `WireSlotInfo` carrying `WireCardInfo` cards), because
+## CardTemplate resolution is heavy and stays lazy at this layer.
+##
+## All factory methods are static and take a Catalog. They tolerate (warn +
+## return null) on unknown tags per protocol §1.2; malformed shapes get
+## push_error.
+
+@abstract
+class_name Deserializer extends RefCounted
+
+
+# --- Top-level wire messages ---
+
+## `state` payload → WireState. `view` is the inner wire dict.
+## Card content is left in WL form (`WireSlotInfo` carrying `WireCardInfo`).
+## Use `lift_state` to resolve those into NL `SlotContents` / `CardInstance`.
+static func parse_state(view: Dictionary, catalog: Catalog) -> WireState:
+	var s := WireState.new()
+	_parse_players(view.get("players", {}), s)
+	s.phase = parse_phase(view.get("current_phase"))
+	s.priority = parse_pid(str(view.get("priority", "")))
+	s.slots = _parse_wire_slot_table(view.get("slots", {}), catalog)
+	return s
+
+
+## WL → NL: resolves WireCardInfo (name string) into CardInstance (with a
+## CardTemplate ref looked up from Catalog), and WireSlotInfo variants into
+## the corresponding SlotContents variants. Cheap because Catalog has all
+## CardTemplates eagerly loaded — this is just a dict-traversal + lookups.
+static func lift_state(ws: WireState, catalog: Catalog) -> State:
+	var s := State.new()
+	s.role = ws.role
+	s.hp = ws.hp
+	s.phase = ws.phase
+	s.priority = ws.priority
+	s.slots = {}
+	for slot: SlotID in ws.slots:
+		s.slots[slot] = _lift_slot_info(ws.slots[slot], catalog)
+	return s
+
+
+static func _lift_slot_info(wsi: WireSlotInfo, catalog: Catalog) -> State.SlotContents:
+	if wsi is WireSlotInfo.WireUnknownInfo:
+		return State.UnknownContents.new()
+	if wsi is WireSlotInfo.WireCountInfo:
+		return State.CountContents.new((wsi as WireSlotInfo.WireCountInfo).n)
+	if wsi is WireSlotInfo.WireFullInfo:
+		var cards: Array[CardInstance] = []
+		for wci in (wsi as WireSlotInfo.WireFullInfo).cards:
+			cards.append(CardInstance.new(catalog.card_for(wci.name), wci.counters))
+		return State.FullContents.new(cards)
+	push_error("Deserializer.lift_state: unknown WireSlotInfo subtype")
+	return State.UnknownContents.new()
+
+
+## `events` array → DL list. Skips unparseable / unknown events with a warning.
+static func parse_dl_batch(events: Array, catalog: Catalog) -> Array[DL]:
+	var out: Array[DL] = []
+	for e in events:
+		if e is Dictionary:
+			var d := parse_dl(e, catalog)
+			if d != null:
+				out.append(d)
+	return out
+
+
+## `event` dict → DL. Returns null for unknown event types.
+static func parse_dl(e: Dictionary, catalog: Catalog) -> DL:
+	match str(e.get("type", "")):
+		"card_moved":
+			return DL.CardMoved.new(
+				_parse_loc(e.get("source"), e.get("source_index"), catalog),
+				_parse_loc(e.get("dest"), e.get("dest_index"), catalog),
+			)
+		"slot_transferred":
+			return DL.SlotTransferred.new(
+				catalog.slot_for(str(e.get("source", ""))),
+				catalog.slot_for(str(e.get("dest", ""))),
+				int(e.get("count", 0)),
+			)
+		"hp_changed":
+			return DL.HPChanged.new(
+				parse_pid(str(e.get("target", ""))),
+				int(e.get("old", 0)),
+				int(e.get("new", 0)),
+			)
+		"slot_shuffled":
+			return DL.SlotShuffled.new(catalog.slot_for(str(e.get("slot", ""))))
+		"player_died":
+			return DL.PlayerDied.new(parse_pid(str(e.get("target", ""))))
+		"phase_changed":
+			return DL.PhaseChanged.new(parse_phase(e.get("phase")))
+		"game_ended":
+			return DL.GameEnded.new(
+				parse_outcome(str(e.get("outcome", ""))),
+				_parse_won(e.get("winners", [])),
+			)
+		_:
+			push_warning("Deserializer.parse_dl: unknown event type: %s" % e)
+			return null
+
+
+## `prompt` payload → Prompt.
+static func parse_prompt(d: Dictionary, catalog: Catalog) -> Prompt:
+	var p := Prompt.new()
+	p.text = str(d.get("text", ""))
+	p.options = _parse_option_array(d.get("options", []), catalog)
+	p.context = _parse_option_array(d.get("context", []), catalog)
+	return p
+
+
+## `notify` payload → Prompt.Notify.
+static func parse_notify(d: Dictionary) -> Prompt.Notify:
+	return Prompt.Notify.new(str(d.get("kind", "")), str(d.get("text", "")))
+
+
+## Single option dict → typed Option. Returns null for unknown option types
+## (which receivers MUST tolerate per protocol §3.3.1 / §1.2).
+static func parse_option(d: Dictionary, catalog: Catalog) -> Option:
+	match str(d.get("type", "")):
+		"text":
+			return Option.TextOption.new(str(d.get("text", "")))
+		"card":
+			var slot_wire := str(d.get("slot", ""))
+			var idx := int(d.get("index", -1))
+			return Option.LocOption.new(Loc.SlotLoc.new(catalog.slot_for(slot_wire), idx))
+		"slot":
+			return Option.SlotOption.new(catalog.slot_for(str(d.get("name", ""))))
+		"weapon_slot":
+			return Option.SlotOption.new(catalog.weapon_slot_for(str(d.get("name", ""))))
+		_:
+			push_warning("Deserializer.parse_option: unknown option type: %s" % d)
+			return null
+
+
+# --- Primitive parsers ---
+
+static func parse_pid(s: String) -> NLEnums.PID:
+	match s.to_upper():
+		"RED":  return NLEnums.PID.RED
+		"BLUE": return NLEnums.PID.BLUE
+		_:
+			push_error("Deserializer.parse_pid: unknown PID '%s'" % s)
+			return NLEnums.PID.RED
+
+
+static func parse_phase(v: Variant) -> NLEnums.Phase:
+	if v == null:
+		return NLEnums.Phase.NONE
+	match str(v).to_upper():
+		"SETUP":        return NLEnums.Phase.SETUP
+		"REFRESH":      return NLEnums.Phase.REFRESH
+		"MANIPULATION": return NLEnums.Phase.MANIPULATION
+		"ACTION":       return NLEnums.Phase.ACTION
+		_:
+			push_warning("Deserializer.parse_phase: unknown phase '%s'; treating as NONE" % v)
+			return NLEnums.Phase.NONE
+
+
+static func parse_alignment(s: String) -> NLEnums.Alignment:
+	match s.to_upper():
+		"GOOD": return NLEnums.Alignment.GOOD
+		"EVIL": return NLEnums.Alignment.EVIL
+		_:
+			push_warning("Deserializer.parse_alignment: unknown alignment '%s'; defaulting to GOOD" % s)
+			return NLEnums.Alignment.GOOD
+
+
+static func parse_outcome(s: String) -> NLEnums.Outcome:
+	match s.to_upper():
+		"MUTUAL_GOOD_WIN":          return NLEnums.Outcome.MUTUAL_GOOD_WIN
+		"GOOD_KILLED_EVIL":         return NLEnums.Outcome.GOOD_KILLED_EVIL
+		"EVIL_KILLED_GOOD":         return NLEnums.Outcome.EVIL_KILLED_GOOD
+		"GOOD_KILLED_GOOD":         return NLEnums.Outcome.GOOD_KILLED_GOOD
+		"EXHAUSTION":               return NLEnums.Outcome.EXHAUSTION
+		"GOOD_GOOD_MUTUAL_DEATH":   return NLEnums.Outcome.GOOD_GOOD_MUTUAL_DEATH
+		"GOOD_EVIL_MUTUAL_DEATH":   return NLEnums.Outcome.GOOD_EVIL_MUTUAL_DEATH
+		"GOOD_THWARTED":            return NLEnums.Outcome.GOOD_THWARTED
+		"EVIL_THWARTED":            return NLEnums.Outcome.EVIL_THWARTED
+		_:
+			push_warning("Deserializer.parse_outcome: unknown outcome '%s'; defaulting to EXHAUSTION" % s)
+			return NLEnums.Outcome.EXHAUSTION
+
+
+# --- Internal helpers ---
+
+## (slot_wire, idx) → Loc. Both nullable per protocol §3.2.3 (CardMoved.source).
+static func _parse_loc(slot_wire_v: Variant, idx_v: Variant, catalog: Catalog) -> Loc:
+	if slot_wire_v == null:
+		return Loc.UnknownLoc.new()
+	var slot := catalog.slot_for(str(slot_wire_v))
+	var idx := -1 if idx_v == null else int(idx_v)
+	return Loc.SlotLoc.new(slot, idx)
+
+
+static func _parse_option_array(a: Array, catalog: Catalog) -> Array[Option]:
+	var r: Array[Option] = []
+	for entry in a:
+		if entry is Dictionary:
+			var o := parse_option(entry, catalog)
+			if o != null:
+				r.append(o)
+	return r
+
+
+## view.players (Dict[PID-string, {role, alignment, hp}]) → state.role and
+## state.hp dicts. Both PIDs are always present in view.players per protocol
+## §3.2; hidden fields are null. We materialize a Role/HP entry only when the
+## relevant fields are non-null on the wire.
+static func _parse_players(players: Dictionary, into: WireState) -> void:
+	for pid_str in players:
+		var pid := parse_pid(str(pid_str))
+		var block: Dictionary = players[pid_str]
+		var role_v = block.get("role")
+		var align_v = block.get("alignment")
+		if role_v != null and not str(role_v).is_empty():
+			var alignment := parse_alignment(str(align_v)) if align_v != null else NLEnums.Alignment.GOOD
+			into.role[pid] = State.Role.new(alignment, str(role_v))
+		var hp_v = block.get("hp")
+		if hp_v != null:
+			# cap/floor not on the wire (TBD via local game-rule constants).
+			into.hp[pid] = State.HP.new(int(hp_v), 0, 0)
+
+
+## view.slots → Dict[SlotID, WireSlotInfo]. Slots absent from the view dict
+## are treated as fog-of-war hidden and represented as WireUnknownInfo.
+static func _parse_wire_slot_table(raw: Dictionary, catalog: Catalog) -> Dictionary:
+	var out: Dictionary = {}
+	# Visible slots (present in view).
+	for wire_name in raw:
+		var key := str(wire_name)
+		if not catalog.has_slot(key):
+			push_warning("Deserializer: view references unknown slot '%s'" % key)
+			continue
+		out[catalog.slot_for(key)] = _parse_wire_slot_info(raw[wire_name])
+	# Hidden slots (in catalog but absent from view).
+	for slot in catalog.all_slots():
+		if not out.has(slot):
+			out[slot] = WireSlotInfo.WireUnknownInfo.new()
+	return out
+
+
+static func _parse_wire_slot_info(v: Variant) -> WireSlotInfo:
+	if v is Array:
+		var cards: Array[WireCardInfo] = []
+		for entry in (v as Array):
+			if entry is Dictionary:
+				cards.append(WireCardInfo.new(
+					str((entry as Dictionary).get("name", "")),
+					int((entry as Dictionary).get("counters", 0)),
+				))
+		return WireSlotInfo.WireFullInfo.new(cards)
+	if v is int or v is float:
+		return WireSlotInfo.WireCountInfo.new(int(v))
+	push_warning("Deserializer: unknown slot value shape: %s" % v)
+	return WireSlotInfo.WireUnknownInfo.new()
+
+
+## winners array (e.g., ["RED"]) → Dict[PID, bool].
+static func _parse_won(winners: Array) -> Dictionary:
+	var out: Dictionary = {
+		NLEnums.PID.RED: false,
+		NLEnums.PID.BLUE: false,
+	}
+	for w in winners:
+		out[parse_pid(str(w))] = true
+	return out

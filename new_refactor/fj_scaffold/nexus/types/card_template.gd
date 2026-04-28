@@ -21,6 +21,7 @@ var types: Array[NLEnums.CardType] = []
 var is_elusive: bool = false
 var is_first: bool = false
 
-# TODO Phase 2+: deserialized assets the Renderer needs to draw the card.
-# var front: Texture2D
-# var back: Texture2D
+## Front face texture, loaded eagerly by Catalog from the local image-info
+## mapping (`fj/assets/card_info/<name>.json` → `front_image` filename).
+## Card backs are per-side, not per-card; ask `Catalog.back_for(slot)` instead.
+var front: Texture2D = null
