@@ -7,7 +7,7 @@
 ## (Catalog + Serializer/Deserializer in Phase 2) handles the projection.
 
 @abstract
-class_name Option extends RefCounted
+class_name Option extends NL
 
 
 ## Used by OptionValidator to match candidate options against pending prompt

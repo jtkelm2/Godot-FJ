@@ -2,7 +2,7 @@
 ## Deserialization happens in wire/ (Phase 2).
 
 @abstract
-class_name DL extends RefCounted
+class_name DL extends NL
 
 
 class CardMoved extends DL:

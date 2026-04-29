@@ -1,54 +1,79 @@
 # board/conductor/
 
-The `Conductor`: the bridge from NL to `Renderer` calls.
+The `Conductor`: the bridge from NL to Renderer animation primitives.
 
 See `architecture.md §Conductor`.
 
 ## Composition
 
 ```
-Conductor = Scheduler + StepHandler
-StepHandler = Dispatcher + ReadinessTracker + DivergenceMonitor
+Conductor (assembly + push API)
+    ├─ Scheduler          — NL queue, gated by ReadinessTracker
+    ├─ Dispatcher         — animates one term at a time
+    ├─ ReadinessTracker   — busy/free counter; gates the Scheduler
+    ├─ DivergenceMonitor  — SL+DL invariant check
+    └─ SlotWrangler       — NL CardInstance → CardView creation
 ```
+
+Each sub-component is independently a small typed unit; the Conductor wires them internally and exposes a small public surface upward.
 
 ## Files
 
 | File | Responsibility | Old-client analogue |
 |---|---|---|
-| `conductor.gd` | Wrapper that owns Scheduler + StepHandler and tees incoming NL. | Parts of `fj/ui/board.gd` (`_on_changed`, `_change_pass`). |
-| `scheduler.gd` | Queues inbound NL; hands one term at a time to StepHandler, gated on ReadinessTracker. | Parts of `fj/ui/board.gd` (`_animating`, `_change_pass` re-entrance guard). |
-| `step_handler.gd` | Wrapper that tees each NL term to Dispatcher, ReadinessTracker, and (for SL) DivergenceMonitor. | Not separately present in old client. |
-| `dispatcher.gd` | Blind, fire-and-forget DL-to-Renderer calls. | `fj/ui/event_animator.gd`. |
-| `readiness_tracker.gd` | Tracks BUSY/FREE. Answers "ready for next term?" | Implicit `await` chain in old board.gd. |
-| `divergence_monitor.gd` | Projects DL batch onto previous shadow; asserts against new SL. Triggers full rebuild on mismatch. | `fj/net/event_projector.gd` + the `_run_events` diff check in `board.gd`. |
+| `conductor.gd` | `class_name Conductor extends Node`. Composes the sub-components, exposes `push_state` / `push_diffs` / `push_prompt` / `reset`. | Parts of `fj/ui/board.gd` (`_on_changed`, `_change_pass`). |
+| `scheduler.gd` | `class_name Scheduler extends RefCounted`. NL queue. `push(term)` accepts terms; `next_term(term)` signal emits one when ready. `notify_idle()` advances the queue. Defers emission to break re-entrance. | Implicit `_animating` + `_change_pass` re-entrance guard in old `board.gd`. |
+| `dispatcher.gd` | `class_name Dispatcher extends Node`. `handle(term)` translates one NL term to Renderer widget calls (CardView/SlotView/WeaponSlotView). Emits `animation_started` / `animation_finished` for the ReadinessTracker. | `fj/ui/event_animator.gd`. |
+| `readiness_tracker.gd` | `class_name ReadinessTracker extends RefCounted`. Busy-count counter. `mark_busy()` / `mark_free()` methods, `became_free` signal. | Implicit `await` chain in old `board.gd`. |
+| `divergence_monitor.gd` | `class_name DivergenceMonitor extends RefCounted`. `check(state, events) -> CheckResult` projects events onto previous SL, compares against new SL, returns `{initial, divergent, diffs}`. Stateless interface (no signals). | `fj/net/event_projector.gd` + the `_run_events` diff check in `board.gd`. |
+| `slot_wrangler.gd` | `class_name SlotWrangler extends RefCounted`. `populate(slot_view, slot_id, contents)` stocks a SlotView from `State.SlotContents`. `create_card(front, back, faceup)` for stand-ins. Composer provides `card_factory` and `back_for_slot` Callables. | `fj/ui/slot_wrangler.gd`. |
 
-## The three inflows
+## The three inbound channels (composer wiring)
 
-`Conductor` subscribes to its `NexusRouter` on three channels:
+The composer (Phase 6 App) connects:
 
-1. **`state_received(sl, dl_batch)`** — atomic SL+DL pair. Routes to both `DivergenceMonitor` (invariant check) and `Dispatcher` (animation).
-2. **`diffs_received(dl_batch)`** — DL batch alone (no paired SL). Routes to `Dispatcher` only.
-3. **`prompt_received(prompt)`** — PL terms for context/highlight rendering. Routes to `Dispatcher` (which handles highlight decoration; highlights are just another animation primitive).
+```gdscript
+nexus.sl_in.connect(conductor.push_state)         # paired (state, events)
+nexus.pl_in.connect(conductor.push_prompt)        # PL
+# diffs_in only if a future protocol revision sends bare DL batches.
+```
 
-The router emits both `state_received` and `diffs_received` for every SL update, because they go to different consumers. See `nexus/nexus_router.gd`.
+Conductor configuration is set before any push:
+
+```gdscript
+conductor.slot_for = composer_built_slot_dict
+conductor.weapon_slot_for = composer_built_ws_dict
+conductor.overlay = board_scene_overlay
+conductor.card_factory = func(): return card_scene.instantiate() as CardView
+conductor.back_for_slot = func(slot_id):
+    if slot_id is SlotID.GuardDeck: return catalog.neutral_back()
+    return catalog.back_for_pid(slot_id.side)
+```
 
 ## Ordering guarantees
 
-- Every term handed to `StepHandler` must complete before the next one starts.
-- A DL batch arriving via `diffs_received` is played as a single unit (all events before readiness is signaled FREE).
-- An SL arriving via `state_received` hard-blocks: `DivergenceMonitor` holds `ReadinessTracker` BUSY until the invariant check AND (if needed) the full rebuild both complete. No DL can slip through during reconciliation.
-- If new NL arrives while the current term is still processing, `Scheduler` queues it. The queue is small and bounded by the server's prompt-pending invariant (P1 in `protocol.md`).
+- The Scheduler hands one term to the Dispatcher at a time. The Dispatcher emits `animation_finished` exactly once per `handle(term)` call, after which the ReadinessTracker becomes free and the Scheduler advances.
+- For paired SL+DL, the Conductor decomposes the pair: it asks the DivergenceMonitor to validate (synchronously), then enqueues either (a) the events alone if the projection matched, (b) the events followed by a state-rebuild term if divergent, or (c) just the state if this is the first SL of the session.
 
 ## Divergence Monitor contract
 
-The `DivergenceMonitor` is the client-side teeth of the paired-SL+DL protocol change.
+`check(state, events)` returns a `CheckResult`:
 
-Each `state_received(sl, dl_batch)`:
+- `initial: true` — the very first SL, no prior baseline. Conductor schedules a rebuild from `state`.
+- `divergent: true` — projection mismatch. `push_warning` is logged with a diff summary; Conductor schedules events, then a rebuild from `state` to snap the UI back to authoritative truth.
+- Otherwise normal — Conductor just plays the events.
 
-1. Take the previous `StateSnapshot` (stored by `DivergenceMonitor` from the prior reconciliation).
-2. Project `dl_batch` onto it to get an expected `StateSnapshot`.
-3. Compare expected vs. actual `sl`.
-4. If they match, update the stored snapshot and release `ReadinessTracker`.
-5. If they don't match, `push_warning` with a diff summary, emit a divergence signal, drive `Dispatcher` to perform a full rebuild from `sl`, and only then release `ReadinessTracker`.
+Under a correct server, divergence never fires. When it does, the warning surfaces a server bug; the rebuild keeps the user from getting stuck on a desynced UI.
 
-The full rebuild path exists as a safety net. Under correct server behavior, it should never fire; if it does, the warning surfaces a bug.
+## What Phase 4 covers
+
+- **CardMoved** animations (flying card across the screen).
+- **SlotTransferred** animations (single fly representing the batch).
+- **SlotShuffled** animations (slot jiggle).
+- **Full rebuilds** from State (initial population + divergence recovery).
+- **Prompt highlights** (HIGHLIGHT for options, CONTEXT for context entries, LOWLIGHT reset elsewhere).
+
+## What's deferred (Phase 5)
+
+- HPChanged, PhaseChanged, PlayerDied, GameEnded — these update info-panel state, which arrives with the Board scene assembly in Phase 5.
+- TextOption rendering in the prompt — also info-panel territory.

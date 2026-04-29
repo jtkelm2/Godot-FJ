@@ -3,7 +3,7 @@
 ## `Notify` is a separate protocol message type (§3.4), not part of PL.
 ## Colocated for fewer-files economy; consumers access it as `Prompt.Notify`.
 
-class_name Prompt extends RefCounted
+class_name Prompt extends NL
 
 
 class Notify extends RefCounted:

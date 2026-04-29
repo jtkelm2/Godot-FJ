@@ -7,7 +7,7 @@
 ## written against State don't need to know which perspective they're in.
 ## Game outcome is conveyed by the trailing DL.GameEnded event, not by State.
 
-class_name State extends RefCounted
+class_name State extends NL
 
 
 class Role extends RefCounted:
