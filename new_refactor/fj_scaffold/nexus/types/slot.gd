@@ -108,3 +108,26 @@ class Killstack extends SlotID:
 	func _init(s: NLEnums.PID, n: int) -> void:
 		side = s
 		num = n
+
+
+## Single resolver between `SlotKind` (+ side, num) and `SlotID`. Builds a
+## fresh instance — Catalog interns these and vends canonical ones via
+## `slot_id_for`. `num` is consulted only for ws-interior kinds.
+static func make(kind: NLEnums.SlotKind, side: NLEnums.PID, num: int) -> SlotID:
+	match kind:
+		NLEnums.SlotKind.GUARD_DECK:                  return GuardDeck.new()
+		NLEnums.SlotKind.HAND:                        return Hand.new(side)
+		NLEnums.SlotKind.DECK:                        return Deck.new(side)
+		NLEnums.SlotKind.REFRESH:                     return Refresh.new(side)
+		NLEnums.SlotKind.DISCARD:                     return Discard.new(side)
+		NLEnums.SlotKind.EQUIPMENT:                   return Equipment.new(side)
+		NLEnums.SlotKind.SIDEBAR:                     return Sidebar.new(side)
+		NLEnums.SlotKind.ACTION_FIELD_TOP_DISTANT:    return ActionTopDistant.new(side)
+		NLEnums.SlotKind.ACTION_FIELD_TOP_HIDDEN:     return ActionTopHidden.new(side)
+		NLEnums.SlotKind.ACTION_FIELD_BOTTOM_DISTANT: return ActionBottomDistant.new(side)
+		NLEnums.SlotKind.ACTION_FIELD_BOTTOM_HIDDEN:  return ActionBottomHidden.new(side)
+		NLEnums.SlotKind.WS:                          return WeaponZone.new(side, num)
+		NLEnums.SlotKind.WS_WEAPON:                   return Holster.new(side, num)
+		NLEnums.SlotKind.WS_KILLSTACK:                return Killstack.new(side, num)
+	push_error("SlotID.make: unknown kind %d" % kind)
+	return null

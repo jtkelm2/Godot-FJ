@@ -1,0 +1,662 @@
+[gd_scene format=3 uid="uid://dn75fqvii0tpu"]
+
+[ext_resource type="Script" uid="uid://bfcwqql6ffn2c" path="res://new_refactor/fj_scaffold/board/scenes/board.gd" id="1_board"]
+[ext_resource type="PackedScene" uid="uid://c524y1xacq4bf" path="res://new_refactor/fj_scaffold/board/scenes/simple_slot.tscn" id="2_simple"]
+[ext_resource type="Script" uid="uid://cbln7hw7l7j5x" path="res://new_refactor/fj_scaffold/board/renderer/slot_field.gd" id="3_field"]
+[ext_resource type="PackedScene" uid="uid://b1o3sgkcbc22g" path="res://new_refactor/fj_scaffold/board/scenes/info_panel.tscn" id="4_info"]
+[ext_resource type="Texture2D" uid="uid://vtf8o1we105k" path="res://fj/assets/images/playmat.png" id="5_mat"]
+[ext_resource type="Texture2D" uid="uid://dyxxotuvlrp7m" path="res://fj/assets/images/slots/combined.png" id="6_combined"]
+[ext_resource type="Texture2D" uid="uid://c7pb4ky3dla1w" path="res://fj/assets/images/slots/refresh.png" id="7_refresh"]
+[ext_resource type="Texture2D" uid="uid://ceag7tvsbj3h8" path="res://fj/assets/images/slots/discard.png" id="8_discard"]
+[ext_resource type="Texture2D" uid="uid://dmdkaq3gw8axg" path="res://fj/assets/images/slots/equipment.png" id="9_equip"]
+[ext_resource type="Script" uid="uid://dx5ji0kupqbk5" path="res://new_refactor/fj_scaffold/board/scenes/weapon_slot_view.gd" id="9_ws"]
+[ext_resource type="Texture2D" uid="uid://xe4wso5p7m2x" path="res://fj/assets/images/slots/weapon_slot.png" id="10_weapon"]
+[ext_resource type="Texture2D" uid="uid://hnsy76nhwsfq" path="res://fj/assets/images/slots/kill_slot.png" id="11_kill"]
+[ext_resource type="Texture2D" uid="uid://rk5u6nco7wxc" path="res://fj/assets/images/slots/fancy_dim.png" id="12_sidebar"]
+
+[node name="Board" type="Control" unique_id=999268480]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_board")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1690777170]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_mat")
+
+[node name="Overlay" type="Control" parent="." unique_id=1936996976]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=517693681]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GameArea" type="HBoxContainer" parent="HBoxContainer" unique_id=105443642]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="RedHalf" type="VBoxContainer" parent="HBoxContainer/GameArea" unique_id=1544933744]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="RedDeckRow" type="HBoxContainer" parent="HBoxContainer/GameArea/RedHalf" unique_id=1820690447]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="RedDiscard" parent="HBoxContainer/GameArea/RedHalf/RedDeckRow" unique_id=317955991 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+kind = 4
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedDeckRow/RedDiscard" unique_id=788561490]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_discard")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedRefresh" parent="HBoxContainer/GameArea/RedHalf/RedDeckRow" unique_id=1686617773 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+kind = 3
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedDeckRow/RedRefresh" unique_id=1597712794]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_refresh")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedDeck" parent="HBoxContainer/GameArea/RedHalf/RedDeckRow" unique_id=1576944786 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+kind = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedDeckRow/RedDeck" unique_id=1785765211]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedEquipment" type="HBoxContainer" parent="HBoxContainer/GameArea/RedHalf" unique_id=1106138185]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+script = ExtResource("3_field")
+kind = 5
+
+[node name="Eq1" parent="HBoxContainer/GameArea/RedHalf/RedEquipment" unique_id=1548869798 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedEquipment/Eq1" unique_id=2104575817]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Eq2" parent="HBoxContainer/GameArea/RedHalf/RedEquipment" unique_id=305912950 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedEquipment/Eq2" unique_id=1474816014]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedWeaponKill" type="HBoxContainer" parent="HBoxContainer/GameArea/RedHalf" unique_id=1938448074]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+script = ExtResource("9_ws")
+holster_path = NodePath("RedWeapon")
+killstack_path = NodePath("RedKill")
+
+[node name="RedWeapon" parent="HBoxContainer/GameArea/RedHalf/RedWeaponKill" unique_id=754498032 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedWeaponKill/RedWeapon" unique_id=1260619165]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_weapon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedKill" parent="HBoxContainer/GameArea/RedHalf/RedWeaponKill" unique_id=1884975150 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedWeaponKill/RedKill" unique_id=2090773153]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_kill")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedSidebar" type="HBoxContainer" parent="HBoxContainer/GameArea/RedHalf" unique_id=83995371]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+script = ExtResource("3_field")
+kind = 6
+
+[node name="S1" parent="HBoxContainer/GameArea/RedHalf/RedSidebar" unique_id=1446988299 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedSidebar/S1" unique_id=34306456]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S2" parent="HBoxContainer/GameArea/RedHalf/RedSidebar" unique_id=1221046595 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedSidebar/S2" unique_id=475034932]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S3" parent="HBoxContainer/GameArea/RedHalf/RedSidebar" unique_id=920124006 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedSidebar/S3" unique_id=1977799169]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S4" parent="HBoxContainer/GameArea/RedHalf/RedSidebar" unique_id=137982135 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/RedHalf/RedSidebar/S4" unique_id=1040960074]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedHand" parent="HBoxContainer/GameArea/RedHalf" unique_id=2027662715 instance=ExtResource("2_simple")]
+custom_minimum_size = Vector2(360, 146)
+layout_mode = 2
+size_flags_horizontal = 4
+offset = Vector2(48, 0)
+
+[node name="CenterColumn" type="VBoxContainer" parent="HBoxContainer/GameArea" unique_id=10626909]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="GuardDeck" parent="HBoxContainer/GameArea/CenterColumn" unique_id=270959061 instance=ExtResource("2_simple")]
+layout_mode = 2
+size_flags_horizontal = 4
+max_display = 5
+kind = 0
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/CenterColumn/GuardDeck" unique_id=104774700]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ActionField" type="VBoxContainer" parent="HBoxContainer/GameArea/CenterColumn" unique_id=1505728942]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="ActionTopRow" type="HBoxContainer" parent="HBoxContainer/GameArea/CenterColumn/ActionField" unique_id=929717431]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="RedDistantTop" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionTopRow" unique_id=1557961614 instance=ExtResource("2_simple")]
+layout_mode = 2
+kind = 7
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionTopRow/RedDistantTop" unique_id=347261684]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedHiddenTop" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionTopRow" unique_id=1480437768 instance=ExtResource("2_simple")]
+layout_mode = 2
+kind = 8
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionTopRow/RedHiddenTop" unique_id=2081417767]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueHiddenTop" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionTopRow" unique_id=853056257 instance=ExtResource("2_simple")]
+layout_mode = 2
+side = 1
+kind = 8
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionTopRow/BlueHiddenTop" unique_id=1360928036]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueDistantTop" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionTopRow" unique_id=1230055826 instance=ExtResource("2_simple")]
+layout_mode = 2
+side = 1
+kind = 7
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionTopRow/BlueDistantTop" unique_id=1025474048]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ActionBotRow" type="HBoxContainer" parent="HBoxContainer/GameArea/CenterColumn/ActionField" unique_id=2042508195]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="RedDistantBot" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionBotRow" unique_id=1025329151 instance=ExtResource("2_simple")]
+layout_mode = 2
+kind = 9
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionBotRow/RedDistantBot" unique_id=2124154583]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedHiddenBot" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionBotRow" unique_id=307766936 instance=ExtResource("2_simple")]
+layout_mode = 2
+kind = 10
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionBotRow/RedHiddenBot" unique_id=1615942321]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueHiddenBot" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionBotRow" unique_id=2125188197 instance=ExtResource("2_simple")]
+layout_mode = 2
+side = 1
+kind = 10
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionBotRow/BlueHiddenBot" unique_id=31528037]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueDistantBot" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionBotRow" unique_id=809267502 instance=ExtResource("2_simple")]
+layout_mode = 2
+side = 1
+kind = 9
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/CenterColumn/ActionField/ActionBotRow/BlueDistantBot" unique_id=656344810]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueHalf" type="VBoxContainer" parent="HBoxContainer/GameArea" unique_id=1604819423]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BlueDeckRow" type="HBoxContainer" parent="HBoxContainer/GameArea/BlueHalf" unique_id=531021603]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="BlueDeck" parent="HBoxContainer/GameArea/BlueHalf/BlueDeckRow" unique_id=353203722 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+side = 1
+kind = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueDeckRow/BlueDeck" unique_id=1627288469]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_combined")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueRefresh" parent="HBoxContainer/GameArea/BlueHalf/BlueDeckRow" unique_id=1785588737 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+side = 1
+kind = 3
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueDeckRow/BlueRefresh" unique_id=1638854919]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_refresh")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueDiscard" parent="HBoxContainer/GameArea/BlueHalf/BlueDeckRow" unique_id=41077438 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+side = 1
+kind = 4
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueDeckRow/BlueDiscard" unique_id=1200774181]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_discard")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueEquipment" type="HBoxContainer" parent="HBoxContainer/GameArea/BlueHalf" unique_id=59793247]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+script = ExtResource("3_field")
+side = 1
+kind = 5
+
+[node name="Eq1" parent="HBoxContainer/GameArea/BlueHalf/BlueEquipment" unique_id=598284355 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueEquipment/Eq1" unique_id=680754708]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Eq2" parent="HBoxContainer/GameArea/BlueHalf/BlueEquipment" unique_id=1021214484 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueEquipment/Eq2" unique_id=832466649]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_equip")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueWepKill" type="HBoxContainer" parent="HBoxContainer/GameArea/BlueHalf" unique_id=692194091]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+script = ExtResource("9_ws")
+side = 1
+holster_path = NodePath("BlueWeapon")
+killstack_path = NodePath("BlueKill")
+
+[node name="BlueKill" parent="HBoxContainer/GameArea/BlueHalf/BlueWepKill" unique_id=1097680269 instance=ExtResource("2_simple")]
+layout_mode = 2
+max_display = 5
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueWepKill/BlueKill" unique_id=967813917]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_kill")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueWeapon" parent="HBoxContainer/GameArea/BlueHalf/BlueWepKill" unique_id=1586867374 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueWepKill/BlueWeapon" unique_id=23808941]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_weapon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueSidebar" type="HBoxContainer" parent="HBoxContainer/GameArea/BlueHalf" unique_id=141809055]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+script = ExtResource("3_field")
+side = 1
+kind = 6
+
+[node name="S1" parent="HBoxContainer/GameArea/BlueHalf/BlueSidebar" unique_id=289662353 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueSidebar/S1" unique_id=267581774]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S2" parent="HBoxContainer/GameArea/BlueHalf/BlueSidebar" unique_id=1223106075 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueSidebar/S2" unique_id=609336755]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S3" parent="HBoxContainer/GameArea/BlueHalf/BlueSidebar" unique_id=2035981958 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueSidebar/S3" unique_id=940389795]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="S4" parent="HBoxContainer/GameArea/BlueHalf/BlueSidebar" unique_id=687271127 instance=ExtResource("2_simple")]
+layout_mode = 2
+
+[node name="Art" type="TextureRect" parent="HBoxContainer/GameArea/BlueHalf/BlueSidebar/S4" unique_id=1089805973]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_sidebar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueHand" parent="HBoxContainer/GameArea/BlueHalf" unique_id=1348327049 instance=ExtResource("2_simple")]
+custom_minimum_size = Vector2(360, 146)
+layout_mode = 2
+size_flags_horizontal = 4
+offset = Vector2(48, 0)
+side = 1
+
+[node name="InfoPanel" parent="HBoxContainer" unique_id=1015410405 instance=ExtResource("4_info")]
+layout_mode = 2

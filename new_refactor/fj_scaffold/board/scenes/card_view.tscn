@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://cjap0a6gv656o"]
+
+[ext_resource type="Script" uid="uid://d2y6ts6wkaag1" path="res://new_refactor/fj_scaffold/board/scenes/card_view.gd" id="1_cardview"]
+[ext_resource type="PackedScene" uid="uid://bctxarrow0001" path="res://fj/ui/context_arrow.tscn" id="2_arrow"]
+
+[node name="CardView" type="Control" unique_id=216825276]
+custom_minimum_size = Vector2(85, 146)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_cardview")
+
+[node name="Back" type="TextureRect" parent="." unique_id=616057729]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Front" type="TextureRect" parent="." unique_id=1823468945]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HighlightTint" type="ColorRect" parent="." unique_id=655472687]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.95, 0.4, 0)
+
+[node name="ContextArrow" parent="." unique_id=471546232 instance=ExtResource("2_arrow")]
+visible = false
+position = Vector2(42.5, 146)

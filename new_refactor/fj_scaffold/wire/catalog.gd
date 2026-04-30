@@ -2,14 +2,22 @@
 ## eager texture loading. Immutable after _init.
 ##
 ## **Player-symmetric.** Per protocol §1.3 / §3.1, the catalog is identical
-## for both clients — it does not encode the receiving player's identity.
-## SlotIDs are constructed with absolute PIDs read straight from each slot's
-## `owner` field. The receiving client's own PID is delivered separately via
-## the `pid_assignment` notify (§3.4.2) and lives outside Catalog.
+## for both clients. SlotIDs are constructed with absolute PIDs read straight
+## from each slot's `owner` field. The receiving client's own PID is
+## delivered separately via the `pid_assignment` notify and lives outside
+## Catalog.
 ##
-## Catalog vends *canonical* SlotID and CardTemplate instances — one per
-## identity — so downstream code can use them as Dictionary keys with
-## reference equality.
+## Catalog vends *canonical* SlotID and CardTemplate instances (one per
+## identity) so downstream code can use them as Dictionary keys with
+## reference equality. Two lookup directions are offered:
+##
+##   wire_name → SlotID         via `slot_for(wire_name)` / `weapon_slot_for(...)`
+##   (kind, side, num) → SlotID via `slot_id_for(side, kind, num)` /
+##                                `weapon_slot_id_for(side, num)`
+##
+## Both return the same canonical instance; the second is what the composer
+## uses at scene-init time to map each `SlotView`'s identity exports to
+## Catalog's slot.
 
 class_name Catalog extends RefCounted
 
@@ -29,6 +37,12 @@ var _card_by_name: Dictionary = {}            ## Dict[String, CardTemplate]
 var _name_by_card: Dictionary = {}            ## Dict[CardTemplate, String]
 
 
+# (kind, side, num) → canonical SlotID, populated alongside the wire-name
+# tables. Lets `slot_id_for` be a single dict lookup.
+var _canonical_by_identity: Dictionary = {}            ## Dict[Array, SlotID]
+var _canonical_by_weapon_identity: Dictionary = {}     ## Dict[Array, SlotID.WeaponZone]
+
+
 # Card backs by absolute PID + a neutral back for unowned slots.
 var _back_by_pid: Dictionary = {}    ## Dict[NLEnums.PID, Texture2D]
 var _neutral_back: Texture2D = null
@@ -42,7 +56,7 @@ func _init(catalog_msg: Dictionary) -> void:
 	_build_card_templates(catalog_msg.get("cards", {}), name_to_image)
 
 
-# --- Public API ---
+# --- Public API: regular slots ---
 
 func slot_for(wire_name: String) -> SlotID:
 	assert(_slot_by_name.has(wire_name), "Catalog: unknown slot wire: %s" % wire_name)
@@ -65,6 +79,16 @@ func all_slots() -> Array[SlotID]:
 	return out
 
 
+## Single-direction resolver from (kind, side, num) → canonical SlotID.
+## `num` is consulted only for ws-interior kinds. Composer calls this once
+## per `SlotView` at scene-init time.
+func slot_id_for(p_side: NLEnums.PID, p_kind: NLEnums.SlotKind, p_num: int = 0) -> SlotID:
+	var key := _identity_key(p_side, p_kind, p_num)
+	return _canonical_by_identity.get(key)
+
+
+# --- Public API: weapon slots ---
+
 func weapon_slot_for(wire_name: String) -> SlotID:
 	assert(_weapon_slot_by_name.has(wire_name), "Catalog: unknown weapon slot wire: %s" % wire_name)
 	return _weapon_slot_by_name[wire_name]
@@ -77,6 +101,13 @@ func wire_for_weapon_slot(slot: SlotID) -> String:
 func has_weapon_slot(wire_name: String) -> bool:
 	return _weapon_slot_by_name.has(wire_name)
 
+
+func weapon_slot_id_for(p_side: NLEnums.PID, p_num: int) -> SlotID:
+	var key := _identity_key(p_side, NLEnums.SlotKind.WS, p_num)
+	return _canonical_by_weapon_identity.get(key)
+
+
+# --- Public API: cards + backs ---
 
 func card_for(wire_name: String) -> CardTemplate:
 	assert(_card_by_name.has(wire_name), "Catalog: unknown card name: %s" % wire_name)
@@ -106,12 +137,22 @@ func _build_slot_tables(slots_dict: Dictionary) -> void:
 		var info: Dictionary = slots_dict[wire]
 		var owner_v: Variant = info.get("owner")
 		var role := str(info.get("role", ""))
-		var slot := _make_slot(role, owner_v)
-		if slot != null:
-			_slot_by_name[str(wire)] = slot
-			_name_by_slot[slot] = str(wire)
+		var resolved := _parse_wire_role(role)
+		if resolved.kind < 0:
+			push_warning("Catalog: unrecognized slot role '%s' (wire=%s)" % [role, wire])
+			continue
+		var side: NLEnums.PID
+		if resolved.kind == NLEnums.SlotKind.GUARD_DECK:
+			side = NLEnums.PID.RED  # ignored by GuardDeck constructor
+		elif owner_v == null:
+			push_warning("Catalog: non-shared slot with null owner (wire=%s)" % wire)
+			continue
 		else:
-			push_warning("Catalog: unrecognized slot role '%s' (owner=%s, wire=%s)" % [role, owner_v, wire])
+			side = _parse_pid(str(owner_v))
+		var slot := SlotID.make(resolved.kind, side, resolved.num)
+		_slot_by_name[str(wire)] = slot
+		_name_by_slot[slot] = str(wire)
+		_canonical_by_identity[_identity_key(side, resolved.kind, resolved.num)] = slot
 
 
 func _build_weapon_slot_tables(weapon_slots_dict: Dictionary) -> void:
@@ -127,43 +168,45 @@ func _build_weapon_slot_tables(weapon_slots_dict: Dictionary) -> void:
 			push_warning("Catalog: weapon slot with null owner (wire=%s); skipping" % wire)
 			continue
 		var pid := _parse_pid(str(owner_v))
-		var slot := SlotID.WeaponZone.new(pid, num)
+		var slot := SlotID.make(NLEnums.SlotKind.WS, pid, num)
 		_weapon_slot_by_name[str(wire)] = slot
 		_name_by_weapon_slot[slot] = str(wire)
+		_canonical_by_weapon_identity[_identity_key(pid, NLEnums.SlotKind.WS, num)] = slot
 
 
-func _make_slot(role: String, owner_v: Variant) -> SlotID:
-	# Unowned (null owner) — only GuardDeck reachable.
-	if owner_v == null:
-		if role == "guard_deck":
-			return SlotID.GuardDeck.new()
-		return null
+# --- Wire role string → SlotKind ---
 
-	var pid := _parse_pid(str(owner_v))
+class _WireRole extends RefCounted:
+	var kind: int = -1     ## NLEnums.SlotKind value, or -1 if unparseable.
+	var num: int = 0
+	func _init(k: int = -1, n: int = 0) -> void:
+		kind = k
+		num = n
 
-	# Per-side simple roles.
+
+## Parses a slot's wire `role` string into a `(kind, num)` pair. Internal
+## to Catalog — wire role strings live here, not in NL types.
+static func _parse_wire_role(role: String) -> _WireRole:
 	match role:
-		"hand":                          return SlotID.Hand.new(pid)
-		"deck":                          return SlotID.Deck.new(pid)
-		"refresh":                       return SlotID.Refresh.new(pid)
-		"discard":                       return SlotID.Discard.new(pid)
-		"equipment":                     return SlotID.Equipment.new(pid)
-		"sidebar":                       return SlotID.Sidebar.new(pid)
-		"action_field_top_distant":      return SlotID.ActionTopDistant.new(pid)
-		"action_field_top_hidden":       return SlotID.ActionTopHidden.new(pid)
-		"action_field_bottom_distant":   return SlotID.ActionBottomDistant.new(pid)
-		"action_field_bottom_hidden":    return SlotID.ActionBottomHidden.new(pid)
-
-	# Per-side per-num interiors: ws_<N>_weapon, ws_<N>_killstack.
+		"guard_deck":                  return _WireRole.new(NLEnums.SlotKind.GUARD_DECK)
+		"hand":                        return _WireRole.new(NLEnums.SlotKind.HAND)
+		"deck":                        return _WireRole.new(NLEnums.SlotKind.DECK)
+		"refresh":                     return _WireRole.new(NLEnums.SlotKind.REFRESH)
+		"discard":                     return _WireRole.new(NLEnums.SlotKind.DISCARD)
+		"equipment":                   return _WireRole.new(NLEnums.SlotKind.EQUIPMENT)
+		"sidebar":                     return _WireRole.new(NLEnums.SlotKind.SIDEBAR)
+		"action_field_top_distant":    return _WireRole.new(NLEnums.SlotKind.ACTION_FIELD_TOP_DISTANT)
+		"action_field_top_hidden":     return _WireRole.new(NLEnums.SlotKind.ACTION_FIELD_TOP_HIDDEN)
+		"action_field_bottom_distant": return _WireRole.new(NLEnums.SlotKind.ACTION_FIELD_BOTTOM_DISTANT)
+		"action_field_bottom_hidden":  return _WireRole.new(NLEnums.SlotKind.ACTION_FIELD_BOTTOM_HIDDEN)
 	if role.begins_with("ws_"):
 		var num := _parse_ws_interior(role, "weapon")
 		if num >= 0:
-			return SlotID.Holster.new(pid, num)
+			return _WireRole.new(NLEnums.SlotKind.WS_WEAPON, num)
 		num = _parse_ws_interior(role, "killstack")
 		if num >= 0:
-			return SlotID.Killstack.new(pid, num)
-
-	return null
+			return _WireRole.new(NLEnums.SlotKind.WS_KILLSTACK, num)
+	return _WireRole.new()
 
 
 static func _parse_pid(s: String) -> NLEnums.PID:
@@ -190,6 +233,11 @@ static func _parse_ws_interior(role: String, suffix: String) -> int:
 		return -1
 	var middle := role.substr(3, role.length() - 3 - pattern.length())
 	return middle.to_int() if middle.is_valid_int() else -1
+
+
+## Composite key for `_canonical_by_identity` and `_canonical_by_weapon_identity`.
+static func _identity_key(side: NLEnums.PID, kind: NLEnums.SlotKind, num: int) -> Array:
+	return [int(kind), int(side), num]
 
 
 # --- Card construction + asset loading ---
@@ -258,8 +306,7 @@ func _make_card_template(wire_name: String, entry: Dictionary, name_to_image: Di
 	t.is_first = bool(entry.get("is_first", false))
 
 	var image_file: String = name_to_image.get(wire_name, "")
-	if image_file.is_empty(): push_warning("Catalog: failed to load image for wire_name: %s" % wire_name)
-	else:
+	if not image_file.is_empty():
 		var path := CARD_ASSET_DIR + image_file
 		var tex := load(path) as Texture2D
 		if tex != null:

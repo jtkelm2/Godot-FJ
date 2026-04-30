@@ -10,76 +10,24 @@ See `architecture.md §InputHandler`.
 InputHandler = OptionAdapter + OptionValidator
 ```
 
+`InputHandler` is a thin Node holding both as internal RefCounteds and exposing their combined surface. The composer (Phase 6 App / Board) wires:
+
+- `nexus.pl_in` → `input_handler.set_pending_prompt`
+- each SlotView's / WeaponSlotView's input signals → `input_handler.on_*` (with the SlotID bound)
+- `info_panel.text_option_selected` → `input_handler.on_text_option`
+- `input_handler.option_accepted` → `nexus.send_response`
+
 ## Files
 
 | File | Responsibility | Old-client analogue |
 |---|---|---|
-| `input_handler.gd` | Wrapper that holds the validator and exposes the RL-emit point. | Parts of `fj/ui/board.gd`. |
-| `option_adapter.gd` | Scene-input (clicks, text button presses) → Option values. | `fj/ui/board.gd` click handlers + `info_panel.text_option_selected`. |
-| `option_validator.gd` | PL pending-prompt tracking + echo matching. | `fj/ui/board.gd::_respond_matching` and `_dict_content_equal`. |
+| `input_handler.gd` | `class_name InputHandler extends Node`. Public surface (`set_pending_prompt`, `clear_pending`, `on_card_clicked`, `on_slot_clicked`, `on_weapon_slot_clicked`, `on_text_option`, `option_accepted` signal). | Parts of `fj/ui/board.gd`. |
+| `option_adapter.gd` | `class_name OptionAdapter extends RefCounted`. Native input (with SlotID already resolved by the composer's bind) → typed `Option` candidates. | `fj/ui/board.gd` click handlers. |
+| `option_validator.gd` | `class_name OptionValidator extends RefCounted`. PL pending-prompt tracking + content-equality matching via `Option.equals`. Forwards the *matched* option (not the candidate) for byte-identical echo per protocol §4.4. | `fj/ui/board.gd::_respond_matching` and `_dict_content_equal`. |
 
-## API surface
+## NL-only surface
 
-### InputHandler
-
-```gdscript
-class_name InputHandler
-extends RefCounted
-
-func _init(router: NexusRouter)
-
-# router.prompt_received → validator.set_pending
-# validator.option_accepted → router.send_response
-```
-
-### OptionAdapter
-
-Native → Option translation. The scene's click/hover signals wire in here.
-
-```gdscript
-class_name OptionAdapter
-extends RefCounted
-
-signal option_candidate(option: Option)
-
-func on_card_clicked(slot_wire: String, shadow_index: int) -> void
-    # emit CardOption(slot_wire, shadow_index)
-
-func on_slot_clicked(slot_wire: String) -> void
-    # emit SlotOption(slot_wire)
-
-func on_weapon_slot_clicked(ws_wire: String) -> void
-    # emit WeaponSlotOption(ws_wire)
-
-func on_text_option_selected(option: Option.TextOption) -> void
-    # emit TextOption as-is (already typed — the info panel constructs it)
-```
-
-### OptionValidator
-
-Tracks the current prompt and matches incoming Option candidates against it.
-
-```gdscript
-class_name OptionValidator
-extends RefCounted
-
-signal option_accepted(option: Option)
-    # emitted when a candidate structurally matches a pending option;
-    # the matched option is forwarded (ensuring byte-identical echo).
-
-func set_pending(prompt: Prompt) -> void
-    # called on router.prompt_received. Replaces any previous pending.
-
-func set_pending_none() -> void
-    # called when the prompt has been answered; blocks further
-    # candidates from being forwarded.
-
-func consider(candidate: Option) -> void
-    # called on OptionAdapter.option_candidate. Walks pending.options,
-    # uses Option.equals for content comparison, emits option_accepted
-    # on match (forwarding the MATCHED option, not the candidate, so
-    # echo is byte-identical).
-```
+OptionAdapter takes typed identities (`SlotID`, `Option.TextOption`) — never wire-name strings. Identity resolution is the composer's job: each scene-input signal is bound with the matching Catalog-vended `SlotID` at scene-init time, so the SlotID instance equals the one DL events arrive carrying (reference equality holds).
 
 ## Why not fold the validator into the adapter
 
@@ -88,9 +36,3 @@ Keeping them separate means:
 1. `OptionValidator` is scene-tree-free and unit-testable.
 2. Alternative adapters (AI, scripted test harness) can reuse the validator unchanged.
 3. The validator's invariants (P2 in protocol.md: one response per prompt) are visible in one small file.
-
-## Migration notes
-
-The old `board.gd` had `_on_slot_card_clicked` / `_on_slot_slot_clicked` / `_on_weapon_slot_clicked` / `_on_text_option_selected` all calling a local `_respond_matching`. The adapter absorbs the click handlers; the validator absorbs `_respond_matching` and `_dict_content_equal`.
-
-Under the new architecture, the validator uses `Option.equals` (content comparison via the typed ADT), not `_dict_content_equal` on raw Dictionaries. The matched option is forwarded to the router, not the candidate — this preserves byte-identical echo for `protocol.md §4.4`.

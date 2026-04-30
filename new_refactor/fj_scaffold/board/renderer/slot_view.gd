@@ -24,6 +24,19 @@ signal card_hovered(slot: SlotView, index: int)
 signal card_unhovered(slot: SlotView)
 
 
+## Scene-level identity exports. The SlotView itself doesn't use these for
+## any logic — they're metadata the composer reads at scene-init time to
+## resolve which Catalog-vended SlotID this widget represents (via
+## `Catalog.slot_id_for(side, kind, num)`).
+##
+## `side` is the absolute PID owner (RED/BLUE), ignored by GuardDeck. `kind`
+## is the typed slot identity. `num` is the weapon-slot index for ws-interior
+## kinds; ignored otherwise.
+@export var side: NLEnums.PID = NLEnums.PID.RED
+@export var kind: NLEnums.SlotKind = NLEnums.SlotKind.HAND
+@export var num: int = 0
+
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	gui_input.connect(_on_slot_gui_input)

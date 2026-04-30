@@ -21,6 +21,11 @@ class_name WeaponSlotView extends Node
 signal weapon_slot_clicked(weapon_slot: WeaponSlotView)
 
 
+## Scene-level identity. `side` + `num` together determine which weapon slot
+## (Catalog.weapon_slots entry) this composite represents.
+@export var side: NLEnums.PID = NLEnums.PID.RED
+@export var num: int = 0
+
 ## Drag the child SlotView nodes into these NodePath fields in the scene.
 @export var holster_path: NodePath
 @export var killstack_path: NodePath
@@ -36,6 +41,16 @@ func _ready() -> void:
 	if holster == null or killstack == null:
 		push_error("WeaponSlotView at %s: holster_path/killstack_path must point to child SlotView nodes" % get_path())
 		return
+
+	# Propagate identity to the interior SlotViews. Their `kind` is fixed
+	# by their interior role; `side` / `num` come from this composite. This
+	# saves the .tscn author from setting them on every interior twice.
+	holster.side = side
+	holster.num = num
+	holster.kind = NLEnums.SlotKind.WS_WEAPON
+	killstack.side = side
+	killstack.num = num
+	killstack.kind = NLEnums.SlotKind.WS_KILLSTACK
 
 	# Composite-level click: holster's empty-area `slot_clicked` is the
 	# "I selected this weapon slot" gesture. Killstack's `slot_clicked` is

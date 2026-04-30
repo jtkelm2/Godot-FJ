@@ -28,14 +28,26 @@ Each sub-component is independently a small typed unit; the Conductor wires them
 | `divergence_monitor.gd` | `class_name DivergenceMonitor extends RefCounted`. `check(state, events) -> CheckResult` projects events onto previous SL, compares against new SL, returns `{initial, divergent, diffs}`. Stateless interface (no signals). | `fj/net/event_projector.gd` + the `_run_events` diff check in `board.gd`. |
 | `slot_wrangler.gd` | `class_name SlotWrangler extends RefCounted`. `populate(slot_view, slot_id, contents)` stocks a SlotView from `State.SlotContents`. `create_card(front, back, faceup)` for stand-ins. Composer provides `card_factory` and `back_for_slot` Callables. | `fj/ui/slot_wrangler.gd`. |
 
-## The three inbound channels (composer wiring)
+## Inbound and outbound surface (composer wiring)
 
-The composer (Phase 6 App) connects:
+The composer (`app/session.gd`) connects:
 
 ```gdscript
-nexus.sl_in.connect(conductor.push_state)         # paired (state, events)
-nexus.pl_in.connect(conductor.push_prompt)        # PL
-# diffs_in only if a future protocol revision sends bare DL batches.
+# Inbound NL push:
+nexus.sl_in.connect(conductor.push_state)
+nexus.pl_in.connect(conductor.push_prompt)
+
+# Outbound per-event signals → InfoPanel (or any other consumer):
+conductor.hp_changed.connect(info_panel.flash_hp)
+conductor.phase_changed.connect(info_panel.set_phase)
+conductor.player_died.connect(info_panel.mark_player_died)
+conductor.game_ended.connect(info_panel.set_game_result)
+conductor.state_rebuilt.connect(info_panel.bind_state)
+conductor.prompt_applied.connect(info_panel.bind_prompt)
+
+# Animation gating for InfoPanel-side animations:
+info_panel.animation_started.connect(conductor.mark_busy)
+info_panel.animation_finished.connect(conductor.mark_free)
 ```
 
 Conductor configuration is set before any push:
@@ -43,16 +55,22 @@ Conductor configuration is set before any push:
 ```gdscript
 conductor.slot_for = composer_built_slot_dict
 conductor.weapon_slot_for = composer_built_ws_dict
-conductor.overlay = board_scene_overlay
+conductor.overlay = board.overlay
 conductor.card_factory = func(): return card_scene.instantiate() as CardView
 conductor.back_for_slot = func(slot_id):
     if slot_id is SlotID.GuardDeck: return catalog.neutral_back()
     return catalog.back_for_pid(slot_id.side)
 ```
 
+The Conductor never imports `InfoPanel` (or any other downstream consumer).
+Per-event signals fan out — zero, one, or many subscribers — and Dispatcher
+itself holds no reference to any of them.
+
 ## Ordering guarantees
 
-- The Scheduler hands one term to the Dispatcher at a time. The Dispatcher emits `animation_finished` exactly once per `handle(term)` call, after which the ReadinessTracker becomes free and the Scheduler advances.
+- The Scheduler hands one term to the Dispatcher at a time.
+- For terms whose handling is synchronous (highlights, phase update, etc.), the Conductor advances the Scheduler immediately after `dispatcher.handle(term)` returns and the ReadinessTracker reports free.
+- For terms whose handling involves animation — Dispatcher's own (CardMoved/SlotTransferred/SlotShuffled) OR a subscriber's (e.g., InfoPanel's flash_hp) — the ReadinessTracker counts every active animation. The Scheduler advances when the count returns to zero (`became_free` signal).
 - For paired SL+DL, the Conductor decomposes the pair: it asks the DivergenceMonitor to validate (synchronously), then enqueues either (a) the events alone if the projection matched, (b) the events followed by a state-rebuild term if divergent, or (c) just the state if this is the first SL of the session.
 
 ## Divergence Monitor contract

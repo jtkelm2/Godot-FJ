@@ -1,15 +1,22 @@
 ## Dispatcher: translates one NL term at a time into Renderer widget calls.
-## Owns its `SlotWrangler` for NL → CardView translation. Animations are
-## fire-and-forget; the ReadinessTracker observes `animation_started` /
-## `animation_finished` to gate the Scheduler.
+## Owns its `SlotWrangler` for NL → CardView translation. Per-event signals
+## fan delegated work out to whatever subscribers exist (zero, one, or many);
+## Dispatcher itself doesn't import or know about InfoPanel or any other
+## consumer.
 ##
-## Composer-provided configuration (set on Dispatcher fields before the node
-## enters the tree, since `_ready` constructs the wrangler from them):
-##   - `slot_for: Dict[SlotID, SlotView]`
-##   - `weapon_slot_for: Dict[SlotID.WeaponZone, WeaponSlotView]`
-##   - `overlay: Control`         — parent for in-flight cards
-##   - `card_factory: Callable`   — () -> CardView
-##   - `back_for_slot: Callable`  — (slot_id: SlotID) -> Texture2D
+## Composer-set configuration (set on Dispatcher fields before the node
+## enters the tree):
+##   slot_for, weapon_slot_for, overlay, card_factory, back_for_slot.
+##
+## Animation-gating model:
+##   - Dispatcher's OWN animations (CardMoved fly, SlotTransferred fly,
+##     SlotShuffled jiggle) emit `animation_started` / `animation_finished`
+##     around their tweens — same as before.
+##   - Per-event signals (hp_changed, phase_changed, player_died,
+##     game_ended, state_rebuilt, prompt_applied) are pure announcements.
+##     If a subscriber animates in response, it emits its own
+##     animation_started/finished pair, which the composer wires to the
+##     same ReadinessTracker via Conductor.mark_busy / mark_free.
 
 class_name Dispatcher extends Node
 
@@ -19,8 +26,20 @@ const SHUFFLE_DURATION := 0.20
 const SHUFFLE_AMPLITUDE_PX := 4.0
 
 
+# --- Animation gating for Dispatcher's own tweens ---
+
 signal animation_started
 signal animation_finished
+
+
+# --- Per-event signals (delegated to subscribers via composer) ---
+
+signal hp_changed(target: NLEnums.PID, old: int, new: int)
+signal phase_changed(phase: NLEnums.Phase)
+signal player_died(target: NLEnums.PID)
+signal game_ended(outcome: NLEnums.Outcome, won: Dictionary)
+signal state_rebuilt(state: State)
+signal prompt_applied(prompt: Prompt)
 
 
 # --- Composer-set configuration ---
@@ -45,20 +64,15 @@ func _ready() -> void:
 
 # --- Public dispatch ---
 
-## Single entry point. The Conductor pushes one NL term at a time. Always
-## emits `animation_finished` exactly once per call (synchronously or after
-## a tween).
 func handle(term: NL) -> void:
 	if term is DL:
 		_handle_dl(term as DL)
 	elif term is State:
 		_full_rebuild(term as State)
-		animation_finished.emit()
+		state_rebuilt.emit(term as State)
 	elif term is Prompt:
-		_apply_prompt_highlights(term as Prompt)
-		animation_finished.emit()
-	else:
-		animation_finished.emit()
+		_apply_prompt(term as Prompt)
+		prompt_applied.emit(term as Prompt)
 
 
 # --- DL handling ---
@@ -70,17 +84,22 @@ func _handle_dl(ev: DL) -> void:
 		_animate_slot_transferred(ev as DL.SlotTransferred)
 	elif ev is DL.SlotShuffled:
 		_animate_shuffle(ev as DL.SlotShuffled)
-	else:
-		# HPChanged, PhaseChanged, PlayerDied, GameEnded — Phase 5 routes these
-		# to the info panel; for now they're acknowledged instantly.
-		animation_finished.emit()
+	elif ev is DL.HPChanged:
+		var hpc := ev as DL.HPChanged
+		hp_changed.emit(hpc.target, hpc.old_hp, hpc.new_hp)
+	elif ev is DL.PhaseChanged:
+		phase_changed.emit((ev as DL.PhaseChanged).phase)
+	elif ev is DL.PlayerDied:
+		player_died.emit((ev as DL.PlayerDied).target)
+	elif ev is DL.GameEnded:
+		var ge := ev as DL.GameEnded
+		game_ended.emit(ge.outcome, ge.won)
 
 
 func _animate_card_moved(ev: DL.CardMoved) -> void:
 	var src_slot: SlotView = _slot_view_of_loc(ev.orig)
 	var dst_slot: SlotView = _slot_view_of_loc(ev.dest)
 	if src_slot == null and dst_slot == null:
-		animation_finished.emit()
 		return
 
 	var src_idx := _idx_of_loc(ev.orig)
@@ -89,8 +108,6 @@ func _animate_card_moved(ev: DL.CardMoved) -> void:
 	var src_pos := _slot_center_global(src_slot if src_slot else dst_slot)
 	var dst_pos := _slot_center_global(dst_slot if dst_slot else src_slot)
 
-	# Use the actual source card when visible; otherwise spawn a facedown
-	# stand-in via the wrangler.
 	var flying: CardView = null
 	if src_slot != null and src_idx >= 0 and src_idx < src_slot.count():
 		flying = src_slot.remove(src_idx)
@@ -119,7 +136,6 @@ func _animate_slot_transferred(ev: DL.SlotTransferred) -> void:
 	var src_slot: SlotView = slot_for.get(ev.orig)
 	var dst_slot: SlotView = slot_for.get(ev.dest)
 	if src_slot == null or dst_slot == null:
-		animation_finished.emit()
 		return
 
 	src_slot.clear()
@@ -135,15 +151,12 @@ func _animate_slot_transferred(ev: DL.SlotTransferred) -> void:
 
 	overlay.remove_child(flying)
 	flying.queue_free()
-	# The count update on dst_slot will arrive in the next state push;
-	# Dispatcher doesn't synthesize CardInstances out of thin air.
 	animation_finished.emit()
 
 
 func _animate_shuffle(ev: DL.SlotShuffled) -> void:
 	var slot: SlotView = slot_for.get(ev.slot)
 	if slot == null:
-		animation_finished.emit()
 		return
 	var origin := slot.position
 	animation_started.emit()
@@ -155,11 +168,8 @@ func _animate_shuffle(ev: DL.SlotShuffled) -> void:
 	animation_finished.emit()
 
 
-# --- State / Prompt ---
+# --- State / Prompt synchronous Renderer work ---
 
-## Full rebuild from authoritative state. Iterates `slot_for` and stocks each
-## SlotView from the corresponding entry in `state.slots` (UnknownContents
-## for slots absent from state).
 func _full_rebuild(state: State) -> void:
 	for slot_id in slot_for:
 		var view: SlotView = slot_for[slot_id]
@@ -169,10 +179,7 @@ func _full_rebuild(state: State) -> void:
 		_wrangler.populate(view, slot_id, contents)
 
 
-## Decorate prompt options with HIGHLIGHT, context with CONTEXT, everything
-## else with LOWLIGHT.
-func _apply_prompt_highlights(prompt: Prompt) -> void:
-	# Reset everything first.
+func _apply_prompt(prompt: Prompt) -> void:
 	for slot_id in slot_for:
 		(slot_for[slot_id] as SlotView).set_highlight(HighlightLevel.Level.LOWLIGHT)
 	for ws_id in weapon_slot_for:
@@ -200,8 +207,6 @@ func _apply_option_highlight(opt: Option, level: HighlightLevel.Level) -> void:
 				var card := view.get_card(sl.idx)
 				if card != null:
 					card.set_highlight(level)
-	# TextOption: no spatial decoration; the info panel renders text options
-	# (Phase 5).
 
 
 # --- Helpers ---
