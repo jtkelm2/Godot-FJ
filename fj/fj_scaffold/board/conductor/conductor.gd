@@ -40,6 +40,7 @@ var card_factory: Callable
 
 # --- Re-emitted Dispatcher signals ---
 
+signal handling(term: NL)
 signal hp_changed(target: NLEnums.PID, old: int, new: int)
 signal phase_changed(phase: NLEnums.Phase)
 signal player_died(target: NLEnums.PID)
@@ -132,6 +133,7 @@ func reset() -> void:
 ## returns synchronously, the ReadinessTracker's eventual `became_free`
 ## signal will advance the Scheduler instead.
 func _on_next_term(term: NL) -> void:
+	handling.emit(term)
 	_dispatcher.handle(term)
 	if _readiness.is_free():
 		_scheduler.notify_idle()

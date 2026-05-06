@@ -45,7 +45,8 @@ func get_card(index: int) -> CardView:
 		if remaining < s.count():
 			return s.get_card(remaining)
 		remaining -= s.count()
-	return null
+	assert("SlotFieldView %s: get_card(%d) beyond capacity" % [get_path(), index])
+	return
 
 
 func insert(index: int, card: CardView) -> void:
@@ -69,7 +70,8 @@ func remove(index: int) -> CardView:
 		if remaining < s.count():
 			return s.remove(remaining)
 		remaining -= s.count()
-	return null
+	assert(false, "SlotFieldView %s: remove(%d) beyond bounds" % [get_path(), index])
+	return
 
 
 func clear() -> void:

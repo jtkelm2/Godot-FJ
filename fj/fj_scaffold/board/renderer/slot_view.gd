@@ -55,6 +55,10 @@ func _ready() -> void:
 func set_highlight(_level: HighlightLevel.Level) -> void:
 	pass
 
+func reset_highlights() -> void:
+	set_highlight(HighlightLevel.Level.LOWLIGHT)
+	for i in count():
+		get_card(i).set_highlight(HighlightLevel.Level.LOWLIGHT)
 
 # --- Signal choreography (subclass calls these when a card is added/removed) ---
 

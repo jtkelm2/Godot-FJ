@@ -63,3 +63,7 @@ func _ready() -> void:
 func set_highlight(level: HighlightLevel.Level) -> void:
 	if holster:
 		holster.set_highlight(level)
+
+func reset_highlights() -> void:
+	if holster:
+		holster.reset_highlights()

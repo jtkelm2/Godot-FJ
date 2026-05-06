@@ -9,34 +9,28 @@
 
 class_name Board extends Control
 
-
 @onready var info_panel: InfoPanel = $HBoxContainer/InfoPanel
 @onready var overlay: Control = $Overlay
-
-
-## All SlotView instances anywhere in the scene tree. The composer reads each
-## view's identity exports (`side`, `role`, `num`) to resolve its canonical
-## SlotID via the Catalog.
-func find_slot_views() -> Array[SlotView]:
-	var out: Array[SlotView] = []
-	for n in _find_all(self, SlotView):
-		out.append(n as SlotView)
-	return out
-
-
-## All WeaponSlotView composites in the scene tree.
-func find_weapon_slot_views() -> Array[WeaponSlotView]:
-	var out: Array[WeaponSlotView] = []
-	for n in _find_all(self, WeaponSlotView):
-		out.append(n as WeaponSlotView)
-	return out
-
+@onready var slot_views: Array[SlotView] = _slot_views()
+@onready var weapon_slot_views: Array[WeaponSlotView] = _weapon_slot_views()
 
 # --- Internal helpers ---
 
-static func _find_all(root: Node, type) -> Array:
+func _slot_views() -> Array[SlotView]:
+	var out:Array[SlotView] = []
+	for v in _find_all(SlotView):
+		out.append(v as SlotView)
+	return out
+
+func _weapon_slot_views() -> Array[WeaponSlotView]:
+	var out:Array[WeaponSlotView] = []
+	for v in _find_all(WeaponSlotView):
+		out.append(v as WeaponSlotView)
+	return out
+
+func _find_all(type) -> Array:
 	var out: Array = []
-	var stack: Array[Node] = [root]
+	var stack: Array[Node] = [self]
 	while not stack.is_empty():
 		var n: Node = stack.pop_back()
 		if is_instance_of(n, type):

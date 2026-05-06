@@ -14,6 +14,10 @@ var _conductor: Conductor
 var _input: InputHandler
 var _board: Board
 
+## Public: the composer (App) can configure sink/silencing before bootstrap
+## or anytime afterward.
+var logger: Logg = Logg.new()
+
 
 func bootstrap(my_pid: NLEnums.PID, nexus: NexusRouter, board: Board) -> void:
 	_board = board
@@ -23,8 +27,8 @@ func bootstrap(my_pid: NLEnums.PID, nexus: NexusRouter, board: Board) -> void:
 	var card_scene: PackedScene = load(CARD_VIEW_SCENE_PATH)
 
 	_conductor = Conductor.new()
-	_conductor.slot_views = board.find_slot_views()
-	_conductor.weapon_slot_views = board.find_weapon_slot_views()
+	_conductor.slot_views = board.slot_views
+	_conductor.weapon_slot_views = board.weapon_slot_views
 	_conductor.overlay = board.overlay
 	_conductor.card_factory = func() -> CardView:
 		return card_scene.instantiate() as CardView
@@ -37,6 +41,7 @@ func bootstrap(my_pid: NLEnums.PID, nexus: NexusRouter, board: Board) -> void:
 	_wire_dispatcher_to_info_panel()
 	_wire_info_panel_animation_gating()
 	_wire_scene_inputs()
+	if my_pid == NLEnums.PID.BLUE: _wire_logger()
 
 
 # --- Wiring helpers ---
@@ -66,14 +71,22 @@ func _wire_info_panel_animation_gating() -> void:
 
 
 func _wire_scene_inputs() -> void:
-	for view in _board.find_slot_views():
+	for view in _board.slot_views:
 		var slot_id := SlotID.make(view.kind, view.side, view.num)
 		view.card_clicked.connect(func(_v: SlotView, idx: int): _input.on_card_clicked(slot_id, idx))
 		view.slot_clicked.connect(func(_v: SlotView): _input.on_slot_clicked(slot_id))
 		view.card_hovered.connect(func(_v: SlotView, idx: int): _board.info_panel.preview_card(view, idx))
 		view.card_unhovered.connect(func(_v: SlotView): _board.info_panel.preview_card(null, -1))
-	for ws in _board.find_weapon_slot_views():
+	for ws in _board.weapon_slot_views:
 		var ws_id := SlotID.WeaponZone(ws.side, ws.num)
 		ws.weapon_slot_clicked.connect(func(_w: WeaponSlotView): _input.on_weapon_slot_clicked(ws_id))
 
 	_board.info_panel.text_option_selected.connect(_input.on_text_option)
+
+
+func _wire_logger() -> void:
+	_conductor.handling.connect(_log_handling)
+
+
+func _log_handling(term: NL) -> void:
+	logger.write("conductor.handling", Logg.describe_nl(term))

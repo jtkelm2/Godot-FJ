@@ -95,3 +95,49 @@ static func GameEnded(p_outcome: NLEnums.Outcome, p_won: Dictionary[NLEnums.PID,
 	d.outcome = p_outcome
 	d.won = p_won
 	return d
+
+
+# --- Description ---
+
+## One-line human-readable summary of this event. Variant-specific: only the
+## fields relevant to the current `type` are read. Used by the Logger; safe
+## to call on any DL.
+func describe() -> String:
+	match type:
+		Type.CARD_MOVED:
+			return "CardMoved %s → %s" % [_loc_str(orig), _loc_str(dest)]
+		Type.SLOT_TRANSFERRED:
+			return "SlotTransferred %s → %s (×%d)" % [_slot_str(orig_slot), _slot_str(dest_slot), count]
+		Type.HP_CHANGED:
+			return "HPChanged %s: %d → %d" % [NLEnums.PID.keys()[target], old_hp, new_hp]
+		Type.SLOT_SHUFFLED:
+			return "SlotShuffled %s" % _slot_str(slot)
+		Type.PLAYER_DIED:
+			return "PlayerDied %s" % NLEnums.PID.keys()[target]
+		Type.PHASE_CHANGED:
+			return "PhaseChanged %s" % NLEnums.Phase.keys()[phase]
+		Type.GAME_ENDED:
+			return "GameEnded %s won=%s" % [NLEnums.Outcome.keys()[outcome], won]
+	return "<unknown DL>"
+
+
+## SlotID / Loc don't yet carry their own `describe`; these are private
+## stopgaps for DL's own formatter. Lift them onto SlotID / Loc if other
+## consumers want the same string form.
+static func _slot_str(s: SlotID) -> String:
+	if s == null:
+		return "null"
+	var t: String = SlotID.Type.keys()[s.type]
+	if s.type == SlotID.Type.GUARD_DECK:
+		return t
+	if s.type == SlotID.Type.WS or s.type == SlotID.Type.WS_WEAPON or s.type == SlotID.Type.WS_KILLSTACK:
+		return "%s/%s/%d" % [NLEnums.PID.keys()[s.side], t, s.num]
+	return "%s/%s" % [NLEnums.PID.keys()[s.side], t]
+
+
+static func _loc_str(loc: Loc) -> String:
+	if loc == null:
+		return "null"
+	if loc.type == Loc.Type.UNKNOWN:
+		return "?"
+	return "%s[%d]" % [_slot_str(loc.slot), loc.idx]

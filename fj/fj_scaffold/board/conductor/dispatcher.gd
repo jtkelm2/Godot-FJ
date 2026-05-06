@@ -99,22 +99,22 @@ func _handle_dl(ev: DL) -> void:
 
 
 func _animate_card_moved(ev: DL) -> void:
-	var src_slot: SlotView = _slot_view_of_loc(ev.orig)
-	var dst_slot: SlotView = _slot_view_of_loc(ev.dest)
+	var src_slot: SlotView = _find_view(ev.orig.slot)
+	var dst_slot: SlotView = _find_view(ev.dest.slot)
 	if src_slot == null and dst_slot == null:
 		return
 
-	var src_idx := _idx_of_loc(ev.orig)
-	var dst_idx := _idx_of_loc(ev.dest)
+	var src_idx := ev.orig.idx
+	var dst_idx := ev.dest.idx
 
 	var src_pos := _slot_center_global(src_slot if src_slot else dst_slot)
 	var dst_pos := _slot_center_global(dst_slot if dst_slot else src_slot)
 
-	var flying: CardView = null
-	if src_slot != null and src_idx >= 0 and src_idx < src_slot.count():
+	var flying: CardView
+	if src_slot != null and src_idx < src_slot.count():
 		flying = src_slot.remove(src_idx)
-	if flying == null:
-		var anchor_id: SlotID = _slot_id_of_loc(ev.orig if ev.orig.type == Loc.Type.SLOT else ev.dest)
+	else:
+		var anchor_id: SlotID = ev.orig.slot if ev.orig.type == Loc.Type.SLOT else ev.dest.slot
 		flying = _wrangler.create_card(null, _back_for_slot(anchor_id), false)
 
 	overlay.add_child(flying)
@@ -137,10 +137,10 @@ func _animate_card_moved(ev: DL) -> void:
 func _animate_slot_transferred(ev: DL) -> void:
 	var src_slot: SlotView = _find_view(ev.orig_slot)
 	var dst_slot: SlotView = _find_view(ev.dest_slot)
-	if src_slot == null or dst_slot == null:
-		return
-
+	if src_slot == null: return
 	src_slot.clear()
+	if dst_slot == null: return
+	
 	var flying := _wrangler.create_card(null, _back_for_slot(ev.orig_slot), false)
 	overlay.add_child(flying)
 	flying.position = _slot_center_global(src_slot) - flying.size * 0.5
@@ -183,9 +183,9 @@ func _full_rebuild(state: State) -> void:
 
 func _apply_prompt(prompt: Prompt) -> void:
 	for slot_id in _slot_for:
-		_slot_for[slot_id].set_highlight(HighlightLevel.Level.LOWLIGHT)
+		_slot_for[slot_id].reset_highlights()
 	for ws_id in _weapon_slot_for:
-		_weapon_slot_for[ws_id].set_highlight(HighlightLevel.Level.LOWLIGHT)
+		_weapon_slot_for[ws_id].reset_highlights()
 
 	for opt in prompt.options:
 		_apply_option_highlight(opt, HighlightLevel.Level.HIGHLIGHT)
@@ -265,25 +265,5 @@ static func _find_contents(slots: Dictionary[SlotID, State.SlotContents], target
 
 # --- Helpers ---
 
-func _slot_view_of_loc(loc: Loc) -> SlotView:
-	if loc.type == Loc.Type.SLOT:
-		return _find_view(loc.slot)
-	return null
-
-
-func _idx_of_loc(loc: Loc) -> int:
-	if loc.type == Loc.Type.SLOT:
-		return loc.idx
-	return -1
-
-
-func _slot_id_of_loc(loc: Loc) -> SlotID:
-	if loc.type == Loc.Type.SLOT:
-		return loc.slot
-	return null
-
-
 static func _slot_center_global(slot: SlotView) -> Vector2:
-	if slot == null:
-		return Vector2.ZERO
 	return slot.global_position + slot.size * 0.5

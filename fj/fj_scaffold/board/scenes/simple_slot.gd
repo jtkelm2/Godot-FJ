@@ -41,8 +41,7 @@ func count() -> int:
 
 
 func get_card(index: int) -> CardView:
-	if index < 0 or index >= _cards.size():
-		return null
+	assert(0 <= index and index < _cards.size(), "SimpleSlotView: get_card(%d) beyond bounds" % index)
 	return _cards[index]
 
 
@@ -54,8 +53,7 @@ func insert(index: int, card: CardView) -> void:
 
 
 func remove(index: int) -> CardView:
-	if index < 0 or index >= _cards.size():
-		return null
+	assert(0 <= index and index < _cards.size(), "Simple slot: Attempting to remove out-of-bounds index %d from slot with %d cards" % [index, count()])
 	var card := _cards[index]
 	_detach_card(card)
 	_cards.remove_at(index)
