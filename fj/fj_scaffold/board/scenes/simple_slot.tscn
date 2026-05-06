@@ -1,6 +1,7 @@
-[gd_scene format=3 uid="uid://c524y1xacq4be"]
+[gd_scene format=3 uid="uid://c524y1xacq4bf"]
 
-[ext_resource type="Script" uid="uid://djtm67gix0yve" path="res://fj/ui/simple_slot.gd" id="1_simple"]
+[ext_resource type="Script" uid="uid://bxcq8ucmsp3g3" path="res://fj/fj_scaffold/board/scenes/simple_slot.gd" id="1_simple"]
+[ext_resource type="PackedScene" uid="uid://bctxarrow0001" path="res://fj/ui/context_arrow.tscn" id="2_arrow"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_outline"]
 bg_color = Color(0.3735739, 0.47003293, 0.41698655, 0)
@@ -15,13 +16,13 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[node name="SimpleSlot" type="Control" unique_id=1748044894]
+[node name="SimpleSlotView" type="Control"]
 custom_minimum_size = Vector2(85, 146)
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_simple")
 
-[node name="SlotHighlight" type="Panel" parent="." unique_id=1376620592]
+[node name="SlotHighlight" type="Panel" parent="."]
 visible = false
 z_index = 1000
 layout_mode = 1
@@ -33,7 +34,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_outline")
 
-[node name="OverflowBadge" type="Label" parent="." unique_id=1586884804]
+[node name="OverflowBadge" type="Label" parent="."]
 visible = false
 z_index = 1001
 layout_mode = 1
@@ -54,3 +55,7 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 2
 vertical_alignment = 1
+
+[node name="ContextArrow" parent="." instance=ExtResource("2_arrow")]
+visible = false
+position = Vector2(42.5, 146)

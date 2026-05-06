@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://crbcutobodbnn"]
-
-[ext_resource type="Script" uid="uid://citqj3hnmohy7" path="res://fj/ui/weapon_slot.gd" id="1_ws"]
-
-[node name="WeaponSlot" type="Node" unique_id=280585163]
-script = ExtResource("1_ws")

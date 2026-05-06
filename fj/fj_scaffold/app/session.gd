@@ -7,7 +7,7 @@
 class_name Session extends Node
 
 
-const CARD_VIEW_SCENE_PATH := "res://new_refactor/fj_scaffold/board/scenes/card_view.tscn"
+const CARD_VIEW_SCENE_PATH := "res://fj/fj_scaffold/board/scenes/card_view.tscn"
 
 
 var _conductor: Conductor

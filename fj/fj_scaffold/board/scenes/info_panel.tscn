@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://b1o3sgkcbc22g"]
 
-[ext_resource type="Script" path="res://new_refactor/fj_scaffold/board/scenes/info_panel.gd" id="1_info"]
+[ext_resource type="Script" path="res://fj/fj_scaffold/board/scenes/info_panel.gd" id="1_info"]
 [ext_resource type="Theme" uid="uid://bjdknkpbxalb6" path="res://themes/red_info_theme.tres" id="2_red"]
 [ext_resource type="LabelSettings" uid="uid://b5skpbbqle4n7" path="res://resources/big_text.tres" id="3_bigtext"]
 [ext_resource type="Theme" uid="uid://cafkndgiy1n2u" path="res://themes/blue_info_theme.tres" id="4_blue"]

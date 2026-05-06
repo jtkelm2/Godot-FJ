@@ -1,6 +1,8 @@
-# Fool's Journey — Client Scaffold
+# Fool's Journey — Client
 
-This tree is a refactor target for the existing Godot client in `fj/`. It implements the architecture described in `architecture.md` (companion document) with one autoload and typed ADTs.
+This tree is the Godot client. It implements the architecture described in `architecture.md` (companion document) with one autoload and typed ADTs.
+
+The old pre-refactor implementation has been removed; what was previously `new_refactor/` is this directory. The mock TCP test server lives under `test/`; the wire-protocol spec is in `protocol.md`; assets and the one shared scene (`ui/context_arrow.tscn`) live alongside `fj_scaffold/` (the client code proper).
 
 ## Reading order
 
@@ -57,13 +59,14 @@ One `App` autoload. Two scenes:
 
 `App` handles the scene swap and dependency wiring so scene scripts never reach for globals.
 
-## Migration checklist
+## Migration history
 
 - [x] **Phase 1**: NL types (`nexus/types/`) and WL types (`wire/types/`).
 - [x] **Phase 2**: `Transport` (TCP + WebSocket), `WireCodec`, `Catalog`, `Serializer`, `Deserializer`, `WireRouter`, `NexusRouter`.
 - [x] **Phase 3**: Renderer widgets — `CardView`, `SlotView`, `SimpleSlotView`, `SlotFieldView`, `WeaponSlotView`, `HighlightLevel`.
 - [x] **Phase 4**: `Conductor` — `Scheduler`, `Dispatcher`, `ReadinessTracker`, `DivergenceMonitor`, `SlotWrangler`.
 - [x] **Phase 5**: `InputHandler` (`OptionAdapter` + `OptionValidator`), `InfoPanel`, `Board` scene, `Session` composition unit, `.tscn` ports.
-- [x] **Phase 6**: `App` autoload, `ConnectionScreen`, `project.godot` autoload + main-scene swap. Old autoloads (`NetworkTransport`, `GameSession`) are still registered alongside `App` so `fj/` parses cleanly.
-- [ ] **Parity verification**: end-to-end test against the server with the new tree as main scene.
-- [ ] Remove `NetworkTransport` and `GameSession` autoloads from `project.godot`. Delete `fj/`.
+- [x] **Phase 6**: `App` autoload, `ConnectionScreen`, `project.godot` autoload + main-scene swap.
+- [x] **Phase 7** (tagged-union flattening): `SlotID` / `Loc` / `Option` / `State.SlotContents` / `WireSlotInfo` / `DL` flattened to single classes with nested `Type` enums and PascalCase factories. Full pass of typed dicts (`Dictionary[K, V]`) for everything we own; remaining untyped Dictionaries are at the JSON boundary only and documented.
+- [x] **Phase 8** (cleanup): old `fj/net/` + `fj/ui/` deleted, `NetworkTransport` / `GameSession` autoloads dropped, the `new_refactor/` scaffold renamed in place to `fj/`. Asset paths revert to `res://fj/assets/...` (matching protocol-doc references).
+- [ ] **Parity verification**: end-to-end test against the live server. Outstanding — requires a running game server.
