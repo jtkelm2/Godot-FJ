@@ -15,12 +15,13 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="FoolsJourney"
-run/main_scene="res://fj/net/connection_screen.tscn"
+run/main_scene="res://new_refactor/fj_scaffold/app/connection_screen.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
 McpInteractionServer="*uid://bewxly5q2kera"
+App="*res://new_refactor/fj_scaffold/app/app.gd"
 NetworkTransport="*res://fj/net/network_transport.gd"
 GameSession="*res://fj/net/game_session.gd"
 

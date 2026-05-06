@@ -59,18 +59,11 @@ One `App` autoload. Two scenes:
 
 ## Migration checklist
 
-Approximate order for the porting agent:
-
-- [ ] Stand up `app/`, `wire/`, and `nexus/types/` first. Nothing renders, but `WireCodec` round-trips JSON.
-- [ ] Port `CatalogData` → `wire/catalog.gd`.
-- [ ] Port `NetworkTransport` → `wire/transport.gd`. Keep the int-preserving `_stringify`.
-- [ ] Port the message dispatch from `GameSession._on_message_received` → `wire/wire_router.gd`, but deserializing into typed NL/RL DTOs rather than passing `Dictionary` through.
-- [ ] Build `nexus/nexus_router.gd`. Minimal — it's mostly a fanout.
-- [ ] Port `Slot`, `SimpleSlot`, `SlotField`, `Card`, `WeaponSlot`, `Highlight` into `board/renderer/` (see `board/renderer/README.md`).
-- [ ] Port `EventProjector` → `board/conductor/divergence_monitor.gd` under the new paired state+events contract.
-- [ ] Port `EventAnimator` → `board/conductor/dispatcher.gd`.
-- [ ] Port `SlotWrangler` → `board/renderer/slot_wrangler.gd`.
-- [ ] Assemble `Conductor` (`scheduler.gd` + `readiness_tracker.gd` + wrappers).
-- [ ] Split `board.gd`: orchestration stays in `Board`, input handling moves to `InputHandler`, everything else is delegated.
-- [ ] Wire up `App` → scene transitions.
-- [ ] Delete `fj/` old client.
+- [x] **Phase 1**: NL types (`nexus/types/`) and WL types (`wire/types/`).
+- [x] **Phase 2**: `Transport` (TCP + WebSocket), `WireCodec`, `Catalog`, `Serializer`, `Deserializer`, `WireRouter`, `NexusRouter`.
+- [x] **Phase 3**: Renderer widgets — `CardView`, `SlotView`, `SimpleSlotView`, `SlotFieldView`, `WeaponSlotView`, `HighlightLevel`.
+- [x] **Phase 4**: `Conductor` — `Scheduler`, `Dispatcher`, `ReadinessTracker`, `DivergenceMonitor`, `SlotWrangler`.
+- [x] **Phase 5**: `InputHandler` (`OptionAdapter` + `OptionValidator`), `InfoPanel`, `Board` scene, `Session` composition unit, `.tscn` ports.
+- [x] **Phase 6**: `App` autoload, `ConnectionScreen`, `project.godot` autoload + main-scene swap. Old autoloads (`NetworkTransport`, `GameSession`) are still registered alongside `App` so `fj/` parses cleanly.
+- [ ] **Parity verification**: end-to-end test against the server with the new tree as main scene.
+- [ ] Remove `NetworkTransport` and `GameSession` autoloads from `project.godot`. Delete `fj/`.

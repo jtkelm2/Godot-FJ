@@ -20,7 +20,10 @@ func _init(host: String, port: int) -> void:
 
 	var err := _peer.connect_to_host(host, port)
 	if err != OK:
-		error.emit("TCP connect failed: %s" % error_string(err))
+		# Caller hasn't had a chance to attach `error` listeners yet (we're
+		# still inside `_init`). Defer the emit to the next idle frame so
+		# subscribers wired right after `.new()` see it.
+		error.emit.call_deferred("TCP connect failed: %s" % error_string(err))
 		_peer = null
 		return
 

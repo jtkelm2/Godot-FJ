@@ -8,12 +8,12 @@ Godot needs at least one "above the scene tree" object to hold state across `cha
 
 ## Files
 
-| File | Status | Responsibility |
-|---|---|---|
-| `session.gd` | **Phase 5** | `class_name Session extends Node`. Owns `Conductor` + `InputHandler` and wires them to a `NexusRouter` and a `Board` scene. Single composition root for the in-game half — the only place that holds references to all the components. |
-| `app.gd` | Phase 6 | Autoload. Owns `Transport`, `WireRouter`, `NexusRouter`, and one live `Session?`. Handles connection lifecycle and scene transitions. |
-| `connection_screen.gd` | Phase 6 | Host/port entry. Configures `App.transport`, initiates handshake. |
-| `connection_screen.tscn` | Phase 6 | (Ported from old client.) |
+| File | Responsibility |
+|---|---|
+| `app.gd` | Autoload (`extends Node`, registered as `App` in `project.godot`). Owns `WireRouter` + `NexusRouter` for the app's lifetime, plus a `Transport` (per connect) and a `Session?` (per game). Wires the codec pipeline (`transport.recv ↔ WireCodec ↔ wire_router.wl_in/out`) and the NL fanout (`WireRouter ↔ NexusRouter`). On `handshake_complete(catalog)` AND `pid_assigned(pid)` (in either order), swaps to Board.tscn and bootstraps a Session. On disconnect / `session_closed`, tears down Session and returns to ConnectionScreen. |
+| `session.gd` | `class_name Session extends Node`. The composition root for the in-game half — owns `Conductor` + `InputHandler` and wires them to a `NexusRouter` and a `Board` scene. App constructs and bootstraps Session post-handshake. |
+| `connection_screen.gd` | Host/port + transport-type input. Talks only to `App` (no other autoload reachable). |
+| `connection_screen.tscn` | Ported from `fj/net/connection_screen.tscn` with the script rebound. |
 
 ## Session's role
 
@@ -48,6 +48,22 @@ App (autoload)                        — Phase 6
 
 The Board scene is a sibling, not Session's child — Board lives where the App's scene-swap puts it. Session doesn't own it; it just wires into it.
 
+## Public API (what ConnectionScreen and other scenes can call)
+
+```gdscript
+# Methods
+App.connect_to(host: String, port: int, type: App.TransportType) -> void
+App.disconnect_from_server() -> void
+
+# Signals
+App.connected
+App.disconnected
+App.connection_error(err: String)
+App.session_started(my_pid: NLEnums.PID)
+```
+
+That's the entire reachable surface. `App` does not expose its `Transport`, `WireRouter`, `NexusRouter`, `Session`, or `Catalog`. Any UI that needs to send NL goes through the Session that App composes (currently only the in-Board scene needs that, and it gets the wiring done by Session.bootstrap during scene swap).
+
 ## Migration notes
 
-Old `NetworkTransport` and `GameSession` autoloads will be folded into `App` (Phase 6). The old `connection_screen.gd` reached into both; the new one will only talk to `App`.
+The old `NetworkTransport` and `GameSession` autoloads are now superseded by `App`. Until parity verification, both old autoloads remain in `project.godot` so the unmodified `fj/` tree still parses; once the new tree is verified end-to-end against the server, both old autoloads are removed and `fj/` is deleted.

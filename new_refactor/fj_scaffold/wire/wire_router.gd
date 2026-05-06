@@ -20,6 +20,8 @@ enum SessionState { AWAITING_CATALOG, ACTIVE, CLOSED }
 
 # --- Outbound NL signals ---
 
+## Fired once after the WCL is parsed and Catalog is built. Catalog stays
+## inside WireRouter; downstream only needs to know the handshake completed.
 signal handshake_complete
 signal pid_assigned(pid: NLEnums.PID)
 signal state_received(state: State, events: Array[DL])

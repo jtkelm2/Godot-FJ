@@ -11,10 +11,18 @@
 class_name Transport extends Node
 
 
+## Selector for which concrete Transport to instantiate. App's
+## `connect_to(host, port, type)` matches on this; ConnectionScreen lists
+## the values in its dropdown.
+enum Type { TCP, WEBSOCKET }
+
+
+@warning_ignore_start("unused_signal")
 signal error(msg: String)
 signal connected
 signal disconnected
 signal recv(msg: String)
+@warning_ignore_restore("unused_signal")
 
 
 @abstract func send(msg: String) -> void

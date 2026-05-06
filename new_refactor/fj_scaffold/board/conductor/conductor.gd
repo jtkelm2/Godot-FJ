@@ -1,7 +1,9 @@
 ## Conductor: the bridge from NL to Renderer animation primitives.
 ##
 ## Composes Scheduler + Dispatcher + ReadinessTracker + DivergenceMonitor.
-## (Dispatcher owns its own SlotWrangler internally — composer doesn't see it.)
+## (Dispatcher owns its own SlotWrangler internally — composer doesn't see
+## it.) The Conductor takes the Renderer's widget arrays as input and builds
+## its internal lookup dicts itself; it knows nothing of Catalog.
 ##
 ## Public surface:
 ##
@@ -11,34 +13,29 @@
 ##     push_diffs(events)          — bare DL batch.
 ##
 ##   Outbound delegated-event signals (composer wires these to InfoPanel,
-##   replay logger, AI observer, … any number of consumers):
-##     hp_changed(target, old, new)
-##     phase_changed(phase)
-##     player_died(target)
-##     game_ended(outcome, won)
-##     state_rebuilt(state)
-##     prompt_applied(prompt)
+##   replay logger, AI observer, …):
+##     hp_changed / phase_changed / player_died / game_ended /
+##     state_rebuilt / prompt_applied
 ##
 ##   Animation-gating hooks (any subscriber that animates in response to a
 ##   per-event signal claims the queue via these):
 ##     mark_busy() / mark_free()
 ##
 ##   Configuration (composer sets BEFORE add_child(conductor)):
-##     slot_for, weapon_slot_for   — Dict[SlotID, …View] from the Renderer.
-##     overlay                     — Control parent for in-flight cards.
-##     card_factory                — Callable() -> CardView.
-##     back_for_slot               — Callable(SlotID) -> Texture2D.
+##     slot_views                  — Array[SlotView] from board.find_slot_views()
+##     weapon_slot_views           — Array[WeaponSlotView] from board.find_weapon_slot_views()
+##     overlay                     — Control parent for in-flight cards
+##     card_factory                — Callable() -> CardView
 
 class_name Conductor extends Node
 
 
 # --- Configuration ---
 
-var slot_for: Dictionary
-var weapon_slot_for: Dictionary
+var slot_views: Array[SlotView] = []
+var weapon_slot_views: Array[WeaponSlotView] = []
 var overlay: Control = null
 var card_factory: Callable
-var back_for_slot: Callable
 
 
 # --- Re-emitted Dispatcher signals ---
@@ -65,11 +62,10 @@ func _ready() -> void:
 	_monitor = DivergenceMonitor.new()
 
 	_dispatcher = Dispatcher.new()
-	_dispatcher.slot_for = slot_for
-	_dispatcher.weapon_slot_for = weapon_slot_for
+	_dispatcher.slot_views = slot_views
+	_dispatcher.weapon_slot_views = weapon_slot_views
 	_dispatcher.overlay = overlay
 	_dispatcher.card_factory = card_factory
-	_dispatcher.back_for_slot = back_for_slot
 	add_child(_dispatcher)
 
 	# Scheduler ↔ Dispatcher dispatch.
@@ -132,10 +128,9 @@ func reset() -> void:
 # --- Internal: term dispatch wrapper ---
 
 ## Wraps the Dispatcher's handle so we can advance the Scheduler immediately
-## when no animation runs (Dispatcher's own + any subscriber's combined). If
-## an animation is in flight by the time `handle` returns synchronously, the
-## ReadinessTracker's eventual `became_free` signal will advance the
-## Scheduler instead.
+## when no animation runs. If an animation is in flight by the time `handle`
+## returns synchronously, the ReadinessTracker's eventual `became_free`
+## signal will advance the Scheduler instead.
 func _on_next_term(term: NL) -> void:
 	_dispatcher.handle(term)
 	if _readiness.is_free():

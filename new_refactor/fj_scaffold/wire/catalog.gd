@@ -1,23 +1,16 @@
-## Catalog: bijective WL ↔ NL translator for slot/card identities, plus
-## eager texture loading. Immutable after _init.
+## Catalog: WireRouter's private wire ↔ NL translator. Built once from the
+## WCL message; used by `Deserializer` / `Serializer` only. Not exposed
+## outside the wire layer.
 ##
 ## **Player-symmetric.** Per protocol §1.3 / §3.1, the catalog is identical
 ## for both clients. SlotIDs are constructed with absolute PIDs read straight
 ## from each slot's `owner` field. The receiving client's own PID is
-## delivered separately via the `pid_assignment` notify and lives outside
-## Catalog.
+## delivered separately via the `pid_assignment` notify and tracked by App.
 ##
-## Catalog vends *canonical* SlotID and CardTemplate instances (one per
-## identity) so downstream code can use them as Dictionary keys with
-## reference equality. Two lookup directions are offered:
-##
-##   wire_name → SlotID         via `slot_for(wire_name)` / `weapon_slot_for(...)`
-##   (kind, side, num) → SlotID via `slot_id_for(side, kind, num)` /
-##                                `weapon_slot_id_for(side, num)`
-##
-## Both return the same canonical instance; the second is what the composer
-## uses at scene-init time to map each `SlotView`'s identity exports to
-## Catalog's slot.
+## SlotID instances Catalog vends are not canonical interns; downstream
+## (Conductor, Renderer) compares slots by structural `SlotID.key()` rather
+## than by reference. Catalog's role here is purely wire-name → typed-NL
+## resolution for serialization.
 
 class_name Catalog extends RefCounted
 
@@ -26,37 +19,23 @@ const CARD_INFO_DIR := "res://fj/assets/card_info/"
 const CARD_ASSET_DIR := "res://fj/assets/images/cards/"
 
 
-# Bijective name ↔ NL maps. Object identity is reliable as a Dictionary key
-# because every SlotID / CardTemplate instance is constructed exactly once
-# below and reused thereafter.
+# Bijective name ↔ NL maps. Used by Deserializer/Serializer only.
 var _slot_by_name: Dictionary = {}            ## Dict[String, SlotID]
-var _name_by_slot: Dictionary = {}            ## Dict[SlotID, String]
+var _name_by_slot: Dictionary = {}            ## Dict[SlotID, String]  (keyed by SlotID.key() since instances aren't canonical)
 var _weapon_slot_by_name: Dictionary = {}     ## Dict[String, SlotID.WeaponZone]
-var _name_by_weapon_slot: Dictionary = {}     ## Dict[SlotID.WeaponZone, String]
+var _name_by_weapon_slot: Dictionary = {}     ## Dict[SlotID.WeaponZone.key(), String]
 var _card_by_name: Dictionary = {}            ## Dict[String, CardTemplate]
 var _name_by_card: Dictionary = {}            ## Dict[CardTemplate, String]
-
-
-# (kind, side, num) → canonical SlotID, populated alongside the wire-name
-# tables. Lets `slot_id_for` be a single dict lookup.
-var _canonical_by_identity: Dictionary = {}            ## Dict[Array, SlotID]
-var _canonical_by_weapon_identity: Dictionary = {}     ## Dict[Array, SlotID.WeaponZone]
-
-
-# Card backs by absolute PID + a neutral back for unowned slots.
-var _back_by_pid: Dictionary = {}    ## Dict[NLEnums.PID, Texture2D]
-var _neutral_back: Texture2D = null
 
 
 func _init(catalog_msg: Dictionary) -> void:
 	_build_slot_tables(catalog_msg.get("slots", {}))
 	_build_weapon_slot_tables(catalog_msg.get("weapon_slots", {}))
-	_load_back_textures()
 	var name_to_image := _load_card_image_map()
 	_build_card_templates(catalog_msg.get("cards", {}), name_to_image)
 
 
-# --- Public API: regular slots ---
+# --- Public API (used by Deserializer / Serializer) ---
 
 func slot_for(wire_name: String) -> SlotID:
 	assert(_slot_by_name.has(wire_name), "Catalog: unknown slot wire: %s" % wire_name)
@@ -64,14 +43,15 @@ func slot_for(wire_name: String) -> SlotID:
 
 
 func wire_for_slot(slot: SlotID) -> String:
-	return _name_by_slot.get(slot, "")
+	return _name_by_slot.get(slot.key(), "")
 
 
 func has_slot(wire_name: String) -> bool:
 	return _slot_by_name.has(wire_name)
 
 
-## All known regular SlotIDs (excludes WeaponZone — those live under weapon_slots).
+## All known regular SlotIDs (used by Deserializer.lift_state to enumerate
+## hidden slots).
 func all_slots() -> Array[SlotID]:
 	var out: Array[SlotID] = []
 	for s in _slot_by_name.values():
@@ -79,35 +59,18 @@ func all_slots() -> Array[SlotID]:
 	return out
 
 
-## Single-direction resolver from (kind, side, num) → canonical SlotID.
-## `num` is consulted only for ws-interior kinds. Composer calls this once
-## per `SlotView` at scene-init time.
-func slot_id_for(p_side: NLEnums.PID, p_kind: NLEnums.SlotKind, p_num: int = 0) -> SlotID:
-	var key := _identity_key(p_side, p_kind, p_num)
-	return _canonical_by_identity.get(key)
-
-
-# --- Public API: weapon slots ---
-
 func weapon_slot_for(wire_name: String) -> SlotID:
 	assert(_weapon_slot_by_name.has(wire_name), "Catalog: unknown weapon slot wire: %s" % wire_name)
 	return _weapon_slot_by_name[wire_name]
 
 
 func wire_for_weapon_slot(slot: SlotID) -> String:
-	return _name_by_weapon_slot.get(slot, "")
+	return _name_by_weapon_slot.get(slot.key(), "")
 
 
 func has_weapon_slot(wire_name: String) -> bool:
 	return _weapon_slot_by_name.has(wire_name)
 
-
-func weapon_slot_id_for(p_side: NLEnums.PID, p_num: int) -> SlotID:
-	var key := _identity_key(p_side, NLEnums.SlotKind.WS, p_num)
-	return _canonical_by_weapon_identity.get(key)
-
-
-# --- Public API: cards + backs ---
 
 func card_for(wire_name: String) -> CardTemplate:
 	assert(_card_by_name.has(wire_name), "Catalog: unknown card name: %s" % wire_name)
@@ -120,14 +83,6 @@ func wire_for_card(template: CardTemplate) -> String:
 
 func has_card(wire_name: String) -> bool:
 	return _card_by_name.has(wire_name)
-
-
-func back_for_pid(pid: NLEnums.PID) -> Texture2D:
-	return _back_by_pid.get(pid)
-
-
-func neutral_back() -> Texture2D:
-	return _neutral_back
 
 
 # --- Slot construction ---
@@ -151,8 +106,7 @@ func _build_slot_tables(slots_dict: Dictionary) -> void:
 			side = _parse_pid(str(owner_v))
 		var slot := SlotID.make(resolved.kind, side, resolved.num)
 		_slot_by_name[str(wire)] = slot
-		_name_by_slot[slot] = str(wire)
-		_canonical_by_identity[_identity_key(side, resolved.kind, resolved.num)] = slot
+		_name_by_slot[slot.key()] = str(wire)
 
 
 func _build_weapon_slot_tables(weapon_slots_dict: Dictionary) -> void:
@@ -170,8 +124,7 @@ func _build_weapon_slot_tables(weapon_slots_dict: Dictionary) -> void:
 		var pid := _parse_pid(str(owner_v))
 		var slot := SlotID.make(NLEnums.SlotKind.WS, pid, num)
 		_weapon_slot_by_name[str(wire)] = slot
-		_name_by_weapon_slot[slot] = str(wire)
-		_canonical_by_weapon_identity[_identity_key(pid, NLEnums.SlotKind.WS, num)] = slot
+		_name_by_weapon_slot[slot.key()] = str(wire)
 
 
 # --- Wire role string → SlotKind ---
@@ -235,18 +188,7 @@ static func _parse_ws_interior(role: String, suffix: String) -> int:
 	return middle.to_int() if middle.is_valid_int() else -1
 
 
-## Composite key for `_canonical_by_identity` and `_canonical_by_weapon_identity`.
-static func _identity_key(side: NLEnums.PID, kind: NLEnums.SlotKind, num: int) -> Array:
-	return [int(kind), int(side), num]
-
-
 # --- Card construction + asset loading ---
-
-func _load_back_textures() -> void:
-	_back_by_pid[NLEnums.PID.RED] = load(CARD_ASSET_DIR + "back_red.png") as Texture2D
-	_back_by_pid[NLEnums.PID.BLUE] = load(CARD_ASSET_DIR + "back_blue.png") as Texture2D
-	_neutral_back = load(CARD_ASSET_DIR + "back1.png") as Texture2D
-
 
 ## Reads every JSON in `card_info/`, building a card_name → front_image
 ## filename map. The card_info JSONs are local-only (not on the wire); they
