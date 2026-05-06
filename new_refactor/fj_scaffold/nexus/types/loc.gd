@@ -1,20 +1,46 @@
-## NL location ADT — where a card is, in NL terms.
-## Wire-agnostic.
+## NL location — where a card is, in NL terms. Wire-agnostic.
+##
+## Tagged-union flattening: one concrete class with a `Type` enum tag plus
+## the union of fields each former-constructor needed. Use the PascalCase
+## static factories (`Loc.Unknown()`, `Loc.Slot(slot, idx)`) for construction.
+##
+## Index convention follows the protocol's: 0 is the top of the pile.
 
-@abstract
 class_name Loc extends RefCounted
 
 
-## Card has no known location (e.g., spawned, drawn from concealment).
-class UnknownLoc extends Loc:
-	pass
+enum Type { UNKNOWN, SLOT }
 
 
-## Card is at index `idx` in slot `slot`. Index convention is the protocol's:
-## 0 is the top of the pile.
-class SlotLoc extends Loc:
-	var slot: SlotID
-	var idx: int
-	func _init(s: SlotID, i: int) -> void:
-		slot = s
-		idx = i
+var type: Type
+var slot: SlotID = null     ## Used when type == SLOT.
+var idx: int = 0            ## Used when type == SLOT.
+
+
+# --- PascalCase factories ---
+
+static func Unknown() -> Loc:
+	var l := Loc.new()
+	l.type = Type.UNKNOWN
+	return l
+
+
+static func Slot(p_slot: SlotID, p_idx: int) -> Loc:
+	var l := Loc.new()
+	l.type = Type.SLOT
+	l.slot = p_slot
+	l.idx = p_idx
+	return l
+
+
+# --- Equality ---
+
+func equals(other: Loc) -> bool:
+	if other == null or other.type != type:
+		return false
+	match type:
+		Type.UNKNOWN:
+			return true
+		Type.SLOT:
+			return slot.equals(other.slot) and idx == other.idx
+	return false

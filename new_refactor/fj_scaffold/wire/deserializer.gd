@@ -45,17 +45,18 @@ static func lift_state(ws: WireState, catalog: Catalog) -> State:
 
 
 static func _lift_slot_info(wsi: WireSlotInfo, catalog: Catalog) -> State.SlotContents:
-	if wsi is WireSlotInfo.WireUnknownInfo:
-		return State.UnknownContents.new()
-	if wsi is WireSlotInfo.WireCountInfo:
-		return State.CountContents.new((wsi as WireSlotInfo.WireCountInfo).n)
-	if wsi is WireSlotInfo.WireFullInfo:
-		var cards: Array[CardInstance] = []
-		for wci in (wsi as WireSlotInfo.WireFullInfo).cards:
-			cards.append(CardInstance.new(catalog.card_for(wci.name), wci.counters))
-		return State.FullContents.new(cards)
-	push_error("Deserializer.lift_state: unknown WireSlotInfo subtype")
-	return State.UnknownContents.new()
+	match wsi.type:
+		WireSlotInfo.Type.UNKNOWN:
+			return State.SlotContents.Unknown()
+		WireSlotInfo.Type.COUNT:
+			return State.SlotContents.Count(wsi.n)
+		WireSlotInfo.Type.FULL:
+			var cards: Array[CardInstance] = []
+			for wci in wsi.cards:
+				cards.append(CardInstance.new(catalog.card_for(wci.name), wci.counters))
+			return State.SlotContents.Full(cards)
+	push_error("Deserializer.lift_state: unknown WireSlotInfo type: %s" % wsi.type)
+	return State.SlotContents.Unknown()
 
 
 ## `events` array → DL list. Skips unparseable / unknown events with a warning.
@@ -73,30 +74,30 @@ static func parse_dl_batch(events: Array, catalog: Catalog) -> Array[DL]:
 static func parse_dl(e: Dictionary, catalog: Catalog) -> DL:
 	match str(e.get("type", "")):
 		"card_moved":
-			return DL.CardMoved.new(
+			return DL.CardMoved(
 				_parse_loc(e.get("source"), e.get("source_index"), catalog),
 				_parse_loc(e.get("dest"), e.get("dest_index"), catalog),
 			)
 		"slot_transferred":
-			return DL.SlotTransferred.new(
+			return DL.SlotTransferred(
 				catalog.slot_for(str(e.get("source", ""))),
 				catalog.slot_for(str(e.get("dest", ""))),
 				int(e.get("count", 0)),
 			)
 		"hp_changed":
-			return DL.HPChanged.new(
+			return DL.HPChanged(
 				parse_pid(str(e.get("target", ""))),
 				int(e.get("old", 0)),
 				int(e.get("new", 0)),
 			)
 		"slot_shuffled":
-			return DL.SlotShuffled.new(catalog.slot_for(str(e.get("slot", ""))))
+			return DL.SlotShuffled(catalog.slot_for(str(e.get("slot", ""))))
 		"player_died":
-			return DL.PlayerDied.new(parse_pid(str(e.get("target", ""))))
+			return DL.PlayerDied(parse_pid(str(e.get("target", ""))))
 		"phase_changed":
-			return DL.PhaseChanged.new(parse_phase(e.get("phase")))
+			return DL.PhaseChanged(parse_phase(e.get("phase")))
 		"game_ended":
-			return DL.GameEnded.new(
+			return DL.GameEnded(
 				parse_outcome(str(e.get("outcome", ""))),
 				_parse_won(e.get("winners", [])),
 			)
@@ -124,15 +125,15 @@ static func parse_notify(d: Dictionary) -> Prompt.Notify:
 static func parse_option(d: Dictionary, catalog: Catalog) -> Option:
 	match str(d.get("type", "")):
 		"text":
-			return Option.TextOption.new(str(d.get("text", "")))
+			return Option.Text(str(d.get("text", "")))
 		"card":
 			var slot_wire := str(d.get("slot", ""))
 			var idx := int(d.get("index", -1))
-			return Option.LocOption.new(Loc.SlotLoc.new(catalog.slot_for(slot_wire), idx))
+			return Option.Loc(Loc.Slot(catalog.slot_for(slot_wire), idx))
 		"slot":
-			return Option.SlotOption.new(catalog.slot_for(str(d.get("name", ""))))
+			return Option.Slot(catalog.slot_for(str(d.get("name", ""))))
 		"weapon_slot":
-			return Option.SlotOption.new(catalog.weapon_slot_for(str(d.get("name", ""))))
+			return Option.Slot(catalog.weapon_slot_for(str(d.get("name", ""))))
 		_:
 			push_warning("Deserializer.parse_option: unknown option type: %s" % d)
 			return null
@@ -192,10 +193,10 @@ static func parse_outcome(s: String) -> NLEnums.Outcome:
 ## (slot_wire, idx) → Loc. Both nullable per protocol §3.2.3 (CardMoved.source).
 static func _parse_loc(slot_wire_v: Variant, idx_v: Variant, catalog: Catalog) -> Loc:
 	if slot_wire_v == null:
-		return Loc.UnknownLoc.new()
+		return Loc.Unknown()
 	var slot := catalog.slot_for(str(slot_wire_v))
 	var idx := -1 if idx_v == null else int(idx_v)
-	return Loc.SlotLoc.new(slot, idx)
+	return Loc.Slot(slot, idx)
 
 
 static func _parse_option_array(a: Array, catalog: Catalog) -> Array[Option]:
@@ -241,7 +242,7 @@ static func _parse_wire_slot_table(raw: Dictionary, catalog: Catalog) -> Diction
 	# Hidden slots (in catalog but absent from view).
 	for slot in catalog.all_slots():
 		if not out.has(slot):
-			out[slot] = WireSlotInfo.WireUnknownInfo.new()
+			out[slot] = WireSlotInfo.Unknown()
 	return out
 
 
@@ -254,11 +255,11 @@ static func _parse_wire_slot_info(v: Variant) -> WireSlotInfo:
 					str((entry as Dictionary).get("name", "")),
 					int((entry as Dictionary).get("counters", 0)),
 				))
-		return WireSlotInfo.WireFullInfo.new(cards)
+		return WireSlotInfo.Full(cards)
 	if v is int or v is float:
-		return WireSlotInfo.WireCountInfo.new(int(v))
+		return WireSlotInfo.Count(int(v))
 	push_warning("Deserializer: unknown slot value shape: %s" % v)
-	return WireSlotInfo.WireUnknownInfo.new()
+	return WireSlotInfo.Unknown()
 
 
 ## winners array (e.g., ["RED"]) → Dict[PID, bool].

@@ -29,27 +29,31 @@ class HP extends RefCounted:
 
 
 ## Tagged union: visible card list, fog-of-war count, or fully hidden.
-## Hidden slots are absent from the wire entirely; here `UnknownContents`
-## makes that state explicit and uniform.
-@abstract
+## Hidden slots are absent from the wire entirely; the UNKNOWN tag makes
+## that state explicit and uniform. Construct via the PascalCase factories.
 class SlotContents extends RefCounted:
-	pass
+	enum Type { UNKNOWN, COUNT, FULL }
 
+	var type: Type
+	var n: int = 0                              ## Used when type == COUNT.
+	var cards: Array[CardInstance] = []         ## Used when type == FULL.
 
-class UnknownContents extends SlotContents:
-	pass
+	static func Unknown() -> SlotContents:
+		var s := SlotContents.new()
+		s.type = Type.UNKNOWN
+		return s
 
+	static func Count(p_n: int) -> SlotContents:
+		var s := SlotContents.new()
+		s.type = Type.COUNT
+		s.n = p_n
+		return s
 
-class CountContents extends SlotContents:
-	var n: int
-	func _init(count: int = 0) -> void:
-		n = count
-
-
-class FullContents extends SlotContents:
-	var cards: Array[CardInstance]
-	func _init(c: Array[CardInstance] = []) -> void:
-		cards = c
+	static func Full(p_cards: Array[CardInstance]) -> SlotContents:
+		var s := SlotContents.new()
+		s.type = Type.FULL
+		s.cards = p_cards
+		return s
 
 
 var role: Dictionary    ## Dict[NLEnums.PID, Role]

@@ -41,7 +41,7 @@ const HP_FLASH_DURATION := 0.25
 @export var blue_theme: Theme
 
 
-signal text_option_selected(option: Option.TextOption)
+signal text_option_selected(option: Option)
 signal animation_started
 signal animation_finished
 
@@ -152,12 +152,11 @@ func bind_prompt(prompt: Prompt) -> void:
 	for child in _text_options_box.get_children():
 		child.queue_free()
 	for opt in prompt.options:
-		if opt is Option.TextOption:
-			var topt := opt as Option.TextOption
+		if opt.type == Option.Type.TEXT:
 			var btn := Button.new()
-			btn.text = topt.text
+			btn.text = opt.text
 			btn.custom_minimum_size = Vector2(0, 36)
-			btn.pressed.connect(func(): text_option_selected.emit(topt))
+			btn.pressed.connect(func(): text_option_selected.emit(opt))
 			_text_options_box.add_child(btn)
 
 

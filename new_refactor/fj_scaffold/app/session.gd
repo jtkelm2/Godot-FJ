@@ -73,7 +73,7 @@ func _wire_scene_inputs() -> void:
 		view.card_hovered.connect(func(_v: SlotView, idx: int): _board.info_panel.preview_card(view, idx))
 		view.card_unhovered.connect(func(_v: SlotView): _board.info_panel.preview_card(null, -1))
 	for ws in _board.find_weapon_slot_views():
-		var ws_id := SlotID.make(NLEnums.SlotKind.WS, ws.side, ws.num)
+		var ws_id := SlotID.WeaponZone(ws.side, ws.num)
 		ws.weapon_slot_clicked.connect(func(_w: WeaponSlotView): _input.on_weapon_slot_clicked(ws_id))
 
 	_board.info_panel.text_option_selected.connect(_input.on_text_option)

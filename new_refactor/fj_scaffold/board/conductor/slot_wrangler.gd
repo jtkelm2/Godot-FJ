@@ -19,17 +19,16 @@ var back_for_slot: Callable    ## (slot_id: SlotID) -> Texture2D
 ## Replace `slot`'s contents with what `contents` describes.
 func populate(slot: SlotView, slot_id: SlotID, contents: State.SlotContents) -> void:
 	slot.clear()
-	if contents is State.UnknownContents:
+	if contents.type == State.SlotContents.Type.UNKNOWN:
 		return
 	var back: Texture2D = back_for_slot.call(slot_id)
-	if contents is State.FullContents:
-		var cards := (contents as State.FullContents).cards
-		for i in cards.size():
-			slot.insert(i, create_card(cards[i].template.front, back, true))
-	elif contents is State.CountContents:
-		var n := (contents as State.CountContents).n
-		for i in n:
-			slot.insert(i, create_card(null, back, false))
+	match contents.type:
+		State.SlotContents.Type.FULL:
+			for i in contents.cards.size():
+				slot.insert(i, create_card(contents.cards[i].template.front, back, true))
+		State.SlotContents.Type.COUNT:
+			for i in contents.n:
+				slot.insert(i, create_card(null, back, false))
 
 
 ## Build a free-standing CardView with the given textures and face.

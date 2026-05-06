@@ -30,24 +30,3 @@ enum Outcome {
 	GOOD_THWARTED,
 	EVIL_THWARTED,
 }
-
-
-## Discrete slot kinds — one value per `SlotID` constructor. Used as the
-## type-safe identity export on `SlotView` and as the dispatch key for
-## `SlotID.make(kind, side, num)`.
-enum SlotKind {
-	GUARD_DECK,
-	HAND,
-	DECK,
-	REFRESH,
-	DISCARD,
-	EQUIPMENT,
-	SIDEBAR,
-	ACTION_FIELD_TOP_DISTANT,
-	ACTION_FIELD_TOP_HIDDEN,
-	ACTION_FIELD_BOTTOM_DISTANT,
-	ACTION_FIELD_BOTTOM_HIDDEN,
-	WS,             ## the weapon slot itself (WeaponZone). Used by Catalog internally.
-	WS_WEAPON,      ## the weapon-card holster (Holster).
-	WS_KILLSTACK,   ## the kill stack (Killstack).
-}

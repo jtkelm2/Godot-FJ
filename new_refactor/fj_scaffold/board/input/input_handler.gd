@@ -60,5 +60,5 @@ func on_weapon_slot_clicked(slot: SlotID) -> void:
 	_adapter.on_weapon_slot_clicked(slot)
 
 
-func on_text_option(option: Option.TextOption) -> void:
+func on_text_option(option: Option) -> void:
 	_adapter.on_text_option(option)

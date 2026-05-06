@@ -33,7 +33,7 @@ signal card_unhovered(slot: SlotView)
 ## is the typed slot identity. `num` is the weapon-slot index for ws-interior
 ## kinds; ignored otherwise.
 @export var side: NLEnums.PID = NLEnums.PID.RED
-@export var kind: NLEnums.SlotKind = NLEnums.SlotKind.HAND
+@export var kind: SlotID.Type = SlotID.Type.HAND
 @export var num: int = 0
 
 

@@ -18,20 +18,20 @@ signal option_candidate(option: Option)
 
 
 func on_card_clicked(slot: SlotID, idx: int) -> void:
-	option_candidate.emit(Option.LocOption.new(Loc.SlotLoc.new(slot, idx)))
+	option_candidate.emit(Option.Loc(Loc.Slot(slot, idx)))
 
 
 func on_slot_clicked(slot: SlotID) -> void:
-	option_candidate.emit(Option.SlotOption.new(slot))
+	option_candidate.emit(Option.Slot(slot))
 
 
 func on_weapon_slot_clicked(slot: SlotID) -> void:
 	# The weapon_slots catalog and the regular slots catalog are disjoint;
-	# the same Option.SlotOption variant carries either via the SlotID it
-	# wraps. (The Serializer disambiguates at the wire boundary by checking
-	# which Catalog table holds the SlotID.)
-	option_candidate.emit(Option.SlotOption.new(slot))
+	# the same Option.Slot variant carries either via the SlotID it wraps.
+	# (The Serializer disambiguates at the wire boundary by checking which
+	# Catalog table holds the SlotID.)
+	option_candidate.emit(Option.Slot(slot))
 
 
-func on_text_option(option: Option.TextOption) -> void:
+func on_text_option(option: Option) -> void:
 	option_candidate.emit(option)

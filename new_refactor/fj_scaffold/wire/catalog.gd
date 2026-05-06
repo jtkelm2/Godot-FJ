@@ -8,7 +8,7 @@
 ## delivered separately via the `pid_assignment` notify and tracked by App.
 ##
 ## SlotID instances Catalog vends are not canonical interns; downstream
-## (Conductor, Renderer) compares slots by structural `SlotID.key()` rather
+## (Conductor, Renderer) compares slots by structural `SlotID.equals` rather
 ## than by reference. Catalog's role here is purely wire-name → typed-NL
 ## resolution for serialization.
 
@@ -21,9 +21,9 @@ const CARD_ASSET_DIR := "res://fj/assets/images/cards/"
 
 # Bijective name ↔ NL maps. Used by Deserializer/Serializer only.
 var _slot_by_name: Dictionary = {}            ## Dict[String, SlotID]
-var _name_by_slot: Dictionary = {}            ## Dict[SlotID, String]  (keyed by SlotID.key() since instances aren't canonical)
-var _weapon_slot_by_name: Dictionary = {}     ## Dict[String, SlotID.WeaponZone]
-var _name_by_weapon_slot: Dictionary = {}     ## Dict[SlotID.WeaponZone.key(), String]
+var _name_by_slot: Dictionary = {}            ## Dict[SlotID, String]  (linear-search by SlotID.equals)
+var _weapon_slot_by_name: Dictionary = {}     ## Dict[String, SlotID]  (Type.WS)
+var _name_by_weapon_slot: Dictionary = {}     ## Dict[SlotID, String]  (linear-search by SlotID.equals)
 var _card_by_name: Dictionary = {}            ## Dict[String, CardTemplate]
 var _name_by_card: Dictionary = {}            ## Dict[CardTemplate, String]
 
@@ -43,7 +43,10 @@ func slot_for(wire_name: String) -> SlotID:
 
 
 func wire_for_slot(slot: SlotID) -> String:
-	return _name_by_slot.get(slot.key(), "")
+	for k in _name_by_slot:
+		if (k as SlotID).equals(slot):
+			return _name_by_slot[k]
+	return ""
 
 
 func has_slot(wire_name: String) -> bool:
@@ -65,7 +68,10 @@ func weapon_slot_for(wire_name: String) -> SlotID:
 
 
 func wire_for_weapon_slot(slot: SlotID) -> String:
-	return _name_by_weapon_slot.get(slot.key(), "")
+	for k in _name_by_weapon_slot:
+		if (k as SlotID).equals(slot):
+			return _name_by_weapon_slot[k]
+	return ""
 
 
 func has_weapon_slot(wire_name: String) -> bool:
@@ -93,11 +99,11 @@ func _build_slot_tables(slots_dict: Dictionary) -> void:
 		var owner_v: Variant = info.get("owner")
 		var role := str(info.get("role", ""))
 		var resolved := _parse_wire_role(role)
-		if resolved.kind < 0:
+		if not resolved.recognized:
 			push_warning("Catalog: unrecognized slot role '%s' (wire=%s)" % [role, wire])
 			continue
 		var side: NLEnums.PID
-		if resolved.kind == NLEnums.SlotKind.GUARD_DECK:
+		if resolved.kind == SlotID.Type.GUARD_DECK:
 			side = NLEnums.PID.RED  # ignored by GuardDeck constructor
 		elif owner_v == null:
 			push_warning("Catalog: non-shared slot with null owner (wire=%s)" % wire)
@@ -106,7 +112,7 @@ func _build_slot_tables(slots_dict: Dictionary) -> void:
 			side = _parse_pid(str(owner_v))
 		var slot := SlotID.make(resolved.kind, side, resolved.num)
 		_slot_by_name[str(wire)] = slot
-		_name_by_slot[slot.key()] = str(wire)
+		_name_by_slot[slot] = str(wire)
 
 
 func _build_weapon_slot_tables(weapon_slots_dict: Dictionary) -> void:
@@ -122,43 +128,47 @@ func _build_weapon_slot_tables(weapon_slots_dict: Dictionary) -> void:
 			push_warning("Catalog: weapon slot with null owner (wire=%s); skipping" % wire)
 			continue
 		var pid := _parse_pid(str(owner_v))
-		var slot := SlotID.make(NLEnums.SlotKind.WS, pid, num)
+		var slot := SlotID.WeaponZone(pid, num)
 		_weapon_slot_by_name[str(wire)] = slot
-		_name_by_weapon_slot[slot.key()] = str(wire)
+		_name_by_weapon_slot[slot] = str(wire)
 
 
-# --- Wire role string → SlotKind ---
+# --- Wire role string → SlotID.Type ---
 
 class _WireRole extends RefCounted:
-	var kind: int = -1     ## NLEnums.SlotKind value, or -1 if unparseable.
+	var recognized: bool = false
+	var kind: SlotID.Type = SlotID.Type.HAND     ## Meaningful only when recognized.
 	var num: int = 0
-	func _init(k: int = -1, n: int = 0) -> void:
-		kind = k
-		num = n
+	static func known(k: SlotID.Type, n: int = 0) -> _WireRole:
+		var r := _WireRole.new()
+		r.recognized = true
+		r.kind = k
+		r.num = n
+		return r
 
 
 ## Parses a slot's wire `role` string into a `(kind, num)` pair. Internal
 ## to Catalog — wire role strings live here, not in NL types.
 static func _parse_wire_role(role: String) -> _WireRole:
 	match role:
-		"guard_deck":                  return _WireRole.new(NLEnums.SlotKind.GUARD_DECK)
-		"hand":                        return _WireRole.new(NLEnums.SlotKind.HAND)
-		"deck":                        return _WireRole.new(NLEnums.SlotKind.DECK)
-		"refresh":                     return _WireRole.new(NLEnums.SlotKind.REFRESH)
-		"discard":                     return _WireRole.new(NLEnums.SlotKind.DISCARD)
-		"equipment":                   return _WireRole.new(NLEnums.SlotKind.EQUIPMENT)
-		"sidebar":                     return _WireRole.new(NLEnums.SlotKind.SIDEBAR)
-		"action_field_top_distant":    return _WireRole.new(NLEnums.SlotKind.ACTION_FIELD_TOP_DISTANT)
-		"action_field_top_hidden":     return _WireRole.new(NLEnums.SlotKind.ACTION_FIELD_TOP_HIDDEN)
-		"action_field_bottom_distant": return _WireRole.new(NLEnums.SlotKind.ACTION_FIELD_BOTTOM_DISTANT)
-		"action_field_bottom_hidden":  return _WireRole.new(NLEnums.SlotKind.ACTION_FIELD_BOTTOM_HIDDEN)
+		"guard_deck":                  return _WireRole.known(SlotID.Type.GUARD_DECK)
+		"hand":                        return _WireRole.known(SlotID.Type.HAND)
+		"deck":                        return _WireRole.known(SlotID.Type.DECK)
+		"refresh":                     return _WireRole.known(SlotID.Type.REFRESH)
+		"discard":                     return _WireRole.known(SlotID.Type.DISCARD)
+		"equipment":                   return _WireRole.known(SlotID.Type.EQUIPMENT)
+		"sidebar":                     return _WireRole.known(SlotID.Type.SIDEBAR)
+		"action_field_top_distant":    return _WireRole.known(SlotID.Type.ACTION_FIELD_TOP_DISTANT)
+		"action_field_top_hidden":     return _WireRole.known(SlotID.Type.ACTION_FIELD_TOP_HIDDEN)
+		"action_field_bottom_distant": return _WireRole.known(SlotID.Type.ACTION_FIELD_BOTTOM_DISTANT)
+		"action_field_bottom_hidden":  return _WireRole.known(SlotID.Type.ACTION_FIELD_BOTTOM_HIDDEN)
 	if role.begins_with("ws_"):
 		var num := _parse_ws_interior(role, "weapon")
 		if num >= 0:
-			return _WireRole.new(NLEnums.SlotKind.WS_WEAPON, num)
+			return _WireRole.known(SlotID.Type.WS_WEAPON, num)
 		num = _parse_ws_interior(role, "killstack")
 		if num >= 0:
-			return _WireRole.new(NLEnums.SlotKind.WS_KILLSTACK, num)
+			return _WireRole.known(SlotID.Type.WS_KILLSTACK, num)
 	return _WireRole.new()
 
 

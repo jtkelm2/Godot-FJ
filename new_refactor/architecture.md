@@ -9,6 +9,8 @@ Canonical reference for abstractions used throughout the `fj_scaffold/` tree. Ev
 - **`DiffLang` (DL)** — incremental game-state events. `CardMoved`, `SlotTransferred`, `SlotShuffled`, `HPChanged`, `PhaseChanged`, `PlayerDied`, `GameEnded` (the seven protocol §3.2.3 types; extend as the protocol grows). DL values reference NL primitives only (`SlotID`, `Loc`, `PID`, `Phase`, `Outcome`, `CardTemplate`) — never wire-name strings.
 
 **NL is wire-agnostic.** The same NL types serve any composition: a network client, a local-multiplayer in-process player, a replay engine, an AI driver, a unit test. Wire concerns (string identifiers, JSON shape) live exclusively in WL types and the `wire/` modules.
+
+**Tagged-union convention.** Every former-ADT in NL (and the parallel `WireSlotInfo` in WL) is a single concrete class with a nested `Type` enum tag plus a union of fields each variant needs. PascalCase static factories (`SlotID.Hand(side)`, `Loc.Slot(slot, idx)`, `DL.CardMoved(orig, dest)`, …) are the construction surface. Dispatch via `match value.type: Foo.Type.A: …`. Structural equality lives on `equals(other)`; SlotIDs are NOT interned, so `Dict[SlotID, V]` consumers write their own private linear-search helpers using `equals`. See `nexus/types/README.md` for the full convention.
 - **`StateLang` (SL)** — full-state snapshots. Map from slot wire name to `CardDescription` list.
 - **`PromptLang` (PL)** — request for a player decision: text, options, context.
 

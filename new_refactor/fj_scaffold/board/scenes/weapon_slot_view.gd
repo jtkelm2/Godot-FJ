@@ -47,10 +47,10 @@ func _ready() -> void:
 	# saves the .tscn author from setting them on every interior twice.
 	holster.side = side
 	holster.num = num
-	holster.kind = NLEnums.SlotKind.WS_WEAPON
+	holster.kind = SlotID.Type.WS_WEAPON
 	killstack.side = side
 	killstack.num = num
-	killstack.kind = NLEnums.SlotKind.WS_KILLSTACK
+	killstack.kind = SlotID.Type.WS_KILLSTACK
 
 	# Composite-level click: holster's empty-area `slot_clicked` is the
 	# "I selected this weapon slot" gesture. Killstack's `slot_clicked` is

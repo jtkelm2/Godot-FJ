@@ -3,6 +3,11 @@
 ## and loads its own card backs. Knows nothing of Catalog or any wire-side
 ## component.
 ##
+## SlotID-keyed lookups go through private linear-search helpers
+## (`_find_view` / `_find_view_ws` / `_find_contents`) using
+## `SlotID.equals` — SlotIDs aren't interned, so reference-equality dict
+## lookup wouldn't find them.
+##
 ## Composer-set configuration (set on Dispatcher fields before the node
 ## enters the tree):
 ##   slot_views                  — Array[SlotView]
@@ -50,8 +55,8 @@ var card_factory: Callable
 # --- Internal ---
 
 var _wrangler: SlotWrangler
-var _slot_for: Dictionary = {}            ## Dict[Array[3], SlotView] keyed by SlotID.key()
-var _weapon_slot_for: Dictionary = {}     ## Dict[Array[3], WeaponSlotView] keyed by SlotID.key()
+var _slot_for: Dictionary = {}            ## Dict[SlotID, SlotView]
+var _weapon_slot_for: Dictionary = {}     ## Dict[SlotID, WeaponSlotView]
 var _back_by_pid: Dictionary = {}         ## Dict[NLEnums.PID, Texture2D]
 var _neutral_back: Texture2D = null
 
@@ -80,25 +85,17 @@ func handle(term: NL) -> void:
 # --- DL handling ---
 
 func _handle_dl(ev: DL) -> void:
-	if ev is DL.CardMoved:
-		_animate_card_moved(ev as DL.CardMoved)
-	elif ev is DL.SlotTransferred:
-		_animate_slot_transferred(ev as DL.SlotTransferred)
-	elif ev is DL.SlotShuffled:
-		_animate_shuffle(ev as DL.SlotShuffled)
-	elif ev is DL.HPChanged:
-		var hpc := ev as DL.HPChanged
-		hp_changed.emit(hpc.target, hpc.old_hp, hpc.new_hp)
-	elif ev is DL.PhaseChanged:
-		phase_changed.emit((ev as DL.PhaseChanged).phase)
-	elif ev is DL.PlayerDied:
-		player_died.emit((ev as DL.PlayerDied).target)
-	elif ev is DL.GameEnded:
-		var ge := ev as DL.GameEnded
-		game_ended.emit(ge.outcome, ge.won)
+	match ev.type:
+		DL.Type.CARD_MOVED:       _animate_card_moved(ev)
+		DL.Type.SLOT_TRANSFERRED: _animate_slot_transferred(ev)
+		DL.Type.SLOT_SHUFFLED:    _animate_shuffle(ev)
+		DL.Type.HP_CHANGED:       hp_changed.emit(ev.target, ev.old_hp, ev.new_hp)
+		DL.Type.PHASE_CHANGED:    phase_changed.emit(ev.phase)
+		DL.Type.PLAYER_DIED:      player_died.emit(ev.target)
+		DL.Type.GAME_ENDED:       game_ended.emit(ev.outcome, ev.won)
 
 
-func _animate_card_moved(ev: DL.CardMoved) -> void:
+func _animate_card_moved(ev: DL) -> void:
 	var src_slot: SlotView = _slot_view_of_loc(ev.orig)
 	var dst_slot: SlotView = _slot_view_of_loc(ev.dest)
 	if src_slot == null and dst_slot == null:
@@ -114,7 +111,7 @@ func _animate_card_moved(ev: DL.CardMoved) -> void:
 	if src_slot != null and src_idx >= 0 and src_idx < src_slot.count():
 		flying = src_slot.remove(src_idx)
 	if flying == null:
-		var anchor_id: SlotID = _slot_id_of_loc(ev.orig if ev.orig is Loc.SlotLoc else ev.dest)
+		var anchor_id: SlotID = _slot_id_of_loc(ev.orig if ev.orig.type == Loc.Type.SLOT else ev.dest)
 		flying = _wrangler.create_card(null, _back_for_slot(anchor_id), false)
 
 	overlay.add_child(flying)
@@ -134,14 +131,14 @@ func _animate_card_moved(ev: DL.CardMoved) -> void:
 	animation_finished.emit()
 
 
-func _animate_slot_transferred(ev: DL.SlotTransferred) -> void:
-	var src_slot: SlotView = _slot_for.get(ev.orig.key())
-	var dst_slot: SlotView = _slot_for.get(ev.dest.key())
+func _animate_slot_transferred(ev: DL) -> void:
+	var src_slot: SlotView = _find_view(ev.orig_slot)
+	var dst_slot: SlotView = _find_view(ev.dest_slot)
 	if src_slot == null or dst_slot == null:
 		return
 
 	src_slot.clear()
-	var flying := _wrangler.create_card(null, _back_for_slot(ev.orig), false)
+	var flying := _wrangler.create_card(null, _back_for_slot(ev.orig_slot), false)
 	overlay.add_child(flying)
 	flying.position = _slot_center_global(src_slot) - flying.size * 0.5
 
@@ -156,8 +153,8 @@ func _animate_slot_transferred(ev: DL.SlotTransferred) -> void:
 	animation_finished.emit()
 
 
-func _animate_shuffle(ev: DL.SlotShuffled) -> void:
-	var slot: SlotView = _slot_for.get(ev.slot.key())
+func _animate_shuffle(ev: DL) -> void:
+	var slot: SlotView = _find_view(ev.slot)
 	if slot == null:
 		return
 	var origin := slot.position
@@ -173,20 +170,19 @@ func _animate_shuffle(ev: DL.SlotShuffled) -> void:
 # --- State / Prompt synchronous Renderer work ---
 
 func _full_rebuild(state: State) -> void:
-	for slot_key in _slot_for:
-		var view: SlotView = _slot_for[slot_key]
-		var slot_id := SlotID.make(slot_key[0], slot_key[1], slot_key[2])
-		var contents: State.SlotContents = _find_contents(state.slots, slot_key)
+	for slot_id in _slot_for:
+		var view: SlotView = _slot_for[slot_id]
+		var contents: State.SlotContents = _find_contents(state.slots, slot_id)
 		if contents == null:
-			contents = State.UnknownContents.new()
+			contents = State.SlotContents.Unknown()
 		_wrangler.populate(view, slot_id, contents)
 
 
 func _apply_prompt(prompt: Prompt) -> void:
-	for slot_key in _slot_for:
-		(_slot_for[slot_key] as SlotView).set_highlight(HighlightLevel.Level.LOWLIGHT)
-	for ws_key in _weapon_slot_for:
-		(_weapon_slot_for[ws_key] as WeaponSlotView).set_highlight(HighlightLevel.Level.LOWLIGHT)
+	for slot_id in _slot_for:
+		(_slot_for[slot_id] as SlotView).set_highlight(HighlightLevel.Level.LOWLIGHT)
+	for ws_id in _weapon_slot_for:
+		(_weapon_slot_for[ws_id] as WeaponSlotView).set_highlight(HighlightLevel.Level.LOWLIGHT)
 
 	for opt in prompt.options:
 		_apply_option_highlight(opt, HighlightLevel.Level.HIGHLIGHT)
@@ -195,31 +191,33 @@ func _apply_prompt(prompt: Prompt) -> void:
 
 
 func _apply_option_highlight(opt: Option, level: HighlightLevel.Level) -> void:
-	if opt is Option.SlotOption:
-		var s := (opt as Option.SlotOption).slot
-		var k := s.key()
-		if _slot_for.has(k):
-			(_slot_for[k] as SlotView).set_highlight(level)
-		elif _weapon_slot_for.has(k):
-			(_weapon_slot_for[k] as WeaponSlotView).set_highlight(level)
-	elif opt is Option.LocOption:
-		var loc := (opt as Option.LocOption).loc
-		if loc is Loc.SlotLoc:
-			var sl := loc as Loc.SlotLoc
-			var view: SlotView = _slot_for.get(sl.slot.key())
+	match opt.type:
+		Option.Type.SLOT:
+			var view: SlotView = _find_view(opt.slot)
 			if view != null:
-				var card := view.get_card(sl.idx)
-				if card != null:
-					card.set_highlight(level)
+				view.set_highlight(level)
+			else:
+				var ws: WeaponSlotView = _find_view_ws(opt.slot)
+				if ws != null:
+					ws.set_highlight(level)
+		Option.Type.LOC:
+			if opt.loc.type == Loc.Type.SLOT:
+				var view: SlotView = _find_view(opt.loc.slot)
+				if view != null:
+					var card := view.get_card(opt.loc.idx)
+					if card != null:
+						card.set_highlight(level)
 
 
 # --- Lookup-dict + back-texture construction (run once in _ready) ---
 
 func _build_lookup_dicts() -> void:
 	for view in slot_views:
-		_slot_for[_view_key(view)] = view
+		var sid := SlotID.make(view.kind, view.side, view.num)
+		_slot_for[sid] = view
 	for ws in weapon_slot_views:
-		_weapon_slot_for[_view_key_weapon(ws)] = ws
+		var sid := SlotID.WeaponZone(ws.side, ws.num)
+		_weapon_slot_for[sid] = ws
 
 
 func _load_back_textures() -> void:
@@ -229,46 +227,54 @@ func _load_back_textures() -> void:
 
 
 func _back_for_slot(slot_id: SlotID) -> Texture2D:
-	if slot_id is SlotID.GuardDeck:
+	if slot_id.type == SlotID.Type.GUARD_DECK:
 		return _neutral_back
-	# All non-GuardDeck SlotIDs carry `side`.
 	return _back_by_pid.get(slot_id.side)
 
 
-# --- Helpers ---
+# --- SlotID-keyed lookup helpers (linear search via SlotID.equals) ---
 
-static func _view_key(view: SlotView) -> Array:
-	return [int(view.kind), int(view.side), view.num]
+func _find_view(target: SlotID) -> SlotView:
+	for sid in _slot_for:
+		if (sid as SlotID).equals(target):
+			return _slot_for[sid]
+	return null
 
 
-static func _view_key_weapon(ws: WeaponSlotView) -> Array:
-	return [int(NLEnums.SlotKind.WS), int(ws.side), ws.num]
+func _find_view_ws(target: SlotID) -> WeaponSlotView:
+	for sid in _weapon_slot_for:
+		if (sid as SlotID).equals(target):
+			return _weapon_slot_for[sid]
+	return null
 
 
-## state.slots is keyed by SlotID instances (whose `key()` matches our keys).
-## We look up by structural key rather than instance.
-static func _find_contents(slots: Dictionary, slot_key: Array) -> State.SlotContents:
+## Linear-search lookup against a Dict[SlotID, V] using SlotID.equals.
+## Used for state.slots, whose keys come from a different construction site
+## than ours (Deserializer's vs. Dispatcher._ready's).
+static func _find_contents(slots: Dictionary, target: SlotID) -> State.SlotContents:
 	for k in slots:
-		if (k as SlotID).key() == slot_key:
+		if (k as SlotID).equals(target):
 			return slots[k]
 	return null
 
 
+# --- Helpers ---
+
 func _slot_view_of_loc(loc: Loc) -> SlotView:
-	if loc is Loc.SlotLoc:
-		return _slot_for.get((loc as Loc.SlotLoc).slot.key())
+	if loc.type == Loc.Type.SLOT:
+		return _find_view(loc.slot)
 	return null
 
 
 func _idx_of_loc(loc: Loc) -> int:
-	if loc is Loc.SlotLoc:
-		return (loc as Loc.SlotLoc).idx
+	if loc.type == Loc.Type.SLOT:
+		return loc.idx
 	return -1
 
 
 func _slot_id_of_loc(loc: Loc) -> SlotID:
-	if loc is Loc.SlotLoc:
-		return (loc as Loc.SlotLoc).slot
+	if loc.type == Loc.Type.SLOT:
+		return loc.slot
 	return null
 
 

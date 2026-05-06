@@ -10,29 +10,27 @@ class_name Serializer extends RefCounted
 
 ## NL Option → wire option dict.
 static func serialize_option(opt: Option, catalog: Catalog) -> Dictionary:
-	if opt is Option.TextOption:
-		return {"type": "text", "text": (opt as Option.TextOption).text}
-	if opt is Option.LocOption:
-		var loc := (opt as Option.LocOption).loc
-		if loc is Loc.SlotLoc:
-			var sl := loc as Loc.SlotLoc
-			return {
-				"type": "card",
-				"slot": catalog.wire_for_slot(sl.slot),
-				"index": sl.idx,
-			}
-		push_error("Serializer.serialize_option: LocOption with non-SlotLoc cannot be echoed")
-		return {}
-	if opt is Option.SlotOption:
-		var s := (opt as Option.SlotOption).slot
-		# A SlotOption can carry either a regular slot or a weapon slot — the
-		# wire form differs ("slot" vs "weapon_slot"). Distinguish by which
-		# Catalog table the SlotID is registered in.
-		var ws_wire := catalog.wire_for_weapon_slot(s)
-		if not ws_wire.is_empty():
-			return {"type": "weapon_slot", "name": ws_wire}
-		return {"type": "slot", "name": catalog.wire_for_slot(s)}
-	push_error("Serializer.serialize_option: unknown Option subtype: %s" % opt)
+	match opt.type:
+		Option.Type.TEXT:
+			return {"type": "text", "text": opt.text}
+		Option.Type.LOC:
+			if opt.loc.type == Loc.Type.SLOT:
+				return {
+					"type": "card",
+					"slot": catalog.wire_for_slot(opt.loc.slot),
+					"index": opt.loc.idx,
+				}
+			push_error("Serializer.serialize_option: Option.Loc with non-Slot Loc cannot be echoed")
+			return {}
+		Option.Type.SLOT:
+			# An Option.Slot can carry either a regular slot or a weapon slot —
+			# the wire form differs ("slot" vs "weapon_slot"). Distinguish by
+			# which Catalog table the SlotID is registered in.
+			var ws_wire := catalog.wire_for_weapon_slot(opt.slot)
+			if not ws_wire.is_empty():
+				return {"type": "weapon_slot", "name": ws_wire}
+			return {"type": "slot", "name": catalog.wire_for_slot(opt.slot)}
+	push_error("Serializer.serialize_option: unknown Option type: %s" % opt.type)
 	return {}
 
 
