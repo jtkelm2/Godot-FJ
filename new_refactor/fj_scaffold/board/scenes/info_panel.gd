@@ -103,7 +103,7 @@ func mark_player_died(target: NLEnums.PID) -> void:
 	show_notify("%s died" % ("You" if target == my_pid else "Opponent"))
 
 
-func set_game_result(outcome: NLEnums.Outcome, won: Dictionary) -> void:
+func set_game_result(outcome: NLEnums.Outcome, won: Dictionary[NLEnums.PID, bool]) -> void:
 	var outcome_str := _outcome_str(outcome)
 	var i_won := bool(won.get(my_pid, false))
 	var no_winners := true

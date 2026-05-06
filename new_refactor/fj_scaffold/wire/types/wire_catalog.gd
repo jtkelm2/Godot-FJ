@@ -16,6 +16,11 @@ class WireSlotEntry extends RefCounted:
 		role = r
 
 
-var cards: Dictionary           ## Dict[String, WireCatalogEntry] — keyed by card name
-var slots: Dictionary           ## Dict[String, WireSlotEntry]    — keyed by slot wire name
-var weapon_slots: Dictionary    ## Dict[String, WireSlotEntry]    — keyed by weapon slot wire name
+## NOTE: `WireCatalog` is currently unused — Catalog parses raw JSON directly
+## in `wire/catalog.gd` rather than going through this typed envelope. The
+## dict values were originally meant to be `WireCatalogEntry` / `WireSlotEntry`
+## but those typed shapes never materialized; they're left as untyped raw JSON
+## here. Kept for protocol-document parity per `WireLang = … | WireCatalog`.
+var cards: Dictionary[String, Variant] = {}           ## Keyed by card name.
+var slots: Dictionary[String, Variant] = {}           ## Keyed by slot wire name.
+var weapon_slots: Dictionary[String, Variant] = {}    ## Keyed by weapon slot wire name.

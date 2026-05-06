@@ -11,6 +11,13 @@
 ## (Conductor, Renderer) compares slots by structural `SlotID.equals` rather
 ## than by reference. Catalog's role here is purely wire-name → typed-NL
 ## resolution for serialization.
+##
+## **Untyped Dictionary at the wire boundary.** `_init`'s `catalog_msg`,
+## `_build_*_tables`'s parameters, and the per-slot `info` locals all carry
+## raw JSON-shaped data from `JSON.parse_string`. They stay `Dictionary` (not
+## `Dictionary[String, Variant]`) because the source is runtime-untyped and
+## we already validate per-key with `.get(name, default)`. Internal dicts we
+## construct here ARE typed strictly (see field declarations above).
 
 class_name Catalog extends RefCounted
 
@@ -20,12 +27,15 @@ const CARD_ASSET_DIR := "res://fj/assets/images/cards/"
 
 
 # Bijective name ↔ NL maps. Used by Deserializer/Serializer only.
-var _slot_by_name: Dictionary = {}            ## Dict[String, SlotID]
-var _name_by_slot: Dictionary = {}            ## Dict[SlotID, String]  (linear-search by SlotID.equals)
-var _weapon_slot_by_name: Dictionary = {}     ## Dict[String, SlotID]  (Type.WS)
-var _name_by_weapon_slot: Dictionary = {}     ## Dict[SlotID, String]  (linear-search by SlotID.equals)
-var _card_by_name: Dictionary = {}            ## Dict[String, CardTemplate]
-var _name_by_card: Dictionary = {}            ## Dict[CardTemplate, String]
+## SlotID-keyed dicts are linear-searched via SlotID.equals (SlotIDs aren't
+## interned); the reverse direction is a native dict get because String keys
+## are value-equal.
+var _slot_by_name: Dictionary[String, SlotID] = {}
+var _name_by_slot: Dictionary[SlotID, String] = {}
+var _weapon_slot_by_name: Dictionary[String, SlotID] = {}     ## SlotID.Type.WS only.
+var _name_by_weapon_slot: Dictionary[SlotID, String] = {}
+var _card_by_name: Dictionary[String, CardTemplate] = {}
+var _name_by_card: Dictionary[CardTemplate, String] = {}
 
 
 func _init(catalog_msg: Dictionary) -> void:
@@ -44,7 +54,7 @@ func slot_for(wire_name: String) -> SlotID:
 
 func wire_for_slot(slot: SlotID) -> String:
 	for k in _name_by_slot:
-		if (k as SlotID).equals(slot):
+		if k.equals(slot):
 			return _name_by_slot[k]
 	return ""
 
@@ -69,7 +79,7 @@ func weapon_slot_for(wire_name: String) -> SlotID:
 
 func wire_for_weapon_slot(slot: SlotID) -> String:
 	for k in _name_by_weapon_slot:
-		if (k as SlotID).equals(slot):
+		if k.equals(slot):
 			return _name_by_weapon_slot[k]
 	return ""
 
@@ -203,8 +213,8 @@ static func _parse_ws_interior(role: String, suffix: String) -> int:
 ## Reads every JSON in `card_info/`, building a card_name → front_image
 ## filename map. The card_info JSONs are local-only (not on the wire); they
 ## supply the asset filenames that the wire catalog references by name.
-func _load_card_image_map() -> Dictionary:
-	var map: Dictionary = {}
+func _load_card_image_map() -> Dictionary[String, String]:
+	var map: Dictionary[String, String] = {}
 	var dir := DirAccess.open(CARD_INFO_DIR)
 	if dir == null:
 		push_error("Catalog: failed to open card info directory: %s" % CARD_INFO_DIR)
@@ -218,7 +228,7 @@ func _load_card_image_map() -> Dictionary:
 			if file:
 				var json := JSON.new()
 				if json.parse(file.get_as_text()) == OK:
-					var data: Dictionary = json.data
+					var data: Dictionary = json.data  # raw JSON
 					if data.has("name") and data.has("front_image"):
 						map[str(data["name"])] = str(data["front_image"])
 				file.close()
@@ -226,7 +236,7 @@ func _load_card_image_map() -> Dictionary:
 	return map
 
 
-func _build_card_templates(cards_dict: Dictionary, name_to_image: Dictionary) -> void:
+func _build_card_templates(cards_dict: Dictionary, name_to_image: Dictionary[String, String]) -> void:
 	for wire_name in cards_dict:
 		var entry: Dictionary = cards_dict[wire_name]
 		var t := _make_card_template(str(wire_name), entry, name_to_image)
@@ -234,7 +244,7 @@ func _build_card_templates(cards_dict: Dictionary, name_to_image: Dictionary) ->
 		_name_by_card[t] = str(wire_name)
 
 
-func _make_card_template(wire_name: String, entry: Dictionary, name_to_image: Dictionary) -> CardTemplate:
+func _make_card_template(wire_name: String, entry: Dictionary, name_to_image: Dictionary[String, String]) -> CardTemplate:
 	var t := CardTemplate.new()
 	t.template_name = wire_name
 	t.display_name = str(entry.get("display_name", ""))
@@ -247,6 +257,9 @@ func _make_card_template(wire_name: String, entry: Dictionary, name_to_image: Di
 		t.has_level = true
 		t.level = int(lvl)
 
+	# `as Array` narrows the Variant return of dict.get; `as NLEnums.CardType`
+	# converts `_parse_card_type`'s int (with -1 sentinel for unknown) into
+	# the enum type for the typed Array. Both casts are necessary.
 	var types: Array[NLEnums.CardType] = []
 	for type_str in (entry.get("types", []) as Array):
 		var ct := _parse_card_type(str(type_str))

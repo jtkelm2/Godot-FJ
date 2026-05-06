@@ -43,7 +43,7 @@ var card_factory: Callable
 signal hp_changed(target: NLEnums.PID, old: int, new: int)
 signal phase_changed(phase: NLEnums.Phase)
 signal player_died(target: NLEnums.PID)
-signal game_ended(outcome: NLEnums.Outcome, won: Dictionary)
+signal game_ended(outcome: NLEnums.Outcome, won: Dictionary[NLEnums.PID, bool])
 signal state_rebuilt(state: State)
 signal prompt_applied(prompt: Prompt)
 

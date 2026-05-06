@@ -69,7 +69,7 @@ static func _apply(state: State, ev: DL) -> void:
 			_apply_slot_transferred(state, ev)
 		DL.Type.HP_CHANGED:
 			if state.hp.has(ev.target):
-				(state.hp[ev.target] as State.HP).val = ev.new_hp
+				state.hp[ev.target].val = ev.new_hp
 		DL.Type.PHASE_CHANGED:
 			state.phase = ev.phase
 		# SLOT_SHUFFLED, PLAYER_DIED, GAME_ENDED: no slot mutation needed for projection.
@@ -114,10 +114,10 @@ static func _apply_slot_transferred(state: State, ev: DL) -> void:
 
 # --- Cloning helpers ---
 
-static func _clone_slots(slots: Dictionary) -> Dictionary:
-	var out: Dictionary = {}
+static func _clone_slots(slots: Dictionary[SlotID, State.SlotContents]) -> Dictionary[SlotID, State.SlotContents]:
+	var out: Dictionary[SlotID, State.SlotContents] = {}
 	for slot in slots:
-		var c: State.SlotContents = slots[slot]
+		var c := slots[slot]
 		match c.type:
 			State.SlotContents.Type.UNKNOWN:
 				out[slot] = State.SlotContents.Unknown()
@@ -130,17 +130,17 @@ static func _clone_slots(slots: Dictionary) -> Dictionary:
 	return out
 
 
-static func _clone_hp(hp: Dictionary) -> Dictionary:
-	var out: Dictionary = {}
+static func _clone_hp(hp: Dictionary[NLEnums.PID, State.HP]) -> Dictionary[NLEnums.PID, State.HP]:
+	var out: Dictionary[NLEnums.PID, State.HP] = {}
 	for pid in hp:
-		var h: State.HP = hp[pid]
+		var h := hp[pid]
 		out[pid] = State.HP.new(h.val, h.cap, h.floor)
 	return out
 
 
 # --- Comparison ---
 
-static func _compare_slots(expected: Dictionary, actual: Dictionary) -> Array[String]:
+static func _compare_slots(expected: Dictionary[SlotID, State.SlotContents], actual: Dictionary[SlotID, State.SlotContents]) -> Array[String]:
 	var diffs: Array[String] = []
 	for slot in expected:
 		if not actual.has(slot):

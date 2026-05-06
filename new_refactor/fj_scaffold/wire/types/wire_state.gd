@@ -8,8 +8,8 @@
 
 class_name WireState extends RefCounted
 
-var role: Dictionary    ## Dict[NLEnums.PID, State.Role]
-var hp: Dictionary      ## Dict[NLEnums.PID, State.HP]
+var role: Dictionary[NLEnums.PID, State.Role] = {}
+var hp: Dictionary[NLEnums.PID, State.HP] = {}
 var phase: NLEnums.Phase = NLEnums.Phase.NONE
 var priority: NLEnums.PID = NLEnums.PID.RED
-var slots: Dictionary   ## Dict[SlotID, WireSlotInfo]
+var slots: Dictionary[SlotID, WireSlotInfo] = {}

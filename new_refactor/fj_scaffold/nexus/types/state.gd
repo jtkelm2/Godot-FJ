@@ -56,8 +56,8 @@ class SlotContents extends RefCounted:
 		return s
 
 
-var role: Dictionary    ## Dict[NLEnums.PID, Role]
-var hp: Dictionary      ## Dict[NLEnums.PID, HP]
+var role: Dictionary[NLEnums.PID, Role] = {}
+var hp: Dictionary[NLEnums.PID, HP] = {}
 var phase: NLEnums.Phase = NLEnums.Phase.NONE
 var priority: NLEnums.PID = NLEnums.PID.RED
-var slots: Dictionary   ## Dict[SlotID, SlotContents]
+var slots: Dictionary[SlotID, SlotContents] = {}

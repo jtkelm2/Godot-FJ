@@ -39,7 +39,7 @@ signal animation_finished
 signal hp_changed(target: NLEnums.PID, old: int, new: int)
 signal phase_changed(phase: NLEnums.Phase)
 signal player_died(target: NLEnums.PID)
-signal game_ended(outcome: NLEnums.Outcome, won: Dictionary)
+signal game_ended(outcome: NLEnums.Outcome, won: Dictionary[NLEnums.PID, bool])
 signal state_rebuilt(state: State)
 signal prompt_applied(prompt: Prompt)
 
@@ -55,9 +55,9 @@ var card_factory: Callable
 # --- Internal ---
 
 var _wrangler: SlotWrangler
-var _slot_for: Dictionary = {}            ## Dict[SlotID, SlotView]
-var _weapon_slot_for: Dictionary = {}     ## Dict[SlotID, WeaponSlotView]
-var _back_by_pid: Dictionary = {}         ## Dict[NLEnums.PID, Texture2D]
+var _slot_for: Dictionary[SlotID, SlotView] = {}
+var _weapon_slot_for: Dictionary[SlotID, WeaponSlotView] = {}
+var _back_by_pid: Dictionary[NLEnums.PID, Texture2D] = {}
 var _neutral_back: Texture2D = null
 
 
@@ -71,6 +71,9 @@ func _ready() -> void:
 
 # --- Public dispatch ---
 
+## `term as <Subtype>` narrows the NL parameter to a concrete subtype before
+## passing to per-subtype handlers — `if term is X` does not flow-narrow the
+## static type in GDScript, so the casts are required at the call sites.
 func handle(term: NL) -> void:
 	if term is DL:
 		_handle_dl(term as DL)
@@ -180,9 +183,9 @@ func _full_rebuild(state: State) -> void:
 
 func _apply_prompt(prompt: Prompt) -> void:
 	for slot_id in _slot_for:
-		(_slot_for[slot_id] as SlotView).set_highlight(HighlightLevel.Level.LOWLIGHT)
+		_slot_for[slot_id].set_highlight(HighlightLevel.Level.LOWLIGHT)
 	for ws_id in _weapon_slot_for:
-		(_weapon_slot_for[ws_id] as WeaponSlotView).set_highlight(HighlightLevel.Level.LOWLIGHT)
+		_weapon_slot_for[ws_id].set_highlight(HighlightLevel.Level.LOWLIGHT)
 
 	for opt in prompt.options:
 		_apply_option_highlight(opt, HighlightLevel.Level.HIGHLIGHT)
@@ -220,6 +223,8 @@ func _build_lookup_dicts() -> void:
 		_weapon_slot_for[sid] = ws
 
 
+## `load()` returns Resource; the `as Texture2D` narrows for the typed dict /
+## var. (Cannot drop — without it the static type doesn't match the slot.)
 func _load_back_textures() -> void:
 	_back_by_pid[NLEnums.PID.RED] = load(_CARD_BACK_DIR + "back_red.png") as Texture2D
 	_back_by_pid[NLEnums.PID.BLUE] = load(_CARD_BACK_DIR + "back_blue.png") as Texture2D
@@ -236,14 +241,14 @@ func _back_for_slot(slot_id: SlotID) -> Texture2D:
 
 func _find_view(target: SlotID) -> SlotView:
 	for sid in _slot_for:
-		if (sid as SlotID).equals(target):
+		if sid.equals(target):
 			return _slot_for[sid]
 	return null
 
 
 func _find_view_ws(target: SlotID) -> WeaponSlotView:
 	for sid in _weapon_slot_for:
-		if (sid as SlotID).equals(target):
+		if sid.equals(target):
 			return _weapon_slot_for[sid]
 	return null
 
@@ -251,9 +256,9 @@ func _find_view_ws(target: SlotID) -> WeaponSlotView:
 ## Linear-search lookup against a Dict[SlotID, V] using SlotID.equals.
 ## Used for state.slots, whose keys come from a different construction site
 ## than ours (Deserializer's vs. Dispatcher._ready's).
-static func _find_contents(slots: Dictionary, target: SlotID) -> State.SlotContents:
+static func _find_contents(slots: Dictionary[SlotID, State.SlotContents], target: SlotID) -> State.SlotContents:
 	for k in slots:
-		if (k as SlotID).equals(target):
+		if k.equals(target):
 			return slots[k]
 	return null
 

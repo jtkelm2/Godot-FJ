@@ -37,7 +37,7 @@ var new_hp: int = 0                  ## HP_CHANGED.
 ## NLEnums.Phase.NONE represents wire-null (between phases).
 var phase: NLEnums.Phase = NLEnums.Phase.NONE  ## PHASE_CHANGED.
 var outcome: NLEnums.Outcome = NLEnums.Outcome.EXHAUSTION  ## GAME_ENDED.
-var won: Dictionary = {}             ## GAME_ENDED. Dict[NLEnums.PID, bool]
+var won: Dictionary[NLEnums.PID, bool] = {}     ## GAME_ENDED.
 
 
 # --- PascalCase factories ---
@@ -89,7 +89,7 @@ static func PhaseChanged(p_phase: NLEnums.Phase) -> DL:
 	return d
 
 
-static func GameEnded(p_outcome: NLEnums.Outcome, p_won: Dictionary) -> DL:
+static func GameEnded(p_outcome: NLEnums.Outcome, p_won: Dictionary[NLEnums.PID, bool]) -> DL:
 	var d := DL.new()
 	d.type = Type.GAME_ENDED
 	d.outcome = p_outcome

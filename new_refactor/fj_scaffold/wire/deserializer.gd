@@ -9,6 +9,14 @@
 ## All factory methods are static and take a Catalog. They tolerate (warn +
 ## return null) on unknown tags per protocol §1.2; malformed shapes get
 ## push_error.
+##
+## **Untyped Dictionary at the wire boundary.** All `Dictionary` parameters in
+## this file carry JSON-shaped payloads — the dicts are produced by
+## `JSON.parse_string` and arrive as runtime-untyped Dictionary. Typing them
+## as `Dictionary[String, Variant]` would force a runtime entry-by-entry
+## coercion at every call without buying real protection (we already access
+## fields via `.get(key, default)`). Internal dicts we construct here ARE
+## typed strictly.
 
 @abstract
 class_name Deserializer extends RefCounted
@@ -229,9 +237,9 @@ static func _parse_players(players: Dictionary, into: WireState) -> void:
 
 
 ## view.slots → Dict[SlotID, WireSlotInfo]. Slots absent from the view dict
-## are treated as fog-of-war hidden and represented as WireUnknownInfo.
-static func _parse_wire_slot_table(raw: Dictionary, catalog: Catalog) -> Dictionary:
-	var out: Dictionary = {}
+## are treated as fog-of-war hidden and represented as WireSlotInfo.Unknown.
+static func _parse_wire_slot_table(raw: Dictionary, catalog: Catalog) -> Dictionary[SlotID, WireSlotInfo]:
+	var out: Dictionary[SlotID, WireSlotInfo] = {}
 	# Visible slots (present in view).
 	for wire_name in raw:
 		var key := str(wire_name)
@@ -246,14 +254,19 @@ static func _parse_wire_slot_table(raw: Dictionary, catalog: Catalog) -> Diction
 	return out
 
 
+## `as Array` / `as Dictionary` here narrow Variant from JSON. The casts
+## cannot be dropped — `if v is Array:` does not flow-narrow the static type
+## of `v` to Array in GDScript; the iterator and `.get(...)` access need a
+## casted local.
 static func _parse_wire_slot_info(v: Variant) -> WireSlotInfo:
 	if v is Array:
 		var cards: Array[WireCardInfo] = []
-		for entry in (v as Array):
+		for entry: Variant in (v as Array):
 			if entry is Dictionary:
+				var d := entry as Dictionary
 				cards.append(WireCardInfo.new(
-					str((entry as Dictionary).get("name", "")),
-					int((entry as Dictionary).get("counters", 0)),
+					str(d.get("name", "")),
+					int(d.get("counters", 0)),
 				))
 		return WireSlotInfo.Full(cards)
 	if v is int or v is float:
@@ -263,8 +276,8 @@ static func _parse_wire_slot_info(v: Variant) -> WireSlotInfo:
 
 
 ## winners array (e.g., ["RED"]) → Dict[PID, bool].
-static func _parse_won(winners: Array) -> Dictionary:
-	var out: Dictionary = {
+static func _parse_won(winners: Array) -> Dictionary[NLEnums.PID, bool]:
+	var out: Dictionary[NLEnums.PID, bool] = {
 		NLEnums.PID.RED: false,
 		NLEnums.PID.BLUE: false,
 	}

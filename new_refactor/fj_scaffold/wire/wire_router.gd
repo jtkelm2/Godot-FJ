@@ -32,6 +32,13 @@ signal session_closed
 
 # --- Outbound WL signal ---
 
+## `msg` carries a JSON-shaped wire payload — keys are strings, values are
+## the JSON-induced Variant union. The dict is untyped here and at every
+## wire-boundary signature in this file: typing it as
+## `Dictionary[String, Variant]` would require a runtime entry-by-entry
+## coercion of the untyped Dictionary that `JSON.parse_string` returns,
+## without buying any real protection (we already access fields via
+## `.get(key, default)`).
 signal wl_out(msg: Dictionary)
 
 
@@ -41,6 +48,7 @@ var _catalog: Catalog = null
 
 # --- Inbound WL ---
 
+## See `wl_out` doc for why `msg` is untyped Dictionary, not parameterized.
 func wl_in(msg: Dictionary) -> void:
 	var msg_type := str(msg.get("type", ""))
 	match msg_type:

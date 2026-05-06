@@ -31,6 +31,9 @@ static func encode(value: Variant) -> String:
 			return String.num(f)
 		TYPE_STRING, TYPE_STRING_NAME:
 			return JSON.stringify(value)
+		# `as Dictionary` / `as Array` narrow `value: Variant` for iteration —
+		# cannot be dropped because `match typeof(value)` does not flow-narrow
+		# the static type of `value` in GDScript.
 		TYPE_DICTIONARY:
 			var parts: PackedStringArray = []
 			for k in (value as Dictionary):
