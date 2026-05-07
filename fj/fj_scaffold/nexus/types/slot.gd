@@ -113,3 +113,15 @@ static func Killstack(p_side: NLEnums.PID, p_num: int) -> SlotID:
 
 func equals(other: SlotID) -> bool:
 	return other != null and other.type == type and other.side == side and other.num == num
+
+
+# --- Description ---
+
+## One-line summary, e.g. "RED/HAND", "GUARD_DECK", or "RED/WS/0".
+func describe() -> String:
+	var t: String = Type.keys()[type]
+	if type == Type.GUARD_DECK:
+		return t
+	if type == Type.WS or type == Type.WS_WEAPON or type == Type.WS_KILLSTACK:
+		return "%s/%s/%d" % [NLEnums.PID.keys()[side], t, num]
+	return "%s/%s" % [NLEnums.PID.keys()[side], t]

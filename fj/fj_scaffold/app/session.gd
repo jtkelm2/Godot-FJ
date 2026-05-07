@@ -86,7 +86,15 @@ func _wire_scene_inputs() -> void:
 
 func _wire_logger() -> void:
 	_conductor.handling.connect(_log_handling)
+	_conductor.divergence_detected.connect(_log_divergence)
 
 
 func _log_handling(term: NL) -> void:
 	logger.write("conductor.handling", Logg.describe_nl(term))
+
+
+## Multi-line; we prefix the report with a newline so the first divergence
+## line lands below the bracketed stream tag instead of next to it. Each
+## subsequent line carries no tag — they're part of the same dump.
+func _log_divergence(report: String) -> void:
+	logger.write("conductor.divergence", "\n" + report)

@@ -79,12 +79,21 @@ static func parse_dl_batch(events: Array, catalog: Catalog) -> Array[DL]:
 
 
 ## `event` dict → DL. Returns null for unknown event types.
+##
+## `dict.get(key)` returns null for absent keys; the protocol now omits keys
+## entirely instead of sending JSON null (§3.2.3 / §3.4), so absent and
+## explicit-null are treated identically. Each branch documents which fields
+## are optional.
 static func parse_dl(e: Dictionary, catalog: Catalog) -> DL:
 	match str(e.get("type", "")):
 		"card_moved":
+			# `source` / `source_index` are omitted when the card had no
+			# prior slot. `card` is omitted when both endpoints are
+			# count-only or hidden.
 			return DL.CardMoved(
 				_parse_loc(e.get("source"), e.get("source_index"), catalog),
 				_parse_loc(e.get("dest"), e.get("dest_index"), catalog),
+				_parse_card(e.get("card"), catalog),
 			)
 		"slot_transferred":
 			return DL.SlotTransferred(
@@ -100,9 +109,18 @@ static func parse_dl(e: Dictionary, catalog: Catalog) -> DL:
 			)
 		"slot_shuffled":
 			return DL.SlotShuffled(catalog.slot_for(str(e.get("slot", ""))))
+		"post_manipulate":
+			# `forced` is present only on the manipulator's view AND only
+			# when they forced; -1 sentinel means "absent." Check explicitly
+			# against null (not just `e.has`) — `int(null)` is 0, which
+			# collides with valid force-index 0.
+			var forced_v: Variant = e.get("forced")
+			var forced: int = int(forced_v) if forced_v != null else -1
+			return DL.PostManipulate(parse_pid(str(e.get("manipulator", ""))), forced)
 		"player_died":
 			return DL.PlayerDied(parse_pid(str(e.get("target", ""))))
 		"phase_changed":
+			# `phase` is omitted between phases (no new phase yet).
 			return DL.PhaseChanged(parse_phase(e.get("phase")))
 		"game_ended":
 			return DL.GameEnded(
@@ -112,6 +130,22 @@ static func parse_dl(e: Dictionary, catalog: Catalog) -> DL:
 		_:
 			push_warning("Deserializer.parse_dl: unknown event type: %s" % e)
 			return null
+
+
+## Optional `card` payload on `card_moved` → CardInstance, or null if absent.
+## Shape: `{"name": <string>, "counters": <int>}` (same as a slot entry).
+static func _parse_card(v: Variant, catalog: Catalog) -> CardInstance:
+	if v == null:
+		return null
+	if not (v is Dictionary):
+		push_warning("Deserializer._parse_card: expected dict, got %s" % v)
+		return null
+	var d := v as Dictionary
+	var card_name := str(d.get("name", ""))
+	if not catalog.has_card(card_name):
+		push_warning("Deserializer._parse_card: unknown card name '%s'" % card_name)
+		return null
+	return CardInstance.new(catalog.card_for(card_name), int(d.get("counters", 0)))
 
 
 ## `prompt` payload → Prompt.

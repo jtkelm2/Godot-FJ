@@ -92,6 +92,7 @@ func _handle_dl(ev: DL) -> void:
 		DL.Type.CARD_MOVED:       _animate_card_moved(ev)
 		DL.Type.SLOT_TRANSFERRED: _animate_slot_transferred(ev)
 		DL.Type.SLOT_SHUFFLED:    _animate_shuffle(ev)
+		DL.Type.POST_MANIPULATE:  _animate_post_manipulate(ev)
 		DL.Type.HP_CHANGED:       hp_changed.emit(ev.target, ev.old_hp, ev.new_hp)
 		DL.Type.PHASE_CHANGED:    phase_changed.emit(ev.phase)
 		DL.Type.PLAYER_DIED:      player_died.emit(ev.target)
@@ -167,6 +168,67 @@ func _animate_shuffle(ev: DL) -> void:
 	tween.tween_property(slot, "position", origin + Vector2(-SHUFFLE_AMPLITUDE_PX, 0), SHUFFLE_DURATION * 0.5)
 	tween.tween_property(slot, "position", origin, SHUFFLE_DURATION * 0.25)
 	await tween.finished
+	animation_finished.emit()
+
+
+## Post-manipulate visual: the manipulator's sidebar cards fly out toward
+## the opponent's deck, and (from the non-manipulator's vantage) two
+## facedown cards spawn at the same deck and fly into the refresh pile.
+## Each side animates only the slots visible to it — the protocol's fog of
+## war filters the rest. The opponent's deck is the shared visual anchor;
+## it's the one slot both perspectives can see (deck is COUNT-to-both).
+func _animate_post_manipulate(ev: DL) -> void:
+	var opp: NLEnums.PID = NLEnums.PID.BLUE if ev.manipulator == NLEnums.PID.RED else NLEnums.PID.RED
+	var sidebar_view: SlotView = _find_view(SlotID.Sidebar(ev.manipulator))
+	var opp_deck_view: SlotView = _find_view(SlotID.Deck(opp))
+	var opp_refresh_view: SlotView = _find_view(SlotID.Refresh(opp))
+
+	var anchor: Vector2 = _slot_center_global(opp_deck_view) if opp_deck_view != null else Vector2.ZERO
+	var to_free: Array[CardView] = []
+	var to_insert: Array[CardView] = []
+
+	animation_started.emit()
+	var tween := create_tween().set_parallel(true)
+
+	# Manipulator side: every sidebar card flies toward `anchor` and is freed.
+	if sidebar_view != null:
+		while sidebar_view.count() > 0:
+			var card := sidebar_view.remove(0)
+			if card == null:
+				break
+			to_free.append(card)
+			overlay.add_child(card)
+			card.position = _slot_center_global(sidebar_view) - card.size * 0.5
+			tween.tween_property(card, "position", anchor - card.size * 0.5, FLY_DURATION) \
+				.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+
+	# Non-manipulator side: spawn two facedown cards at `anchor`, fly to refresh.
+	if opp_refresh_view != null:
+		var refresh_back := _back_for_slot(SlotID.Refresh(opp))
+		var refresh_pos := _slot_center_global(opp_refresh_view)
+		for i in 2:
+			var card := _wrangler.create_card(null, refresh_back, false)
+			to_insert.append(card)
+			overlay.add_child(card)
+			card.position = anchor - card.size * 0.5
+			tween.tween_property(card, "position", refresh_pos - card.size * 0.5, FLY_DURATION) \
+				.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+
+	if to_free.is_empty() and to_insert.is_empty():
+		# Nothing visible to animate; release the readiness gate immediately.
+		animation_finished.emit()
+		return
+
+	await tween.finished
+
+	for card in to_free:
+		overlay.remove_child(card)
+		card.queue_free()
+	# Insert at index 0 (top of pile per protocol §3.2.1 indexing convention).
+	for card in to_insert:
+		overlay.remove_child(card)
+		opp_refresh_view.insert(0, card)
+
 	animation_finished.emit()
 
 

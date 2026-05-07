@@ -48,6 +48,11 @@ signal game_ended(outcome: NLEnums.Outcome, won: Dictionary[NLEnums.PID, bool])
 signal state_rebuilt(state: State)
 signal prompt_applied(prompt: Prompt)
 
+## Fired when DivergenceMonitor's projection ≠ the next SL. `report` is a
+## multi-line dump (events + per-slot diffs + projected/actual contents)
+## suitable for piping straight into a logger stream.
+signal divergence_detected(report: String)
+
 
 # --- Internal sub-components ---
 
@@ -98,6 +103,7 @@ func push_state(state: State, events: Array[DL]) -> void:
 	for ev in events:
 		_scheduler.push(ev)
 	if result.divergent:
+		divergence_detected.emit(result.format_report(events))
 		_scheduler.push(state)
 
 

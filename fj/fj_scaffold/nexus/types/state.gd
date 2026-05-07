@@ -55,6 +55,20 @@ class SlotContents extends RefCounted:
 		s.cards = p_cards
 		return s
 
+	## One-line summary, e.g. "UNKNOWN", "COUNT(5)", or "FULL[a(0), b(1)]".
+	func describe() -> String:
+		match type:
+			Type.UNKNOWN:
+				return "UNKNOWN"
+			Type.COUNT:
+				return "COUNT(%d)" % n
+			Type.FULL:
+				var parts := PackedStringArray()
+				for c in cards:
+					parts.append(c.describe() if c != null else "<null>")
+				return "FULL[%s]" % ", ".join(parts)
+		return "<unknown SlotContents>"
+
 
 var role: Dictionary[NLEnums.PID, Role] = {}
 var hp: Dictionary[NLEnums.PID, HP] = {}

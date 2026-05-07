@@ -44,3 +44,16 @@ func equals(other: Loc) -> bool:
 		Type.SLOT:
 			return slot.equals(other.slot) and idx == other.idx
 	return false
+
+
+# --- Description ---
+
+## One-line summary: "?" for Unknown, "<slot>[idx]" for Slot.
+func describe() -> String:
+	match type:
+		Type.UNKNOWN:
+			return "?"
+		Type.SLOT:
+			var s := slot.describe() if slot != null else "null"
+			return "%s[%d]" % [s, idx]
+	return "<unknown Loc>"

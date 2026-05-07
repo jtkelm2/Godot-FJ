@@ -14,6 +14,7 @@ enum Type {
 	SLOT_TRANSFERRED,
 	HP_CHANGED,
 	SLOT_SHUFFLED,
+	POST_MANIPULATE,
 	PLAYER_DIED,
 	PHASE_CHANGED,
 	GAME_ENDED,
@@ -23,6 +24,11 @@ enum Type {
 var type: Type
 var orig: Loc = null                 ## CARD_MOVED. Loc.Unknown() if no prior slot.
 var dest: Loc = null                 ## CARD_MOVED.
+## CARD_MOVED. Carries the moved card's identity when the server has it
+## visible to this player (either endpoint card-visible). `null` means the
+## protocol omitted it (both endpoints count-only or hidden) and the client
+## must fall back to source-side extraction or treat the move as opaque.
+var card: CardInstance = null
 var slot: SlotID = null              ## SLOT_SHUFFLED.
 var orig_slot: SlotID = null         ## SLOT_TRANSFERRED.
 var dest_slot: SlotID = null         ## SLOT_TRANSFERRED.
@@ -34,19 +40,29 @@ var target: NLEnums.PID = NLEnums.PID.RED  ## HP_CHANGED, PLAYER_DIED.
 ## `new` is a reserved identifier in GDScript, so HP val fields are *_hp.
 var old_hp: int = 0                  ## HP_CHANGED.
 var new_hp: int = 0                  ## HP_CHANGED.
-## NLEnums.Phase.NONE represents wire-null (between phases).
+## NLEnums.Phase.NONE represents wire-null (between phases / phase ended
+## without a new one starting — protocol §3.2.3 omits the key in that case).
 var phase: NLEnums.Phase = NLEnums.Phase.NONE  ## PHASE_CHANGED.
 var outcome: NLEnums.Outcome = NLEnums.Outcome.EXHAUSTION  ## GAME_ENDED.
 var won: Dictionary[NLEnums.PID, bool] = {}     ## GAME_ENDED.
+## POST_MANIPULATE. Which player manipulated.
+var manipulator: NLEnums.PID = NLEnums.PID.RED
+## POST_MANIPULATE. Index (0 or 1) of the sidebar card the manipulator
+## forced; -1 means the field was absent (no force, or the receiving player
+## isn't the manipulator). See protocol §3.2.3.
+var forced: int = -1
 
 
 # --- PascalCase factories ---
 
-static func CardMoved(p_orig: Loc, p_dest: Loc) -> DL:
+## `p_card` is optional — pass `null` when the protocol omits the `card`
+## field (both endpoints hidden or count-only).
+static func CardMoved(p_orig: Loc, p_dest: Loc, p_card: CardInstance = null) -> DL:
 	var d := DL.new()
 	d.type = Type.CARD_MOVED
 	d.orig = p_orig
 	d.dest = p_dest
+	d.card = p_card
 	return d
 
 
@@ -72,6 +88,15 @@ static func SlotShuffled(p_slot: SlotID) -> DL:
 	var d := DL.new()
 	d.type = Type.SLOT_SHUFFLED
 	d.slot = p_slot
+	return d
+
+
+## `p_forced` of -1 means the field was absent on the wire.
+static func PostManipulate(p_manipulator: NLEnums.PID, p_forced: int = -1) -> DL:
+	var d := DL.new()
+	d.type = Type.POST_MANIPULATE
+	d.manipulator = p_manipulator
+	d.forced = p_forced
 	return d
 
 
@@ -105,13 +130,17 @@ static func GameEnded(p_outcome: NLEnums.Outcome, p_won: Dictionary[NLEnums.PID,
 func describe() -> String:
 	match type:
 		Type.CARD_MOVED:
-			return "CardMoved %s → %s" % [_loc_str(orig), _loc_str(dest)]
+			var card_str := " [%s]" % card.describe() if card != null else ""
+			return "CardMoved %s → %s%s" % [orig.describe(), dest.describe(), card_str]
 		Type.SLOT_TRANSFERRED:
-			return "SlotTransferred %s → %s (×%d)" % [_slot_str(orig_slot), _slot_str(dest_slot), count]
+			return "SlotTransferred %s → %s (×%d)" % [orig_slot.describe(), dest_slot.describe(), count]
 		Type.HP_CHANGED:
 			return "HPChanged %s: %d → %d" % [NLEnums.PID.keys()[target], old_hp, new_hp]
 		Type.SLOT_SHUFFLED:
-			return "SlotShuffled %s" % _slot_str(slot)
+			return "SlotShuffled %s" % slot.describe()
+		Type.POST_MANIPULATE:
+			var force_str := " forced=%d" % forced if forced >= 0 else ""
+			return "PostManipulate %s%s" % [NLEnums.PID.keys()[manipulator], force_str]
 		Type.PLAYER_DIED:
 			return "PlayerDied %s" % NLEnums.PID.keys()[target]
 		Type.PHASE_CHANGED:
@@ -119,25 +148,3 @@ func describe() -> String:
 		Type.GAME_ENDED:
 			return "GameEnded %s won=%s" % [NLEnums.Outcome.keys()[outcome], won]
 	return "<unknown DL>"
-
-
-## SlotID / Loc don't yet carry their own `describe`; these are private
-## stopgaps for DL's own formatter. Lift them onto SlotID / Loc if other
-## consumers want the same string form.
-static func _slot_str(s: SlotID) -> String:
-	if s == null:
-		return "null"
-	var t: String = SlotID.Type.keys()[s.type]
-	if s.type == SlotID.Type.GUARD_DECK:
-		return t
-	if s.type == SlotID.Type.WS or s.type == SlotID.Type.WS_WEAPON or s.type == SlotID.Type.WS_KILLSTACK:
-		return "%s/%s/%d" % [NLEnums.PID.keys()[s.side], t, s.num]
-	return "%s/%s" % [NLEnums.PID.keys()[s.side], t]
-
-
-static func _loc_str(loc: Loc) -> String:
-	if loc == null:
-		return "null"
-	if loc.type == Loc.Type.UNKNOWN:
-		return "?"
-	return "%s[%d]" % [_slot_str(loc.slot), loc.idx]
