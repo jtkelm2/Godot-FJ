@@ -68,11 +68,11 @@ static func _lift_slot_info(wsi: WireSlotInfo, catalog: Catalog) -> State.SlotCo
 
 
 ## `events` array → DL list. Skips unparseable / unknown events with a warning.
-static func parse_dl_batch(events: Array, catalog: Catalog) -> Array[DL]:
+static func parse_dl_batch(events: Array, state: State, catalog: Catalog) -> Array[DL]:
 	var out: Array[DL] = []
 	for e in events:
 		if e is Dictionary:
-			var d := parse_dl(e, catalog)
+			var d := parse_dl(e, state, catalog)
 			if d != null:
 				out.append(d)
 	return out
@@ -84,7 +84,7 @@ static func parse_dl_batch(events: Array, catalog: Catalog) -> Array[DL]:
 ## entirely instead of sending JSON null (§3.2.3 / §3.4), so absent and
 ## explicit-null are treated identically. Each branch documents which fields
 ## are optional.
-static func parse_dl(e: Dictionary, catalog: Catalog) -> DL:
+static func parse_dl(e: Dictionary, state: State, catalog: Catalog) -> DL:
 	match str(e.get("type", "")):
 		"card_moved":
 			# `source` / `source_index` are omitted when the card had no
@@ -93,12 +93,14 @@ static func parse_dl(e: Dictionary, catalog: Catalog) -> DL:
 			return DL.CardMoved(
 				_parse_loc(e.get("source"), e.get("source_index"), catalog),
 				_parse_loc(e.get("dest"), e.get("dest_index"), catalog),
+				_parse_cardstate(e.get("dest"), state, catalog),
 				_parse_card(e.get("card"), catalog),
 			)
 		"slot_transferred":
 			return DL.SlotTransferred(
 				catalog.slot_for(str(e.get("source", ""))),
 				catalog.slot_for(str(e.get("dest", ""))),
+				_parse_cardstate(e.get("dest"), state, catalog),
 				int(e.get("count", 0)),
 			)
 		"hp_changed":
@@ -240,6 +242,18 @@ static func _parse_loc(slot_wire_v: Variant, idx_v: Variant, catalog: Catalog) -
 	var idx := -1 if idx_v == null else int(idx_v)
 	return Loc.Slot(slot, idx)
 
+static func _parse_cardstate(slot_wire_v: Variant, state: State, catalog: Catalog) -> DL.CardState:
+	var slot := catalog.slot_for(str(slot_wire_v))
+	match state.slots[slot].type:
+		State.SlotContents.Type.UNKNOWN:
+			return DL.CardState.DISCARD
+		State.SlotContents.Type.COUNT:
+			return DL.CardState.FACEDOWN
+		State.SlotContents.Type.FULL:
+			return DL.CardState.FACEUP
+		_:
+			push_error("Unknown slot type for %s" % slot)
+			return DL.CardState.DISCARD
 
 static func _parse_option_array(a: Array, catalog: Catalog) -> Array[Option]:
 	var r: Array[Option] = []

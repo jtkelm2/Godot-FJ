@@ -113,7 +113,7 @@ func _handle_state(msg: Dictionary) -> void:
 	var events_raw: Array = msg.get("events", [])
 	var wire_state := Deserializer.parse_state(view, _catalog)
 	var nl_state := Deserializer.lift_state(wire_state, _catalog)
-	var events := Deserializer.parse_dl_batch(events_raw, _catalog)
+	var events := Deserializer.parse_dl_batch(events_raw, nl_state, _catalog)
 	state_received.emit(nl_state, events)
 
 

@@ -75,7 +75,7 @@ func _handle_dl(ev: DL) -> void:
 func _on_card_moved(ev: DL) -> void:
 	var src: SlotView = _slot_view_of_loc(ev.orig)
 	var dst: SlotView = _slot_view_of_loc(ev.dest)
-	var card_front: Texture2D = ev.card.template.front if ev.card != null else null
+	var card_front: Texture2D = ev.card.template.front if ev.card != null and ev.card_endstate == DL.CardState.FACEUP else null
 
 	if src == null and dst == null:
 		return

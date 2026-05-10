@@ -20,6 +20,11 @@ enum Type {
 	GAME_ENDED,
 }
 
+enum CardState {
+	FACEUP,
+	FACEDOWN,
+	DISCARD,
+}
 
 var type: Type
 var orig: Loc = null                 ## CARD_MOVED. Loc.Unknown() if no prior slot.
@@ -29,6 +34,7 @@ var dest: Loc = null                 ## CARD_MOVED.
 ## protocol omitted it (both endpoints count-only or hidden) and the client
 ## must fall back to source-side extraction or treat the move as opaque.
 var card: CardInstance = null
+var card_endstate: CardState = CardState.FACEUP
 var slot: SlotID = null              ## SLOT_SHUFFLED.
 var orig_slot: SlotID = null         ## SLOT_TRANSFERRED.
 var dest_slot: SlotID = null         ## SLOT_TRANSFERRED.
@@ -57,21 +63,23 @@ var forced: int = -1
 
 ## `p_card` is optional — pass `null` when the protocol omits the `card`
 ## field (both endpoints hidden or count-only).
-static func CardMoved(p_orig: Loc, p_dest: Loc, p_card: CardInstance = null) -> DL:
+static func CardMoved(p_orig: Loc, p_dest: Loc, p_card_endstate: CardState, p_card: CardInstance = null) -> DL:
 	var d := DL.new()
 	d.type = Type.CARD_MOVED
 	d.orig = p_orig
 	d.dest = p_dest
 	d.card = p_card
+	d.card_endstate = p_card_endstate
 	return d
 
 
-static func SlotTransferred(p_orig: SlotID, p_dest: SlotID, p_count: int) -> DL:
+static func SlotTransferred(p_orig: SlotID, p_dest: SlotID, p_card_endstate: CardState, p_count: int) -> DL:
 	var d := DL.new()
 	d.type = Type.SLOT_TRANSFERRED
 	d.orig_slot = p_orig
 	d.dest_slot = p_dest
 	d.count = p_count
+	d.card_endstate = p_card_endstate
 	return d
 
 
@@ -131,9 +139,9 @@ func describe() -> String:
 	match type:
 		Type.CARD_MOVED:
 			var card_str := " [%s]" % card.describe() if card != null else ""
-			return "CardMoved %s → %s%s" % [orig.describe(), dest.describe(), card_str]
+			return "CardMoved %s → %s%s (%s)" % [orig.describe(), dest.describe(), card_str, card_endstate]
 		Type.SLOT_TRANSFERRED:
-			return "SlotTransferred %s → %s (×%d)" % [orig_slot.describe(), dest_slot.describe(), count]
+			return "SlotTransferred %s → %s (×%d) (%s)" % [orig_slot.describe(), dest_slot.describe(), count, card_endstate]
 		Type.HP_CHANGED:
 			return "HPChanged %s: %d → %d" % [NLEnums.PID.keys()[target], old_hp, new_hp]
 		Type.SLOT_SHUFFLED:
