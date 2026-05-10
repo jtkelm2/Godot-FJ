@@ -7,9 +7,6 @@
 class_name Session extends Node
 
 
-const CARD_VIEW_SCENE_PATH := "res://fj/fj_scaffold/board/scenes/card_view.tscn"
-
-
 var _conductor: Conductor
 var _input: InputHandler
 var _board: Board
@@ -24,14 +21,8 @@ func bootstrap(my_pid: NLEnums.PID, nexus: NexusRouter, board: Board) -> void:
 
 	board.info_panel.set_my_pid(my_pid)
 
-	var card_scene: PackedScene = load(CARD_VIEW_SCENE_PATH)
-
 	_conductor = Conductor.new()
-	_conductor.slot_views = board.slot_views
-	_conductor.weapon_slot_views = board.weapon_slot_views
-	_conductor.overlay = board.overlay
-	_conductor.card_factory = func() -> CardView:
-		return card_scene.instantiate() as CardView
+	_conductor.board = board
 	add_child(_conductor)
 
 	_input = InputHandler.new()
@@ -71,13 +62,13 @@ func _wire_info_panel_animation_gating() -> void:
 
 
 func _wire_scene_inputs() -> void:
-	for view in _board.slot_views:
+	for view in _board.slots():
 		var slot_id := SlotID.make(view.kind, view.side, view.num)
 		view.card_clicked.connect(func(_v: SlotView, idx: int): _input.on_card_clicked(slot_id, idx))
 		view.slot_clicked.connect(func(_v: SlotView): _input.on_slot_clicked(slot_id))
 		view.card_hovered.connect(func(_v: SlotView, idx: int): _board.info_panel.preview_card(view, idx))
 		view.card_unhovered.connect(func(_v: SlotView): _board.info_panel.preview_card(null, -1))
-	for ws in _board.weapon_slot_views:
+	for ws in _board.weapon_slots():
 		var ws_id := SlotID.WeaponZone(ws.side, ws.num)
 		ws.weapon_slot_clicked.connect(func(_w: WeaponSlotView): _input.on_weapon_slot_clicked(ws_id))
 

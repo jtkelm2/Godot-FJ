@@ -1,9 +1,9 @@
 ## Conductor: the bridge from NL to Renderer animation primitives.
 ##
 ## Composes Scheduler + Dispatcher + ReadinessTracker + DivergenceMonitor.
-## (Dispatcher owns its own SlotWrangler internally — composer doesn't see
-## it.) The Conductor takes the Renderer's widget arrays as input and builds
-## its internal lookup dicts itself; it knows nothing of Catalog.
+## The Dispatcher is the only thing that talks to the Board; the Conductor
+## just hands it the `board` reference at construction time and re-emits
+## per-event signals upward for the InfoPanel.
 ##
 ## Public surface:
 ##
@@ -15,27 +15,23 @@
 ##   Outbound delegated-event signals (composer wires these to InfoPanel,
 ##   replay logger, AI observer, …):
 ##     hp_changed / phase_changed / player_died / game_ended /
-##     state_rebuilt / prompt_applied
+##     state_rebuilt / prompt_applied / divergence_detected / handling
 ##
 ##   Animation-gating hooks (any subscriber that animates in response to a
 ##   per-event signal claims the queue via these):
 ##     mark_busy() / mark_free()
 ##
 ##   Configuration (composer sets BEFORE add_child(conductor)):
-##     slot_views                  — Array[SlotView] from board.find_slot_views()
-##     weapon_slot_views           — Array[WeaponSlotView] from board.find_weapon_slot_views()
-##     overlay                     — Control parent for in-flight cards
-##     card_factory                — Callable() -> CardView
+##     board                       — Board scene root (owns the Renderer's
+##                                   animation surface; passed straight to
+##                                   the Dispatcher).
 
 class_name Conductor extends Node
 
 
 # --- Configuration ---
 
-var slot_views: Array[SlotView] = []
-var weapon_slot_views: Array[WeaponSlotView] = []
-var overlay: Control = null
-var card_factory: Callable
+var board: Board = null
 
 
 # --- Re-emitted Dispatcher signals ---
@@ -47,10 +43,6 @@ signal player_died(target: NLEnums.PID)
 signal game_ended(outcome: NLEnums.Outcome, won: Dictionary[NLEnums.PID, bool])
 signal state_rebuilt(state: State)
 signal prompt_applied(prompt: Prompt)
-
-## Fired when DivergenceMonitor's projection ≠ the next SL. `report` is a
-## multi-line dump (events + per-slot diffs + projected/actual contents)
-## suitable for piping straight into a logger stream.
 signal divergence_detected(report: String)
 
 
@@ -63,15 +55,14 @@ var _monitor: DivergenceMonitor
 
 
 func _ready() -> void:
+	assert(board != null, "Conductor: composer must set `board` before add_child")
+
 	_readiness = ReadinessTracker.new()
 	_scheduler = Scheduler.new()
 	_monitor = DivergenceMonitor.new()
 
 	_dispatcher = Dispatcher.new()
-	_dispatcher.slot_views = slot_views
-	_dispatcher.weapon_slot_views = weapon_slot_views
-	_dispatcher.overlay = overlay
-	_dispatcher.card_factory = card_factory
+	_dispatcher.board = board
 	add_child(_dispatcher)
 
 	# Scheduler ↔ Dispatcher dispatch.
@@ -88,6 +79,7 @@ func _ready() -> void:
 	_dispatcher.game_ended.connect(game_ended.emit)
 	_dispatcher.state_rebuilt.connect(state_rebuilt.emit)
 	_dispatcher.prompt_applied.connect(prompt_applied.emit)
+	_dispatcher.handling.connect(handling.emit)
 
 	# Scheduler advances when readiness drains.
 	_readiness.became_free.connect(_scheduler.notify_idle)
@@ -139,7 +131,6 @@ func reset() -> void:
 ## returns synchronously, the ReadinessTracker's eventual `became_free`
 ## signal will advance the Scheduler instead.
 func _on_next_term(term: NL) -> void:
-	handling.emit(term)
 	_dispatcher.handle(term)
 	if _readiness.is_free():
 		_scheduler.notify_idle()

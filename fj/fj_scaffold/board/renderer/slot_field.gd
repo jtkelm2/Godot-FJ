@@ -2,9 +2,13 @@
 ## SlotViews placed in the editor, up to `capacity_per_child` cards per child.
 ##
 ## Presents a unified ordered-list API over its children:
-##   `insert(k, card)`    — finds the k-th free position
-##   `get_card(k)`        — walks child-sizes until k is exhausted
-##   `count()`            — sum of child counts
+##   `insert_state(k, card)` — finds the k-th free position
+##   `get_card(k)`           — walks child-sizes until k is exhausted
+##   `count()`               — sum of child counts
+##
+## `relayout(tween)` threads the same tween through every child's
+## `relayout(tween)` — the canonical "tween-as-arg through children"
+## composability example.
 ##
 ## Children's `card_clicked` / `slot_clicked` signals are re-emitted from this
 ## SlotFieldView with globally-numbered indices. A `card_clicked` on a child
@@ -32,6 +36,8 @@ func _ready() -> void:
 			child.card_unhovered.connect(_on_child_card_unhovered_signal)
 
 
+# --- (1) Inspection ---
+
 func count() -> int:
 	var n := 0
 	for s in _child_slots:
@@ -45,39 +51,82 @@ func get_card(index: int) -> CardView:
 		if remaining < s.count():
 			return s.get_card(remaining)
 		remaining -= s.count()
-	assert("SlotFieldView %s: get_card(%d) beyond capacity" % [get_path(), index])
-	return
+	assert(false, "SlotFieldView %s: get_card(%d) beyond capacity" % [get_path(), index])
+	return null
 
 
-func insert(index: int, card: CardView) -> void:
+## Local position the i-th card occupies = the matching child's local
+## position (relative to this field) plus the child's own `card_position`.
+func card_position(index: int) -> Vector2:
+	var remaining := index
+	for s in _child_slots:
+		if remaining < s.count():
+			return s.position + s.card_position(remaining)
+		remaining -= s.count()
+	# Walked off the end — return where the next-inserted card would go.
+	# Find the first child with free capacity.
+	for s in _child_slots:
+		if s.count() < capacity_per_child:
+			return s.position + s.card_position(s.count())
+	# Fully saturated; clamp to last child's would-be position.
+	if _child_slots.is_empty():
+		return Vector2.ZERO
+	var last := _child_slots[-1]
+	return last.position + last.card_position(capacity_per_child)
+
+
+# --- (2) State mutation ---
+
+func insert_state(index: int, card: CardView) -> void:
 	var remaining := index
 	for s in _child_slots:
 		var local_count := s.count()
 		var free_here := capacity_per_child - local_count
 		# Fits if the target local index is within 0..local_count AND there's room.
 		if remaining <= local_count and free_here > 0:
-			s.insert(remaining, card)
+			s.insert_state(remaining, card)
 			return
 		remaining -= local_count
 		if remaining < 0:
 			remaining = 0
-	assert(false, "SlotFieldView %s: insert(%d) beyond capacity" % [get_path(), index])
+	assert(false, "SlotFieldView %s: insert_state(%d) beyond capacity" % [get_path(), index])
 
 
-func remove(index: int) -> CardView:
+func remove_state(index: int) -> CardView:
 	var remaining := index
 	for s in _child_slots:
 		if remaining < s.count():
-			return s.remove(remaining)
+			return s.remove_state(remaining)
 		remaining -= s.count()
-	assert(false, "SlotFieldView %s: remove(%d) beyond bounds" % [get_path(), index])
-	return
+	assert(false, "SlotFieldView %s: remove_state(%d) beyond bounds" % [get_path(), index])
+	return null
 
 
-func clear() -> void:
+func clear_state() -> void:
 	for s in _child_slots:
-		s.clear()
+		s.clear_state()
 
+
+func layout() -> void:
+	for s in _child_slots:
+		s.layout()
+
+
+# --- (3) Animation ---
+
+## Par of each child slot's `relayout()`. Children are independent — their
+## relayout Actions run in parallel cleanly.
+func _relayout() -> Action:
+	var actions: Array[Action] = []
+	for s in _child_slots:
+		actions.append(s._relayout())
+	return Action.Par.new(actions)
+
+func wiggle(_amplitude_px:float, _duration_s:float) -> Action:
+	return Action.noop()
+
+
+# --- Highlights ---
 
 func set_highlight(level: HighlightLevel.Level) -> void:
 	for s in _child_slots:
