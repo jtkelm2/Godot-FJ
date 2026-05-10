@@ -73,6 +73,8 @@ func _wire_scene_inputs() -> void:
 		ws.weapon_slot_clicked.connect(func(_w: WeaponSlotView): _input.on_weapon_slot_clicked(ws_id))
 
 	_board.info_panel.text_option_selected.connect(_input.on_text_option)
+	
+	_input.option_accepted.connect(func(_opt): _board.clear_all_highlights())
 
 
 func _wire_logger() -> void:

@@ -105,6 +105,15 @@ func back_for(slot: SlotView) -> Texture2D:
 # (2)+(3) Async composites — return Action
 # ============================================================================
 
+# move_card -------- loc to loc, optional flip to front texture reveal
+# spawn_card ------- spawn at slot, send to loc; face-up or face-down
+# discard_card ----- loc to slot, and free
+#
+# drain_slot ------- mass discard_card
+# fill_slot_from --- mass spawn_card (face-down)
+# wiggle_slot
+
+
 ## Move a known card from `src[src_idx]` to `dst[dst_idx]`. Choreography:
 ## brief lift in src → reparent to overlay → src.relayout() in PARALLEL
 ## with the cross-board glide (and an optional mid-flight face-flip if
