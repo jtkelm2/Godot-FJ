@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://40hg7a14j0uh"]
 
-[ext_resource type="Script" path="res://fj/fj_scaffold/app/connection_screen.gd" id="1"]
+[ext_resource type="Script" uid="uid://dinafp0hfg2jf" path="res://fj/app/connection_screen.gd" id="1"]
 
 [node name="ConnectionScreen" type="Control"]
 layout_mode = 3

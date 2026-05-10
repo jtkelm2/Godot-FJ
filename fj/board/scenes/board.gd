@@ -40,7 +40,7 @@ const WIGGLE_DURATION := 0.20
 
 # --- Asset preloads ---
 
-const _CARD_SCENE := preload("res://fj/fj_scaffold/board/scenes/card_view.tscn")
+const _CARD_SCENE := preload("res://fj/board/scenes/card_view.tscn")
 @onready var back_red: Texture2D = preload("res://fj/assets/images/cards/back_red.png")
 @onready var back_blue: Texture2D = preload("res://fj/assets/images/cards/back_blue.png")
 @onready var back_neutral: Texture2D = preload("res://fj/assets/images/cards/back1.png")

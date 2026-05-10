@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c524y1xacq4bf"]
 
-[ext_resource type="Script" uid="uid://bxcq8ucmsp3g3" path="res://fj/fj_scaffold/board/scenes/simple_slot.gd" id="1_simple"]
+[ext_resource type="Script" uid="uid://bxcq8ucmsp3g3" path="res://fj/board/scenes/simple_slot.gd" id="1_simple"]
 [ext_resource type="PackedScene" uid="uid://bctxarrow0001" path="res://fj/ui/context_arrow.tscn" id="2_arrow"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_outline"]

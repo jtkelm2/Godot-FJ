@@ -15,8 +15,8 @@
 extends Node
 
 
-const CONNECTION_SCREEN_PATH := "res://fj/fj_scaffold/app/connection_screen.tscn"
-const BOARD_SCENE_PATH := "res://fj/fj_scaffold/board/scenes/board.tscn"
+const CONNECTION_SCREEN_PATH := "res://fj/app/connection_screen.tscn"
+const BOARD_SCENE_PATH := "res://fj/board/scenes/board.tscn"
 
 
 # --- Public lifecycle signals (ConnectionScreen subscribes to these) ---
