@@ -17,23 +17,19 @@
 
 class_name SlotFieldView extends SlotView
 
+@export var _child_slots: Array[SlotView]
 
-@export var capacity_per_child: int = 1
-
-
-var _child_slots: Array[SlotView] = []
+var _card_index_to_slot: Dictionary[int, SlotView]
 var _last_slot_click_frame: int = -1
-
 
 func _ready() -> void:
 	super._ready()
-	for child in get_children():
-		if child is SlotView:
-			_child_slots.append(child)
-			child.card_clicked.connect(_on_child_card_clicked_signal)
-			child.slot_clicked.connect(_on_child_slot_clicked_signal)
-			child.card_hovered.connect(_on_child_card_hovered_signal)
-			child.card_unhovered.connect(_on_child_card_unhovered_signal)
+	_card_index_to_slot = {}
+	for child in _child_slots:
+		child.card_clicked.connect(_on_child_card_clicked_signal)
+		child.slot_clicked.connect(_on_child_slot_clicked_signal)
+		child.card_hovered.connect(_on_child_card_hovered_signal)
+		child.card_unhovered.connect(_on_child_card_unhovered_signal)
 
 
 # --- (1) Inspection ---
@@ -46,71 +42,39 @@ func count() -> int:
 
 
 func get_card(index: int) -> CardView:
-	var remaining := index
-	for s in _child_slots:
-		if remaining < s.count():
-			return s.get_card(remaining)
-		remaining -= s.count()
-	assert(false, "SlotFieldView %s: get_card(%d) beyond capacity" % [get_path(), index])
-	return null
+	assert(_card_index_to_slot.has(index), "_card_index_to_slot missing index %d" % index)
+	return _card_index_to_slot[index].get_card(0)	
 
 
 ## Local position the i-th card occupies = the matching child's local
 ## position (relative to this field) plus the child's own `card_position`.
 func card_position(index: int) -> Vector2:
-	var remaining := index
-	for s in _child_slots:
-		if remaining < s.count():
-			return s.position + s.card_position(remaining)
-		remaining -= s.count()
-	# Walked off the end — return where the next-inserted card would go.
-	# Find the first child with free capacity.
-	for s in _child_slots:
-		if s.count() < capacity_per_child:
-			return s.position + s.card_position(s.count())
-	# Fully saturated; clamp to last child's would-be position.
-	if _child_slots.is_empty():
-		return Vector2.ZERO
-	var last := _child_slots[-1]
-	return last.position + last.card_position(capacity_per_child)
-
+	if _card_index_to_slot.has(index): return _card_index_to_slot[index].card_position(0)
+	else: return _fresh_slot().card_position(0)
 
 # --- (2) State mutation ---
 
 func insert_state(index: int, card: CardView) -> void:
-	var remaining := index
-	for s in _child_slots:
-		var local_count := s.count()
-		var free_here := capacity_per_child - local_count
-		# Fits if the target local index is within 0..local_count AND there's room.
-		if remaining <= local_count and free_here > 0:
-			s.insert_state(remaining, card)
-			return
-		remaining -= local_count
-		if remaining < 0:
-			remaining = 0
-	assert(false, "SlotFieldView %s: insert_state(%d) beyond capacity" % [get_path(), index])
-
+	for i in range(count()-1, index-1, -1): _card_index_to_slot[i+1] = _card_index_to_slot[i]
+	var s = _fresh_slot()
+	s.insert_state(0, card)
+	_card_index_to_slot[index] = s
 
 func remove_state(index: int) -> CardView:
-	var remaining := index
-	for s in _child_slots:
-		if remaining < s.count():
-			return s.remove_state(remaining)
-		remaining -= s.count()
-	assert(false, "SlotFieldView %s: remove_state(%d) beyond bounds" % [get_path(), index])
-	return null
-
+	var s = _card_index_to_slot[index]
+	for i in range(index, count()-1): _card_index_to_slot[i] = _card_index_to_slot[i+1]
+	_card_index_to_slot.erase(count()-1)
+	var card = s.remove_state(0)
+	return card
 
 func clear_state() -> void:
 	for s in _child_slots:
 		s.clear_state()
-
+	_card_index_to_slot.clear()
 
 func layout() -> void:
 	for s in _child_slots:
 		s.layout()
-
 
 # --- (3) Animation ---
 
@@ -132,6 +96,13 @@ func set_highlight(level: HighlightLevel.Level) -> void:
 	for s in _child_slots:
 		s.set_highlight(level)
 
+# ---- Helpers ---
+
+func _fresh_slot() -> SlotView:
+	for s in _child_slots:
+		if s not in _card_index_to_slot.values(): return s
+	assert(false, "_fresh_slot: All slots allocated")
+	return null
 
 # --- Child signal re-emission with globally-numbered indices ---
 

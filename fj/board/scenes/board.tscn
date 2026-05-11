@@ -119,11 +119,12 @@ texture = ExtResource("6_combined")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RedEquipment" type="HBoxContainer" parent="HBoxContainer/GameArea/RedHalf" unique_id=1106138185]
+[node name="RedEquipment" type="HBoxContainer" parent="HBoxContainer/GameArea/RedHalf" unique_id=1106138185 node_paths=PackedStringArray("_child_slots")]
 layout_mode = 2
 theme_override_constants/separation = 6
 alignment = 1
 script = ExtResource("3_field")
+_child_slots = [NodePath("Eq1"), NodePath("Eq2")]
 kind = 5
 
 [node name="Eq1" parent="HBoxContainer/GameArea/RedHalf/RedEquipment" unique_id=1548869798 instance=ExtResource("2_simple")]
@@ -195,11 +196,12 @@ texture = ExtResource("11_kill")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RedSidebar" type="HBoxContainer" parent="HBoxContainer/GameArea/RedHalf" unique_id=83995371]
+[node name="RedSidebar" type="HBoxContainer" parent="HBoxContainer/GameArea/RedHalf" unique_id=83995371 node_paths=PackedStringArray("_child_slots")]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 script = ExtResource("3_field")
+_child_slots = [NodePath("S1"), NodePath("S2"), NodePath("S3"), NodePath("S4")]
 kind = 6
 
 [node name="S1" parent="HBoxContainer/GameArea/RedHalf/RedSidebar" unique_id=1446988299 instance=ExtResource("2_simple")]
@@ -505,11 +507,12 @@ texture = ExtResource("8_discard")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BlueEquipment" type="HBoxContainer" parent="HBoxContainer/GameArea/BlueHalf" unique_id=59793247]
+[node name="BlueEquipment" type="HBoxContainer" parent="HBoxContainer/GameArea/BlueHalf" unique_id=59793247 node_paths=PackedStringArray("_child_slots")]
 layout_mode = 2
 theme_override_constants/separation = 6
 alignment = 1
 script = ExtResource("3_field")
+_child_slots = [NodePath("Eq1"), NodePath("Eq2")]
 side = 1
 kind = 5
 
@@ -583,11 +586,12 @@ texture = ExtResource("10_weapon")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BlueSidebar" type="HBoxContainer" parent="HBoxContainer/GameArea/BlueHalf" unique_id=141809055]
+[node name="BlueSidebar" type="HBoxContainer" parent="HBoxContainer/GameArea/BlueHalf" unique_id=141809055 node_paths=PackedStringArray("_child_slots")]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 script = ExtResource("3_field")
+_child_slots = [NodePath("S1"), NodePath("S2"), NodePath("S3"), NodePath("S4")]
 side = 1
 kind = 6
 

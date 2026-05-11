@@ -65,13 +65,6 @@ func _ready() -> void:
 ## targets without flying to the slot's center first.
 @abstract func card_position(index: int) -> Vector2
 
-## Convenience: where the next-inserted card would land. Default impl is
-## `card_position(count())`; subclasses may override if their layout is
-## non-trivially count-dependent.
-func next_insert_position() -> Vector2:
-	return card_position(count())
-
-
 # --- (2) State mutation (no layout, no animation) ---
 
 ## Splice `card` into `_cards` at `index`, reparent into the SlotView, and

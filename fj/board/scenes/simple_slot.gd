@@ -53,7 +53,8 @@ func get_card(index: int) -> CardView:
 
 
 func card_position(index: int) -> Vector2:
-	return offset * index
+	if max_display == 0: return offset * (count() - index - 1)
+	else: return offset * (mini(count(), max_display) - index - 1)
 
 
 # --- (2) State mutation (no layout) ---
