@@ -56,6 +56,7 @@ var manipulator: NLEnums.PID = NLEnums.PID.RED
 ## POST_MANIPULATE. Index (0 or 1) of the sidebar card the manipulator
 ## forced; -1 means the field was absent (no force, or the receiving player
 ## isn't the manipulator). See protocol §3.2.3.
+var into_hidden_zone: bool = false
 var forced: int = -1
 
 
@@ -100,11 +101,12 @@ static func SlotShuffled(p_slot: SlotID) -> DL:
 
 
 ## `p_forced` of -1 means the field was absent on the wire.
-static func PostManipulate(p_manipulator: NLEnums.PID, p_forced: int = -1) -> DL:
+static func PostManipulate(p_manipulator: NLEnums.PID, p_forced: int = -1, p_into_hidden_zone:bool = false) -> DL:
 	var d := DL.new()
 	d.type = Type.POST_MANIPULATE
 	d.manipulator = p_manipulator
 	d.forced = p_forced
+	d.into_hidden_zone = p_into_hidden_zone
 	return d
 
 
@@ -139,9 +141,9 @@ func describe() -> String:
 	match type:
 		Type.CARD_MOVED:
 			var card_str := " [%s]" % card.describe() if card != null else ""
-			return "CardMoved %s → %s%s (%s)" % [orig.describe(), dest.describe(), card_str, card_endstate]
+			return "CardMoved %s → %s%s (%s)" % [orig.describe(), dest.describe(), card_str, CardState.find_key(card_endstate)]
 		Type.SLOT_TRANSFERRED:
-			return "SlotTransferred %s → %s (×%d) (%s)" % [orig_slot.describe(), dest_slot.describe(), count, card_endstate]
+			return "SlotTransferred %s → %s (×%d) (%s)" % [orig_slot.describe(), dest_slot.describe(), count, CardState.find_key(card_endstate)]
 		Type.HP_CHANGED:
 			return "HPChanged %s: %d → %d" % [NLEnums.PID.keys()[target], old_hp, new_hp]
 		Type.SLOT_SHUFFLED:

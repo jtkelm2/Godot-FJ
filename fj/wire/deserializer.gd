@@ -118,7 +118,9 @@ static func parse_dl(e: Dictionary, state: State, catalog: Catalog) -> DL:
 			# collides with valid force-index 0.
 			var forced_v: Variant = e.get("forced")
 			var forced: int = int(forced_v) if forced_v != null else -1
-			return DL.PostManipulate(parse_pid(str(e.get("manipulator", ""))), forced)
+			var effect_v: Variant = e.get("effect")
+			var effect: bool = effect_v != null
+			return DL.PostManipulate(parse_pid(str(e.get("manipulator", ""))), forced, effect)
 		"player_died":
 			return DL.PlayerDied(parse_pid(str(e.get("target", ""))))
 		"phase_changed":

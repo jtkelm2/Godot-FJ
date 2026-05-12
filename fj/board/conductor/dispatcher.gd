@@ -82,7 +82,11 @@ func _on_card_moved(ev: DL) -> void:
 
 	var action: Action
 	if src != null and dst != null:
-		action = board.move_card(src, ev.orig.idx, dst, ev.dest.idx, card_front)
+		var move = board.move_card(src, ev.orig.idx, dst, ev.dest.idx, card_front)
+		if ev.card_endstate == DL.CardState.DISCARD:
+			var discard = Action.Lazy.new(board.discard_card.bind(dst, ev.dest.idx, _anchor_for_one_sided(dst)))
+			action = Action.Seq.new([move, discard])
+		else: action = move
 	elif src == null and dst != null:
 		action = board.spawn_card(dst, ev.dest.idx, _anchor_for_one_sided(dst), card_front)
 	else:    # src != null, dst == null
@@ -91,22 +95,9 @@ func _on_card_moved(ev: DL) -> void:
 
 
 func _on_slot_transferred(ev: DL) -> void:
-	var src := _find(ev.orig_slot)
-	var dst := _find(ev.dest_slot)
-	if src == null and dst == null:
-		return
-
-	var actions: Array[Action] = []
-	if src != null:
-		# Drain to dst's location if dst is visible, else to src itself
-		# (cards just dissipate in place).
-		actions.append(board.drain_slot(src, dst if dst != null else src))
-	if dst != null:
-		# Fill from src's location if src is visible, else from dst itself.
-		actions.append(board.fill_slot_from(src if src != null else dst, dst, ev.count))
-	if actions.is_empty():
-		return
-	await _orchestrate(Action.Par.new(actions))
+	var src: SlotView = _slot_view_of_loc(ev.orig)
+	var dst: SlotView = _slot_view_of_loc(ev.dest)
+	await _orchestrate(board.slot_transfer_all(src,dst))
 
 
 func _on_slot_shuffled(ev: DL) -> void:
@@ -121,17 +112,13 @@ func _on_post_manipulate(ev: DL) -> void:
 	var sidebar := board.find_slot(ev.manipulator, SlotID.Type.SIDEBAR, 0)
 	var opp_deck := board.find_slot(opp, SlotID.Type.DECK, 0)
 	var opp_refresh := board.find_slot(opp, SlotID.Type.REFRESH, 0)
+	var and_discard := ev.into_hidden_zone
 
-	var actions: Array[Action] = []
-	if sidebar != null and sidebar.count() > 0:
-		var anchor: SlotView = opp_deck if opp_deck != null else sidebar
-		actions.append(board.drain_slot(sidebar, anchor))
-	if opp_refresh != null:
-		var anchor: SlotView = opp_deck if opp_deck != null else opp_refresh
-		actions.append(board.fill_slot_from(anchor, opp_refresh, 2))
-	if actions.is_empty():
-		return
-	await _orchestrate(Action.Par.new(actions))
+	var actions: Array[Action] = [
+		board.slot_transfer_all(sidebar, opp_deck),
+		board.slot_transfer(opp_deck, opp_refresh, 2, and_discard)
+	]
+	await _orchestrate(Action.Seq.new(actions))
 
 
 # --- State / Prompt synchronous Renderer work ---

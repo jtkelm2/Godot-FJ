@@ -43,7 +43,7 @@ func count() -> int:
 
 func get_card(index: int) -> CardView:
 	assert(_card_index_to_slot.has(index), "_card_index_to_slot missing index %d" % index)
-	return _card_index_to_slot[index].get_card(0)	
+	return _card_index_to_slot[index].get_card(0)
 
 
 ## Local position the i-th card occupies = the matching child's local
@@ -106,28 +106,25 @@ func _fresh_slot() -> SlotView:
 
 # --- Child signal re-emission with globally-numbered indices ---
 
-func _on_child_card_clicked_signal(child: SlotView, local_idx: int) -> void:
-	var global_idx := 0
-	for s in _child_slots:
+func _on_child_card_clicked_signal(child: SlotView, _local_idx: int) -> void:
+	for field_idx in _card_index_to_slot.keys():
+		var s = _card_index_to_slot[field_idx]
 		if s == child:
-			global_idx += local_idx
-			card_clicked.emit(self, global_idx)
+			card_clicked.emit(self, field_idx)
 			_emit_slot_clicked_once()
 			return
-		global_idx += s.count()
 
 
 func _on_child_slot_clicked_signal(_child: SlotView) -> void:
 	_emit_slot_clicked_once()
 
 
-func _on_child_card_hovered_signal(child: SlotView, local_idx: int) -> void:
-	var global_idx := 0
-	for s in _child_slots:
+func _on_child_card_hovered_signal(child: SlotView, _local_idx: int) -> void:
+	for field_idx in _card_index_to_slot.keys():
+		var s = _card_index_to_slot[field_idx]
 		if s == child:
-			card_hovered.emit(self, global_idx + local_idx)
+			card_hovered.emit(self, field_idx)
 			return
-		global_idx += s.count()
 
 
 func _on_child_card_unhovered_signal(_child: SlotView) -> void:

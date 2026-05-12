@@ -113,14 +113,14 @@ func back_for(slot: SlotView) -> Texture2D:
 # fill_slot_from --- mass spawn_card (face-down)
 # wiggle_slot
 
-
 ## Move a known card from `src[src_idx]` to `dst[dst_idx]`. Choreography:
 ## brief lift in src → reparent to overlay → src.relayout() in PARALLEL
 ## with the cross-board glide (and a mid-flight face-flip according to
 ## `reveal_front`) → drop into dst → dst.relayout() settles.
 func move_card(src: SlotView, src_idx: int, dst: SlotView, dst_idx: int, reveal_front: Texture2D = null) -> Action:
-	if src == null or dst == null or src_idx < 0 or src_idx >= src.count():
-		return Action.noop()
+	if src == null or dst == null: assert(false, "move_card: null src or dst")
+	if src_idx < 0 or src_idx >= src.count(): return spawn_card(dst, dst_idx, src, reveal_front)
+	
 	var card := src.get_card(src_idx)
 	var dst_drop_global := dst.global_position + dst.card_position(dst_idx)
 	var lift_target := card.position + LIFT_LOCAL
@@ -223,11 +223,22 @@ func discard_card(src: SlotView, src_idx: int, anchor: SlotView) -> Action:
 		free,
 	])
 
+func slot_transfer(src:SlotView, dst:SlotView, count:int, and_discard:bool = false):
+	var actions:Array[Action] = []
+	
+	for _i in mini(count, src.count()):
+		if and_discard: actions.append(Action.Lazy.new(discard_card.bind(src, 0, dst)))
+		else: actions.append(Action.Lazy.new(move_card.bind(src, 0, dst, 0)))
+	
+	return Action.Seq.new(actions)
+
+func slot_transfer_all(src:SlotView, dst:SlotView, and_discard:bool = false):
+	return slot_transfer(src, dst, src.count(), and_discard)
 
 ## Empty `src` by gliding every card concurrently to `anchor` and freeing
 ## them. All cards are reparented to overlay in one Sync at the start;
 ## glides run in parallel; final Sync queue_frees them.
-func drain_slot(src: SlotView, anchor: SlotView) -> Action:
+func __drain_slot(src: SlotView, anchor: SlotView) -> Action:
 	if src == null or anchor == null or src.count() == 0:
 		return Action.noop()
 	var cards: Array[CardView] = []
@@ -271,7 +282,7 @@ func drain_slot(src: SlotView, anchor: SlotView) -> Action:
 ##
 ## Cards spawn into a closure-shared array in one Sync; glides built lazily
 ## (after spawn fires) reference the now-populated array.
-func fill_slot_from(anchor: SlotView, dst: SlotView, count: int) -> Action:
+func __fill_slot_from(anchor: SlotView, dst: SlotView, count: int) -> Action:
 	if dst == null or anchor == null or count <= 0:
 		return Action.noop()
 	var anchor_global := _slot_center_global(anchor)
