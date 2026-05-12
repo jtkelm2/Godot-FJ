@@ -11,10 +11,6 @@ var _conductor: Conductor
 var _input: InputHandler
 var _board: Board
 
-## Public: the composer (App) can configure sink/silencing before bootstrap
-## or anytime afterward.
-var logger: Logg = Logg.new()
-
 
 func bootstrap(my_pid: NLEnums.PID, nexus: NexusRouter, board: Board) -> void:
 	_board = board
@@ -32,7 +28,7 @@ func bootstrap(my_pid: NLEnums.PID, nexus: NexusRouter, board: Board) -> void:
 	_wire_dispatcher_to_info_panel()
 	_wire_info_panel_animation_gating()
 	_wire_scene_inputs()
-	if my_pid == NLEnums.PID.BLUE: _wire_logger()
+	if my_pid == NLEnums.PID.BLUE: _wire__logger()
 
 
 # --- Wiring helpers ---
@@ -77,17 +73,17 @@ func _wire_scene_inputs() -> void:
 	_input.option_accepted.connect(func(_opt): _board.clear_all_highlights())
 
 
-func _wire_logger() -> void:
+func _wire__logger() -> void:
 	_conductor.handling.connect(_log_handling)
 	_conductor.divergence_detected.connect(_log_divergence)
 
 
 func _log_handling(term: NL) -> void:
-	logger.write("conductor.handling", Logg.describe_nl(term))
+	App.logger.write("conductor.handling", Logg.describe_nl(term))
 
 
 ## Multi-line; we prefix the report with a newline so the first divergence
 ## line lands below the bracketed stream tag instead of next to it. Each
 ## subsequent line carries no tag — they're part of the same dump.
 func _log_divergence(report: String) -> void:
-	logger.write("conductor.divergence", "\n" + report)
+	App.logger.write("conductor.divergence", "\n" + report)

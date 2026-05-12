@@ -40,13 +40,13 @@ var _handshake_done: bool = false
 var _my_pid: NLEnums.PID
 var _have_my_pid: bool = false
 
+var logger: Logg = Logg.new()
+
 
 func _ready() -> void:
 	_wire_router = WireRouter.new()
 	_nexus_router = NexusRouter.new()
 
-	# Wire signals before either node enters the tree. Defensive against any
-	# future `_ready` override that might emit on attach.
 	_wire_router.state_received.connect(_nexus_router.push_state)
 	_wire_router.prompt_received.connect(_nexus_router.push_prompt)
 	_wire_router.notify_received.connect(_nexus_router.push_notify)
@@ -114,6 +114,12 @@ func disconnect_from_server() -> void:
 
 func _on_transport_recv(line: String) -> void:
 	var parsed: Variant = WireCodec.decode(line)
+	var color_prefix:String
+	if _have_my_pid:
+		if _my_pid == NLEnums.PID.RED: color_prefix = "(RED) "
+		else: color_prefix = "(BLUE) "
+	else: color_prefix = "(???) "
+	if not _have_my_pid or (_have_my_pid and _my_pid == NLEnums.PID.BLUE): logger.write("transport.recv", color_prefix + line)
 	if parsed is Dictionary:
 		_wire_router.wl_in(parsed)
 
