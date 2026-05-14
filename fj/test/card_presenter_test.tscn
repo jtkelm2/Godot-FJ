@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dfesmbpahjyne"]
+
+[ext_resource type="Script" uid="uid://c2jrb13hdd2b7" path="res://fj/test/card_presenter_test.gd" id="1_test"]
+
+[node name="CardPresenterTest" type="Node" unique_id=665565643]
+script = ExtResource("1_test")
