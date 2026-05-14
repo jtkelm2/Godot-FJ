@@ -3,12 +3,12 @@
 [ext_resource type="StyleBox" uid="uid://b03gsec8q38l2" path="res://resources/red_info_stylebox.tres" id="1_le7tv"]
 [ext_resource type="Script" uid="uid://dln57dxphhvo1" path="res://fj/board/scenes/card_presenter.gd" id="2_2hn7p"]
 
-[node name="CardPresenter" type="CanvasLayer"]
+[node name="CardPresenter" type="CanvasLayer" unique_id=82443117]
 layer = 10
 visible = false
 script = ExtResource("2_2hn7p")
 
-[node name="Backdrop" type="ColorRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=602906202]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -16,7 +16,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.4)
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="Center" type="CenterContainer" parent="." unique_id=837915061]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -24,35 +24,42 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="Center"]
+[node name="Panel" type="PanelContainer" parent="Center" unique_id=1623257023]
 custom_minimum_size = Vector2(720, 540)
+layout_mode = 2
 theme_override_styles/panel = ExtResource("1_le7tv")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel"]
+[node name="Margin" type="MarginContainer" parent="Center/Panel" unique_id=1540674307]
+layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin" unique_id=1504983769]
+layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="PromptLabel" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="PromptLabel" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1645358924]
 unique_name_in_owner = true
+layout_mode = 2
 autowrap_mode = 3
 
-[node name="Scroll" type="ScrollContainer" parent="Center/Panel/Margin/VBox"]
+[node name="Scroll" type="ScrollContainer" parent="Center/Panel/Margin/VBox" unique_id=1455723500]
 custom_minimum_size = Vector2(0, 360)
+layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="CardGrid" type="HFlowContainer" parent="Center/Panel/Margin/VBox/Scroll"]
+[node name="CardGrid" type="HFlowContainer" parent="Center/Panel/Margin/VBox/Scroll" unique_id=2067648354]
 unique_name_in_owner = true
+layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 
-[node name="ConfirmButton" type="Button" parent="Center/Panel/Margin/VBox"]
+[node name="ConfirmButton" type="Button" parent="Center/Panel/Margin/VBox" unique_id=2091403373]
 unique_name_in_owner = true
+layout_mode = 2
 size_flags_horizontal = 8
 text = "Done"

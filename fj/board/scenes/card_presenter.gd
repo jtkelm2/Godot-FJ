@@ -80,7 +80,7 @@ func _do_populate(descriptors: Array[CardDescriptor]) -> void:
 
 
 func _spawn_card(d: CardDescriptor) -> CardView:
-	var card: CardView = CardView.new()
+	var card: CardView = _CARD_VIEW_SCENE.instantiate()
 	card.back_texture = d.back
 	card.front_texture = d.front
 	card.is_faceup = d.faceup
