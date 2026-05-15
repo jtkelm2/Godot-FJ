@@ -1,9 +1,13 @@
-## Dispatcher: thin NL → Board translator. Owns no animation state; every
-## visible mutation goes through the Board's composite API. Holds no card
-## factory, no overlay reference, no slot lookups (Board has `find_slot`).
+## Dispatcher: thin NL → Board / InfoPanel translator. Owns no animation
+## state; every visible mutation goes through the Board's composite API or
+## the InfoPanel public surface. Holds no card factory, no overlay
+## reference, no slot lookups (Board has `find_slot`).
 ##
-## Per-event signals fan delegated work out to whatever subscribers exist;
-## Dispatcher itself holds no reference to InfoPanel or any other consumer.
+## InfoPanels are configured by the composer as a `Dictionary[PID, panel]`;
+## Dispatcher fans state/prompt/event updates out to every configured panel
+## directly, so subscribers no longer need to wire `hp_changed`/`phase_changed`
+## etc. themselves. The per-event signals are still emitted for external
+## observers (loggers, tests, replay tools).
 ##
 ## **Action orchestration.** Each animated DL produces an `Action`
 ## (Seq/Par/Twact/Sync/Lazy tree, see `action/action.gd`); `_orchestrate`
@@ -24,21 +28,23 @@ class_name Dispatcher extends Node
 signal animation_started
 signal animation_finished
 
-
-# --- Per-event signals (delegated to subscribers via composer) ---
-
-signal handling(term: NL)
-signal hp_changed(target: NLEnums.PID, old: int, new: int)
-signal phase_changed(phase: NLEnums.Phase)
-signal player_died(target: NLEnums.PID)
-signal game_ended(outcome: NLEnums.Outcome, won: Dictionary[NLEnums.PID, bool])
-signal state_rebuilt(state: State)
-signal prompt_applied(prompt: Prompt)
-
-
 # --- Composer-set configuration ---
 
 var board: Board = null
+
+## InfoPanels keyed by the PID whose perspective each panel renders. Set by
+## the composer before `add_child`; Dispatcher fans events out to every
+## panel here and, for events that target a specific PID (HP_CHANGED,
+## PLAYER_DIED), raises an error if that PID has no configured panel.
+var info_panels: Dictionary[NLEnums.PID, InfoPanel] = {}
+
+
+func _ready() -> void:
+	for pid in info_panels:
+		var panel: InfoPanel = info_panels[pid]
+		panel.set_my_pid(pid)
+		panel.animation_started.connect(animation_started.emit)
+		panel.animation_finished.connect(animation_finished.emit)
 
 
 # --- Public dispatch ---
@@ -47,15 +53,19 @@ var board: Board = null
 ## passing to per-subtype handlers — `if term is X` does not flow-narrow the
 ## static type in GDScript, so the casts are required at the call sites.
 func handle(term: NL) -> void:
-	handling.emit(term)
+	if App._my_pid == NLEnums.PID.BLUE: App.logger.write("conductor.handling", Logg.describe_nl(term))
 	if term is DL:
 		await _handle_dl(term as DL)
 	elif term is State:
-		_full_rebuild(term as State)
-		state_rebuilt.emit(term as State)
+		var s := term as State
+		_full_rebuild(s)
+		for panel in info_panels.values():
+			panel.bind_state(s)
 	elif term is Prompt:
-		_apply_prompt(term as Prompt)
-		prompt_applied.emit(term as Prompt)
+		var p := term as Prompt
+		_apply_prompt(p)
+		for panel:InfoPanel in info_panels.values(): # TODO: Prompt messages should include the player in review mode
+			panel.bind_prompt(p)
 
 
 # --- DL handling ---
@@ -66,10 +76,10 @@ func _handle_dl(ev: DL) -> void:
 		DL.Type.SLOT_TRANSFERRED: await _on_slot_transferred(ev)
 		DL.Type.SLOT_SHUFFLED:    await _on_slot_shuffled(ev)
 		DL.Type.POST_MANIPULATE:  await _on_post_manipulate(ev)
-		DL.Type.HP_CHANGED:       hp_changed.emit(ev.target, ev.old_hp, ev.new_hp)
-		DL.Type.PHASE_CHANGED:    phase_changed.emit(ev.phase)
-		DL.Type.PLAYER_DIED:      player_died.emit(ev.target)
-		DL.Type.GAME_ENDED:       game_ended.emit(ev.outcome, ev.won)
+		DL.Type.HP_CHANGED:       await _on_hp_changed(ev)
+		DL.Type.PHASE_CHANGED:    _on_phase_changed(ev) # TODO: async banner over board
+		DL.Type.PLAYER_DIED:      _on_player_died(ev) # TODO: mournful animation overlay
+		DL.Type.GAME_ENDED:       _on_game_ended(ev) # TODO: animation overlay depending on outcome
 
 
 func _on_card_moved(ev: DL) -> void:
@@ -105,6 +115,33 @@ func _on_slot_shuffled(ev: DL) -> void:
 	if slot == null:
 		return
 	await _orchestrate(board.wiggle_slot(slot))
+
+
+func _on_hp_changed(ev: DL) -> void:
+	_require_panel(ev.target, "HP_CHANGED")
+	await info_panels[ev.target].flash_hp(ev.old_hp, ev.new_hp)
+
+
+func _on_phase_changed(ev: DL) -> void:
+	for panel in info_panels.values():
+		panel.set_phase(ev.phase)
+
+
+func _on_player_died(ev: DL) -> void:
+	_require_panel(ev.target, "PLAYER_DIED")
+	for panel in info_panels.values():
+		panel.mark_player_died(ev.target)
+
+
+func _on_game_ended(ev: DL) -> void:
+	for panel in info_panels.values():
+		panel.set_game_result(ev.outcome, ev.won)
+
+
+func _require_panel(pid: NLEnums.PID, ctx: String) -> void:
+	if not info_panels.has(pid):
+		push_error("Dispatcher: %s targets PID %s but no info_panel is configured for that PID" \
+			% [ctx, NLEnums.PID.keys()[pid]])
 
 
 func _on_post_manipulate(ev: DL) -> void:

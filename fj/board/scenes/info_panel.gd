@@ -83,7 +83,7 @@ func bind_state(state: State) -> void:
 	set_phase(state.phase)
 
 	var mine := (state.priority == my_pid)
-	_priority_label.text = "Your turn" if mine else "Opponent's turn"
+	_priority_label.text = "You have priority this round" if mine else "Opponent has priority this round"
 	_priority_label.modulate = Color.LIGHT_GREEN if mine else Color(0.7, 0.7, 0.7)
 
 	var my_role: State.Role = state.role.get(my_pid)
@@ -126,9 +126,9 @@ func set_game_result(outcome: NLEnums.Outcome, won: Dictionary[NLEnums.PID, bool
 ## Emits `animation_started` before the flash tween and `animation_finished`
 ## after, so the composer can gate the Scheduler on this animation via
 ## `Conductor.mark_busy` / `mark_free` connections.
-func flash_hp(target: NLEnums.PID, old_val: int, new_val: int) -> void:
+func flash_hp(old_val: int, new_val: int) -> void:
 	var delta := new_val - old_val
-	if delta != 0 and target == my_pid:
+	if delta != 0:
 		var caption := "+%d HP" if delta > 0 else "%d HP"
 		show_notify(caption % delta)
 		_hp_value.text = "%d / 20" % new_val
@@ -139,7 +139,7 @@ func flash_hp(target: NLEnums.PID, old_val: int, new_val: int) -> void:
 	animation_started.emit()
 	var tween := create_tween()
 	tween.tween_property(self, "modulate", color, HP_FLASH_DURATION * 0.3)
-	tween.tween_property(self, "modulate", orig, HP_FLASH_DURATION * 0.7)
+	tween.tween_property(self, "modulate", orig, HP_FLASH_DURATION * 1.7)
 	await tween.finished
 	animation_finished.emit()
 

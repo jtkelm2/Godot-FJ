@@ -15,21 +15,16 @@ var _board: Board
 func bootstrap(my_pid: NLEnums.PID, nexus: NexusRouter, board: Board) -> void:
 	_board = board
 
-	board.info_panel.set_my_pid(my_pid)
-
 	_conductor = Conductor.new()
 	_conductor.board = board
+	_conductor.info_panels = {my_pid: board.info_panel}
 	add_child(_conductor)
 
 	_input = InputHandler.new()
 	add_child(_input)
 
 	_wire_nexus(nexus)
-	_wire_dispatcher_to_info_panel()
-	_wire_info_panel_animation_gating()
 	_wire_scene_inputs()
-	if my_pid == NLEnums.PID.BLUE: _wire__logger()
-
 
 # --- Wiring helpers ---
 
@@ -41,20 +36,6 @@ func _wire_nexus(nexus: NexusRouter) -> void:
 
 	_input.option_accepted.connect(nexus.send_response)
 	_input.option_accepted.connect(func(_o: Option): _board.info_panel.clear_prompt())
-
-
-func _wire_dispatcher_to_info_panel() -> void:
-	_conductor.hp_changed.connect(_board.info_panel.flash_hp)
-	_conductor.phase_changed.connect(_board.info_panel.set_phase)
-	_conductor.player_died.connect(_board.info_panel.mark_player_died)
-	_conductor.game_ended.connect(_board.info_panel.set_game_result)
-	_conductor.state_rebuilt.connect(_board.info_panel.bind_state)
-	_conductor.prompt_applied.connect(_board.info_panel.bind_prompt)
-
-
-func _wire_info_panel_animation_gating() -> void:
-	_board.info_panel.animation_started.connect(_conductor.mark_busy)
-	_board.info_panel.animation_finished.connect(_conductor.mark_free)
 
 
 func _wire_scene_inputs() -> void:
@@ -71,19 +52,3 @@ func _wire_scene_inputs() -> void:
 	_board.info_panel.text_option_selected.connect(_input.on_text_option)
 	
 	_input.option_accepted.connect(func(_opt): _board.clear_all_highlights())
-
-
-func _wire__logger() -> void:
-	_conductor.handling.connect(_log_handling)
-	_conductor.divergence_detected.connect(_log_divergence)
-
-
-func _log_handling(term: NL) -> void:
-	App.logger.write("conductor.handling", Logg.describe_nl(term))
-
-
-## Multi-line; we prefix the report with a newline so the first divergence
-## line lands below the bracketed stream tag instead of next to it. Each
-## subsequent line carries no tag — they're part of the same dump.
-func _log_divergence(report: String) -> void:
-	App.logger.write("conductor.divergence", "\n" + report)

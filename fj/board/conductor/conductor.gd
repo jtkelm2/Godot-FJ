@@ -1,9 +1,10 @@
 ## Conductor: the bridge from NL to Renderer animation primitives.
 ##
 ## Composes Scheduler + Dispatcher + ReadinessTracker + DivergenceMonitor.
-## The Dispatcher is the only thing that talks to the Board; the Conductor
-## just hands it the `board` reference at construction time and re-emits
-## per-event signals upward for the InfoPanel.
+## The Dispatcher is the only thing that talks to the Board and to
+## InfoPanels; the Conductor passes both references through at construction
+## time and re-emits per-event signals upward for external observers
+## (loggers, tests).
 ##
 ## Public surface:
 ##
@@ -25,6 +26,10 @@
 ##     board                       — Board scene root (owns the Renderer's
 ##                                   animation surface; passed straight to
 ##                                   the Dispatcher).
+##     info_panels                 — Dictionary[PID, InfoPanel] passed straight
+##                                   to the Dispatcher; Dispatcher fans state /
+##                                   event updates out to every configured
+##                                   panel.
 
 class_name Conductor extends Node
 
@@ -32,19 +37,7 @@ class_name Conductor extends Node
 # --- Configuration ---
 
 var board: Board = null
-
-
-# --- Re-emitted Dispatcher signals ---
-
-signal handling(term: NL)
-signal hp_changed(target: NLEnums.PID, old: int, new: int)
-signal phase_changed(phase: NLEnums.Phase)
-signal player_died(target: NLEnums.PID)
-signal game_ended(outcome: NLEnums.Outcome, won: Dictionary[NLEnums.PID, bool])
-signal state_rebuilt(state: State)
-signal prompt_applied(prompt: Prompt)
-signal divergence_detected(report: String)
-
+var info_panels: Dictionary[NLEnums.PID, InfoPanel] = {}
 
 # --- Internal sub-components ---
 
@@ -63,6 +56,7 @@ func _ready() -> void:
 
 	_dispatcher = Dispatcher.new()
 	_dispatcher.board = board
+	_dispatcher.info_panels = info_panels
 	add_child(_dispatcher)
 
 	# Scheduler ↔ Dispatcher dispatch.
@@ -71,15 +65,6 @@ func _ready() -> void:
 	# Dispatcher's own animations gate the ReadinessTracker.
 	_dispatcher.animation_started.connect(_readiness.mark_busy)
 	_dispatcher.animation_finished.connect(_readiness.mark_free)
-
-	# Re-emit Dispatcher's per-event signals as Conductor's own.
-	_dispatcher.hp_changed.connect(hp_changed.emit)
-	_dispatcher.phase_changed.connect(phase_changed.emit)
-	_dispatcher.player_died.connect(player_died.emit)
-	_dispatcher.game_ended.connect(game_ended.emit)
-	_dispatcher.state_rebuilt.connect(state_rebuilt.emit)
-	_dispatcher.prompt_applied.connect(prompt_applied.emit)
-	_dispatcher.handling.connect(handling.emit)
 
 	# Scheduler advances when readiness drains.
 	_readiness.became_free.connect(_scheduler.notify_idle)
@@ -95,7 +80,7 @@ func push_state(state: State, events: Array[DL]) -> void:
 	for ev in events:
 		_scheduler.push(ev)
 	if result.divergent:
-		divergence_detected.emit(result.format_report(events))
+		App.logger.write("conductor.divergence", "\n" + result.format_report(events))
 		_scheduler.push(state)
 
 
