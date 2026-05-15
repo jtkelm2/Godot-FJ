@@ -1,13 +1,13 @@
-## App: the single autoload. Owns the lifetime of Transport, WireRouter,
-## NexusRouter, and (when in-game) Session. Orchestrates connection
-## lifecycle and scene transitions.
+## App: the single autoload. Owns the lifetime of Transport, WireRouter, and
+## (when in-game) Session. Orchestrates connection lifecycle and scene
+## transitions.
 ##
 ## ConnectionScreen is the main scene. When the user connects, App constructs
-## a Transport, wires `transport ↔ WireCodec ↔ WireRouter` and
-## `WireRouter ↔ NexusRouter`. As soon as both `handshake_complete(catalog)`
-## and `pid_assigned(pid)` arrive, App swaps to Board.tscn and bootstraps a
-## Session. On disconnect, App tears down Session, resets WireRouter, and
-## returns to ConnectionScreen.
+## a Transport and wires `transport ↔ WireCodec ↔ WireRouter`. As soon as
+## both `handshake_complete(catalog)` and `pid_assigned(pid)` arrive, App
+## swaps to Board.tscn, bootstraps a Session, and wires `WireRouter ↔ Session`
+## across the NL boundary (Session is itself the NL signal hub). On disconnect,
+## App tears down Session, resets WireRouter, and returns to ConnectionScreen.
 ##
 ## ConnectionScreen and any other scene-side code should talk only to App;
 ## App is the sole reachable global.
@@ -31,7 +31,6 @@ signal session_started(my_pid: NLEnums.PID)
 
 var _transport: Transport = null
 var _wire_router: WireRouter
-var _nexus_router: NexusRouter
 
 var _session: Session = null
 var _board: Board = null
@@ -45,23 +44,12 @@ var logger: Logg = Logg.new()
 
 func _ready() -> void:
 	_wire_router = WireRouter.new()
-	_nexus_router = NexusRouter.new()
-
-	_wire_router.state_received.connect(_nexus_router.push_state)
-	_wire_router.prompt_received.connect(_nexus_router.push_prompt)
-	_wire_router.notify_received.connect(_nexus_router.push_notify)
-
-	_nexus_router.rl_out.connect(_wire_router.send_response)
-	_nexus_router.resign_out.connect(_wire_router.send_resign)
-	_nexus_router.draw_offer_out.connect(_wire_router.send_draw_offer)
-	_nexus_router.draw_accept_out.connect(_wire_router.send_draw_accept)
 
 	_wire_router.handshake_complete.connect(_on_handshake_complete)
 	_wire_router.pid_assigned.connect(_on_pid_assigned)
 	_wire_router.session_closed.connect(_on_session_closed)
 
 	add_child(_wire_router)
-	add_child(_nexus_router)
 
 
 # --- Public connect / disconnect API ---
@@ -176,8 +164,22 @@ func _try_bootstrap_session() -> void:
 	_swap_to_board()
 	_session = Session.new()
 	add_child(_session)
-	_session.bootstrap(_my_pid, _nexus_router, _board)
+	_session.bootstrap(_my_pid, _board)
+	_wire_session_to_wire_router(_session)
 	session_started.emit(_my_pid)
+
+
+## Per-session bridge across the NL boundary. Connections die automatically
+## with the Session when it's `queue_free`'d on disconnect / session_closed.
+func _wire_session_to_wire_router(session: Session) -> void:
+	_wire_router.state_received.connect(session.sl_in.emit)
+	_wire_router.prompt_received.connect(session.pl_in.emit)
+	_wire_router.notify_received.connect(session.notify_in.emit)
+
+	session.rl_out.connect(_wire_router.send_response)
+	session.resign_out.connect(_wire_router.send_resign)
+	session.draw_offer_out.connect(_wire_router.send_draw_offer)
+	session.draw_accept_out.connect(_wire_router.send_draw_accept)
 
 
 # --- Scene transitions ---

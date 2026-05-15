@@ -1,12 +1,12 @@
 ## WireRouter: WL ↔ NL bidirectional translator.
 ##
 ## Wire-agnostic of its surroundings — knows nothing about Transport,
-## WireCodec, or NexusRouter. Composition wires them together externally:
+## WireCodec, or Session. Composition wires them together externally:
 ##
 ##   transport.recv     ──►  WireCodec.decode  ──►  wire_router.wl_in
 ##   wire_router.wl_out ──►  WireCodec.encode  ──►  transport.send
-##   wire_router.state_received  ──►  nexus_router.push_state
-##   nexus_router.rl_out         ──►  wire_router.send_response
+##   wire_router.state_received  ──►  session.sl_in.emit
+##   session.rl_out              ──►  wire_router.send_response
 ##
 ## Internal: a single Catalog, built on the first WCL message. State machine
 ## is just AWAITING_CATALOG → ACTIVE → CLOSED. Use `reset()` to return to

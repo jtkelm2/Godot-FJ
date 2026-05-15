@@ -8,7 +8,7 @@
 ##
 ## Public surface:
 ##
-##   Inbound (composer wires NexusRouter signals to these):
+##   Inbound (composer wires Session's NL signals to these):
 ##     push_state(state, events)   — paired SL+DL.
 ##     push_prompt(prompt)         — PL.
 ##     push_diffs(events)          — bare DL batch.

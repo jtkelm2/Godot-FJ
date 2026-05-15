@@ -1,10 +1,29 @@
-## Session: the composed Player — Conductor + InputHandler — wired to a
-## NexusRouter and a Board scene. Constructed by App at handshake time
-## (after `pid_assignment` notify has resolved my_pid).
+## Session: the composed Player — Conductor + InputHandler — wired to a Board
+## scene and exposing the NL boundary as its own signals. Constructed by App
+## at handshake time (after `pid_assignment` notify has resolved my_pid).
 ##
-## Session is the composition root for the in-game half of the architecture.
+## Session is the composition root for the in-game half of the architecture,
+## and it is the NL boundary: external producers (WireRouter, replay tools,
+## tests) connect to `sl_in` / `pl_in` / `notify_in`; external sinks
+## subscribe to `rl_out` / `resign_out` / `draw_offer_out` / `draw_accept_out`.
 
 class_name Session extends Node
+
+
+# --- Inbound NL signals (App wires these from WireRouter at bootstrap) ---
+# Emitted externally via signal-to-signal connects, hence the suppressions.
+
+@warning_ignore("unused_signal") signal sl_in(state: State, events: Array[DL])
+@warning_ignore("unused_signal") signal pl_in(prompt: Prompt)
+@warning_ignore("unused_signal") signal notify_in(notify: Prompt.Notify)
+
+
+# --- Outbound NL signals (App wires these into WireRouter at bootstrap) ---
+
+signal rl_out(option: Option)
+@warning_ignore("unused_signal") signal resign_out
+@warning_ignore("unused_signal") signal draw_offer_out
+@warning_ignore("unused_signal") signal draw_accept_out
 
 
 var _conductor: Conductor
@@ -12,7 +31,7 @@ var _input: InputHandler
 var _board: Board
 
 
-func bootstrap(my_pid: NLEnums.PID, nexus: NexusRouter, board: Board) -> void:
+func bootstrap(my_pid: NLEnums.PID, board: Board) -> void:
 	_board = board
 
 	_conductor = Conductor.new()
@@ -23,18 +42,19 @@ func bootstrap(my_pid: NLEnums.PID, nexus: NexusRouter, board: Board) -> void:
 	_input = InputHandler.new()
 	add_child(_input)
 
-	_wire_nexus(nexus)
+	_wire_nl_signals()
 	_wire_scene_inputs()
+
 
 # --- Wiring helpers ---
 
-func _wire_nexus(nexus: NexusRouter) -> void:
-	nexus.sl_in.connect(_conductor.push_state)
-	nexus.pl_in.connect(_conductor.push_prompt)
-	nexus.pl_in.connect(_input.set_pending_prompt)
-	nexus.notify_in.connect(func(notify: Prompt.Notify): _board.info_panel.show_notify(notify.text))
+func _wire_nl_signals() -> void:
+	sl_in.connect(_conductor.push_state)
+	pl_in.connect(_conductor.push_prompt)
+	pl_in.connect(_input.set_pending_prompt)
+	notify_in.connect(func(notify: Prompt.Notify): _board.info_panel.show_notify(notify.text))
 
-	_input.option_accepted.connect(nexus.send_response)
+	_input.option_accepted.connect(rl_out.emit)
 	_input.option_accepted.connect(func(_o: Option): _board.info_panel.clear_prompt())
 
 
@@ -50,5 +70,5 @@ func _wire_scene_inputs() -> void:
 		ws.weapon_slot_clicked.connect(func(_w: WeaponSlotView): _input.on_weapon_slot_clicked(ws_id))
 
 	_board.info_panel.text_option_selected.connect(_input.on_text_option)
-	
+
 	_input.option_accepted.connect(func(_opt): _board.clear_all_highlights())
