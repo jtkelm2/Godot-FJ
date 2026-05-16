@@ -166,6 +166,44 @@ class Sync extends Action:
 		_emit_finished()
 
 
+## Time-based delay. Completes after `duration` seconds via SceneTreeTimer.
+## `cancel()` sets `_terminated`; the late timeout fires `_emit_finished`
+## which the guard makes a no-op. SceneTreeTimer can't be killed, but the
+## Callable it holds keeps this Action alive until it fires regardless, so
+## a cancelled Wait is GC'd shortly after its duration elapses.
+class Wait extends Action:
+	var _duration: float
+
+	func _init(duration: float) -> void:
+		_duration = duration
+
+	func fire() -> void:
+		if _terminated: return
+		var tree := Engine.get_main_loop() as SceneTree
+		tree.create_timer(_duration).timeout.connect(_emit_finished, ConnectFlags.CONNECT_ONE_SHOT)
+
+
+## Signal-based wait. Completes when `signal_` next emits. `cancel()`
+## disconnects the listener (no leaked connections). Connection is set in
+## `fire()`, not `_init()` — emissions that happen before the OnSignal is
+## fired are not retroactively counted.
+class OnSignal extends Action:
+	var _signal: Signal
+	var _callable: Callable
+
+	func _init(signal_: Signal) -> void:
+		_signal = signal_
+
+	func fire() -> void:
+		if _terminated: return
+		_callable = _emit_finished
+		_signal.connect(_callable, ConnectFlags.CONNECT_ONE_SHOT)
+
+	func _on_cancel() -> void:
+		if _callable.is_valid() and _signal.is_connected(_callable):
+			_signal.disconnect(_callable)
+
+
 ## Defers Action construction until fire() time. Wraps a callable that
 ## returns an Action; when this Lazy fires, the callable is invoked, its
 ## returned Action's terminal signal is forwarded to ours, and the inner

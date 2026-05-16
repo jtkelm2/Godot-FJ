@@ -6,7 +6,10 @@
 ##   set_front(texture)           — swap the front face texture.
 ##   set_back(texture)            — swap the back face texture.
 ##   set_face(faceup: bool)       — show front (true) or back (false).
-##   flip()                       — toggle face.
+##   flip()                       — toggle face (instantaneous).
+##   animated_flip(duration)      — Action that visually flips the card
+##                                  (scale.x shrink → face swap → grow),
+##                                  preserving any pre-applied scale.
 ##   set_highlight(level)         — visual prompt decoration (HighlightLevel.Level).
 ##   clicked: signal              — left mouse down on the card.
 
@@ -18,6 +21,8 @@ signal clicked
 
 const HIGHLIGHT_PULSE_DURATION := 1.1
 const HIGHLIGHT_PEAK_ALPHA := 0.35
+const FLIP_DURATION_DEFAULT := 0.4
+const FLIP_TILT_DEFAULT := 0.18  # ~10° in radians; positive = CCW pre-mirror
 
 
 @export var front_texture: Texture2D: set = set_front
@@ -59,6 +64,61 @@ func set_face(faceup: bool) -> void:
 
 func flip() -> void:
 	set_face(not is_faceup)
+
+
+## Animated flip Action: shrinks scale.x to 0 while tilting Z-rotation by
+## `tilt`, swaps face and mirrors the rotation (invisible — width is 0 at
+## the midpoint), then grows scale.x back to its pre-flip value while
+## unwinding the rotation. The mirror is what produces the consistent
+## one-direction rotational motion that reads as a vertical-axis 3D flip
+## rather than a symmetric squish.
+##
+## `scale.x` and `rotation` are captured at fire time so callers that pre-
+## transform the card (e.g. RoleScreen fitting to a region) get a flip
+## that ends at the same scale/rotation they applied. Not reentrant —
+## calling animated_flip while one is in flight clobbers the captured
+## values. Pivot is centered for the flip.
+func animated_flip(duration: float = FLIP_DURATION_DEFAULT, tilt: float = FLIP_TILT_DEFAULT) -> Action:
+	var half := duration * 0.5
+	return Action.Seq.new([
+		Action.Sync.new(_prepare_flip.bind(tilt)),
+		Action.Twact.new(_build_flip_shrink_tween.bind(half)),
+		Action.Sync.new(_swap_face_and_mirror_tilt),
+		Action.Twact.new(_build_flip_grow_tween.bind(half)),
+	])
+
+
+var _flip_original_scale_x: float = 1.0
+var _flip_original_rotation: float = 0.0
+var _flip_tilt: float = 0.0
+
+
+func _prepare_flip(tilt: float) -> void:
+	pivot_offset = size * 0.5
+	_flip_original_scale_x = scale.x
+	_flip_original_rotation = rotation
+	_flip_tilt = tilt
+
+
+func _build_flip_shrink_tween(dur: float) -> Tween:
+	var t := create_tween()
+	t.set_parallel(true)
+	t.tween_property(self, "scale:x", 0.0, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	t.tween_property(self, "rotation", _flip_original_rotation + _flip_tilt, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	return t
+
+
+func _swap_face_and_mirror_tilt() -> void:
+	flip()
+	rotation = _flip_original_rotation - _flip_tilt
+
+
+func _build_flip_grow_tween(dur: float) -> Tween:
+	var t := create_tween()
+	t.set_parallel(true)
+	t.tween_property(self, "scale:x", _flip_original_scale_x, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	t.tween_property(self, "rotation", _flip_original_rotation, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	return t
 
 
 func set_highlight(level: HighlightLevel.Level) -> void:
