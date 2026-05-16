@@ -31,7 +31,7 @@ class_name Board extends Control
 
 # --- Tunables ---
 
-const FLY_DURATION := 0.25
+const FLY_DURATION := 0.35
 const LIFT_LOCAL := Vector2(0, -8)
 const RELAYOUT_DURATION := 0.18
 const WIGGLE_AMPLITUDE := 4.0
@@ -115,13 +115,17 @@ func back_for(slot: SlotView) -> Texture2D:
 # wiggle_slot
 
 ## Move a known card from `src[src_idx]` to `dst[dst_idx]`. Choreography:
-## brief lift in src → reparent to overlay → src.relayout() in PARALLEL
-## with the cross-board glide (and a mid-flight face-flip according to
-## `reveal_front`) → drop into dst → dst.relayout() settles.
+## brief lift in src → reparent to overlay → src.relayout(), the
+## cross-board glide, and (when the face state changes) an animated
+## reveal all in parallel → drop into dst → dst.relayout() settles. The
+## reveal flip is delayed and shrunk to fit inside the glide's middle so
+## the texture-swap moment lines up with the card's halfway point
+## through its trajectory; if the face state already matches, the
+## reveal collapses to a no-op (or a single texture-only Sync).
 func move_card(src: SlotView, src_idx: int, dst: SlotView, dst_idx: int, reveal_front: Texture2D = null) -> Action:
 	if src == null or dst == null: assert(false, "move_card: null src or dst")
 	if src_idx < 0 or src_idx >= src.count(): return spawn_card(dst, dst_idx, src, reveal_front)
-	
+
 	var card := src.get_card(src_idx)
 	var dst_drop_global := dst.global_position + dst.card_position(dst_idx)
 	var lift_target := card.position + LIFT_LOCAL
@@ -138,16 +142,19 @@ func move_card(src: SlotView, src_idx: int, dst: SlotView, dst_idx: int, reveal_
 		var t := create_tween()
 		t.tween_property(card, "global_position", dst_drop_global, FLY_DURATION) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-		t.parallel().tween_callback(_reveal.bind(card, reveal_front)).set_delay(FLY_DURATION * 0.4)
 		return t)
 
+	var reveal := Action.Seq.new([
+		Action.Wait.new(FLY_DURATION * 0.2),
+		card.animated_reveal(reveal_front != null, reveal_front, FLY_DURATION * 0.6),
+	])
+
 	var unpin := Action.Sync.new(_unpin_into.bind(card, dst, dst_idx))
-	
 
 	return Action.Seq.new([
 		lift,
 		pin,
-		Action.Par.new([glide, src.relayout()]),
+		Action.Par.new([glide, src.relayout(), reveal]),
 		unpin,
 		dst.relayout(),
 	])
@@ -404,15 +411,6 @@ func _unpin_into(card: CardView, dst: SlotView, dst_idx: int) -> void:
 	overlay.remove_child(card)
 	dst.insert_state(dst_idx, card)
 	card.global_position = g
-
-
-func _reveal(card: CardView, front: Texture2D) -> void:
-	if front == null:
-		card.set_front(null)
-		card.set_face(false)
-	else:
-		card.set_front(front)
-		card.set_face(true)
 
 
 static func _slot_center_global(slot: SlotView) -> Vector2:

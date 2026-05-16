@@ -10,6 +10,13 @@
 ##   animated_flip(duration)      — Action that visually flips the card
 ##                                  (scale.x shrink → face swap → grow),
 ##                                  preserving any pre-applied scale.
+##   animated_reveal(target_faceup, new_front, duration)
+##                                — Action that flips the card to a
+##                                  specified face + front texture, with
+##                                  the texture swap hidden at the flip's
+##                                  zero-width midpoint. No-op when state
+##                                  already matches; single Sync when only
+##                                  the texture (not the face) differs.
 ##   set_highlight(level)         — visual prompt decoration (HighlightLevel.Level).
 ##   clicked: signal              — left mouse down on the card.
 
@@ -21,8 +28,8 @@ signal clicked
 
 const HIGHLIGHT_PULSE_DURATION := 1.1
 const HIGHLIGHT_PEAK_ALPHA := 0.35
-const FLIP_DURATION_DEFAULT := 0.4
-const FLIP_TILT_DEFAULT := 0.18  # ~10° in radians; positive = CCW pre-mirror
+const FLIP_DURATION_DEFAULT := 0.8
+const FLIP_TILT_DEFAULT := 0.4  # ~10° in radians; positive = CCW pre-mirror
 
 
 @export var front_texture: Texture2D: set = set_front
@@ -119,6 +126,45 @@ func _build_flip_grow_tween(dur: float) -> Tween:
 	t.tween_property(self, "scale:x", _flip_original_scale_x, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	t.tween_property(self, "rotation", _flip_original_rotation, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	return t
+
+
+## Animated face-and-texture change. Wraps `animated_flip` but the midpoint
+## Sync also sets the front texture, so the swap is invisible (card is at
+## scale.x = 0 there). Wrapped in Lazy so state is read at fire time, not
+## build time — important when this Action is composed into a Seq behind
+## other state-mutating siblings.
+##
+## Resolution rules:
+##   * face matches AND texture matches  → noop
+##   * face matches, texture differs     → single Sync(set_front)
+##   * face differs                      → full flip Seq with the texture
+##                                          set at the midpoint
+func animated_reveal(target_faceup: bool, new_front: Texture2D, duration: float = FLIP_DURATION_DEFAULT, tilt: float = FLIP_TILT_DEFAULT) -> Action:
+	return Action.Lazy.new(_build_animated_reveal.bind(target_faceup, new_front, duration, tilt))
+
+
+func _build_animated_reveal(target_faceup: bool, new_front: Texture2D, duration: float, tilt: float) -> Action:
+	# Going face-down clears the front texture (matches the previous
+	# board._reveal behavior).
+	var target_front: Texture2D = new_front if target_faceup else null
+	var face_changes := is_faceup != target_faceup
+	var texture_changes := front_texture != target_front
+	if not face_changes and not texture_changes:
+		return Action.noop()
+	if not face_changes:
+		return Action.Sync.new(set_front.bind(target_front))
+	var half := duration * 0.5
+	return Action.Seq.new([
+		Action.Sync.new(_prepare_flip.bind(tilt)),
+		Action.Twact.new(_build_flip_shrink_tween.bind(half)),
+		Action.Sync.new(_reveal_swap.bind(target_front)),
+		Action.Twact.new(_build_flip_grow_tween.bind(half)),
+	])
+
+
+func _reveal_swap(new_front: Texture2D) -> void:
+	set_front(new_front)
+	_swap_face_and_mirror_tilt()
 
 
 func set_highlight(level: HighlightLevel.Level) -> void:
