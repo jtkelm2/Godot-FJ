@@ -30,6 +30,10 @@
 ##                                   to the Dispatcher; Dispatcher fans state /
 ##                                   event updates out to every configured
 ##                                   panel.
+##     phase_banner                 — Single PhaseBanner overlaying the play
+##                                   area. Optional. Dispatcher orchestrates a
+##                                   gated banner animation on PhaseChanged
+##                                   when present.
 
 class_name Conductor extends Node
 
@@ -38,6 +42,7 @@ class_name Conductor extends Node
 
 var board: Board = null
 var info_panels: Dictionary[NLEnums.PID, InfoPanel] = {}
+var phase_banner: PhaseBanner = null
 
 # --- Internal sub-components ---
 
@@ -57,6 +62,7 @@ func _ready() -> void:
 	_dispatcher = Dispatcher.new()
 	_dispatcher.board = board
 	_dispatcher.info_panels = info_panels
+	_dispatcher.phase_banner = phase_banner
 	add_child(_dispatcher)
 
 	# Scheduler ↔ Dispatcher dispatch.

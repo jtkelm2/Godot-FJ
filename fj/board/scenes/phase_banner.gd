@@ -35,6 +35,11 @@ signal animation_finished
 @export var sliver_height: float = 2.0
 @export var label_drift_distance: float = 32.0
 
+@export_group("Phase Themes")
+@export var action_theme: Theme
+@export var refresh_theme: Theme
+@export var manipulation_theme: Theme
+
 @export_group("Durations")
 @export var fade_in_duration: float = 0.18
 @export var grow_duration: float = 0.36
@@ -74,11 +79,40 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	visible = false
 	modulate.a = 0.0
-	_label.text = text
+	_label.text = "placeholder"
 	if style != null:
 		_banner.theme = style
 	_apply_banner_half_height(0.0)
 	_label.visible = false
+
+
+## Convenience for the PhaseChanged DL: maps `phase` to text + theme via
+## the @export per-phase fields, then returns `play()`. Phases without an
+## assigned theme (NONE, SETUP, or any explicitly null @export) yield
+## `Action.noop()` so the Dispatcher can orchestrate uniformly.
+func play_for_phase(phase: NLEnums.Phase) -> Action:
+	var t := _theme_for_phase(phase)
+	if t == null:
+		return Action.noop()
+	text = _name_for_phase(phase)
+	style = t
+	return play()
+
+
+func _theme_for_phase(phase: NLEnums.Phase) -> Theme:
+	match phase:
+		NLEnums.Phase.ACTION:       return action_theme
+		NLEnums.Phase.REFRESH:      return refresh_theme
+		NLEnums.Phase.MANIPULATION: return manipulation_theme
+	return null
+
+
+static func _name_for_phase(phase: NLEnums.Phase) -> String:
+	match phase:
+		NLEnums.Phase.ACTION:       return "ACTION"
+		NLEnums.Phase.REFRESH:      return "REFRESH"
+		NLEnums.Phase.MANIPULATION: return "MANIPULATION"
+	return ""
 
 
 func play() -> Action:

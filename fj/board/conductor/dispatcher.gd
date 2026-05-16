@@ -38,6 +38,9 @@ var board: Board = null
 ## PLAYER_DIED), raises an error if that PID has no configured panel.
 var info_panels: Dictionary[NLEnums.PID, InfoPanel] = {}
 
+## Single PhaseBanner. Set by the composer before `add_child`.
+var phase_banner: PhaseBanner = null
+
 
 func _ready() -> void:
 	for pid in info_panels:
@@ -77,7 +80,7 @@ func _handle_dl(ev: DL) -> void:
 		DL.Type.SLOT_SHUFFLED:    await _on_slot_shuffled(ev)
 		DL.Type.POST_MANIPULATE:  await _on_post_manipulate(ev)
 		DL.Type.HP_CHANGED:       await _on_hp_changed(ev)
-		DL.Type.PHASE_CHANGED:    _on_phase_changed(ev) # TODO: async banner over board
+		DL.Type.PHASE_CHANGED:    await _on_phase_changed(ev)
 		DL.Type.PLAYER_DIED:      _on_player_died(ev) # TODO: mournful animation overlay
 		DL.Type.GAME_ENDED:       _on_game_ended(ev) # TODO: animation overlay depending on outcome
 
@@ -125,6 +128,8 @@ func _on_hp_changed(ev: DL) -> void:
 func _on_phase_changed(ev: DL) -> void:
 	for panel in info_panels.values():
 		panel.set_phase(ev.phase)
+	if phase_banner != null:
+		await _orchestrate(phase_banner.play_for_phase(ev.phase))
 
 
 func _on_player_died(ev: DL) -> void:

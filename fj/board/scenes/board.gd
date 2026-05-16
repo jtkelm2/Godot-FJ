@@ -48,8 +48,9 @@ const _CARD_SCENE := preload("res://fj/board/scenes/card_view.tscn")
 
 # --- Scene-tree references ---
 
-@onready var info_panel: InfoPanel = $HBoxContainer/InfoPanel
-@onready var overlay: Control = $Overlay
+@onready var info_panel: InfoPanel = %InfoPanel
+@onready var overlay: Control = %Overlay
+@onready var phase_banner: PhaseBanner = %PhaseBanner
 @onready var _slots_cache: Array[SlotView] = _gather_slots()
 @onready var _weapon_slots_cache: Array[WeaponSlotView] = _gather_weapon_slots()
 
