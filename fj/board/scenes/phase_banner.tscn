@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://csm8sudl6ka1d"]
+
+[ext_resource type="Script" uid="uid://cs41pwlsct7sv" path="res://fj/board/scenes/phase_banner.gd" id="1_jbfjj"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_jbfjj"]
+font_size = 32
+
+[node name="PhaseBanner" type="Control" unique_id=1401116894]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jbfjj")
+
+[node name="Banner" type="Panel" parent="." unique_id=925060326]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -48.0
+offset_bottom = 48.0
+mouse_filter = 2
+
+[node name="LabelClip" type="Control" parent="Banner" unique_id=931939501]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PhaseLabel" type="Label" parent="Banner/LabelClip" unique_id=1605775704]
+unique_name_in_owner = true
+layout_mode = 0
+label_settings = SubResource("LabelSettings_jbfjj")
+vertical_alignment = 1

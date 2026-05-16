@@ -1,0 +1,16 @@
+[gd_resource type="Theme" format=3 uid="uid://ch365xgqcb85r"]
+
+[sub_resource type="Gradient" id="Gradient_purple"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(0.35, 0.12, 0.55, 1, 0.66, 0.36, 0.92, 1, 0.22, 0.07, 0.4, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_purple"]
+gradient = SubResource("Gradient_purple")
+height = 128
+fill_to = Vector2(0, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_purple"]
+texture = SubResource("GradientTexture2D_purple")
+
+[resource]
+Panel/styles/panel = SubResource("StyleBoxTexture_purple")

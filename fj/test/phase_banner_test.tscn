@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://b54m20dm86pyd"]
+
+[ext_resource type="Script" uid="uid://dcgeqdtewck33" path="res://fj/test/phase_banner_test.gd" id="1_test"]
+
+[node name="PhaseBannerTest" type="Control" unique_id=1384869589]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_test")
+
+[node name="Background" type="ColorRect" parent="." unique_id=317099459]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.12, 0.14, 0.18, 1)
+
+[node name="GameArea" type="Control" parent="." unique_id=1227998268]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -270.0
+offset_right = 480.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="GameAreaBg" type="ColorRect" parent="GameArea" unique_id=1240528455]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.22, 0.26, 0.32, 1)
+
+[node name="Controls" type="HBoxContainer" parent="." unique_id=619516792]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -64.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 12
+
+[node name="TextInput" type="LineEdit" parent="Controls" unique_id=1160950928]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+placeholder_text = "Banner text (default: PHASE CHANGE)"
+
+[node name="BlueButton" type="Button" parent="Controls" unique_id=1393100851]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Blue"
+
+[node name="RedButton" type="Button" parent="Controls" unique_id=54491649]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Red"
+
+[node name="PurpleButton" type="Button" parent="Controls" unique_id=64153155]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Purple"

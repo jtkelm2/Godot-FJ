@@ -1,0 +1,16 @@
+[gd_resource type="Theme" format=3 uid="uid://ciq48wb5n5sd3"]
+
+[sub_resource type="Gradient" id="Gradient_blue"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(0.12, 0.22, 0.55, 1, 0.28, 0.52, 0.92, 1, 0.08, 0.16, 0.42, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_blue"]
+gradient = SubResource("Gradient_blue")
+height = 128
+fill_to = Vector2(0, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_blue"]
+texture = SubResource("GradientTexture2D_blue")
+
+[resource]
+Panel/styles/panel = SubResource("StyleBoxTexture_blue")
