@@ -1,19 +1,28 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://cwc04tgyvbusf"]
 
-[ext_resource type="Script" path="res://fj/board/scenes/role_screen.gd" id="1_rs"]
-[ext_resource type="PackedScene" path="res://fj/board/scenes/card_view.tscn" id="2_card"]
+[ext_resource type="Script" uid="uid://csafmhoh4d70" path="res://fj/board/scenes/role_screen.gd" id="1_rs"]
+[ext_resource type="PackedScene" uid="uid://cjap0a6gv656o" path="res://fj/board/scenes/card_view.tscn" id="2_card"]
 
-[node name="RoleScreen" type="Control"]
+[node name="RoleScreen" type="Control" unique_id=589136448]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 script = ExtResource("1_rs")
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=1738275536]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.41096002, 0.40039998, 0.44, 0.30588236)
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1992094021]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,14 +31,13 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TopRegion" type="Control" parent="VBox"]
+[node name="TopRegion" type="Control" parent="VBox" unique_id=55349021]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 1.0
 mouse_filter = 2
 
-[node name="TopLabel" type="Label" parent="VBox/TopRegion"]
+[node name="TopLabel" type="Label" parent="VBox/TopRegion" unique_id=2144951976]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -37,31 +45,29 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MiddleRegion" type="Control" parent="VBox"]
+[node name="MiddleRegion" type="Control" parent="VBox" unique_id=666771161]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 2.5
 mouse_filter = 2
 
-[node name="RoleCard" parent="VBox/MiddleRegion" instance=ExtResource("2_card")]
+[node name="RoleCard" parent="VBox/MiddleRegion" unique_id=1170297892 instance=ExtResource("2_card")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 mouse_filter = 2
-visible = false
 
-[node name="BottomRegion" type="Control" parent="VBox"]
+[node name="BottomRegion" type="Control" parent="VBox" unique_id=1575685275]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 1.0
 mouse_filter = 2
 
-[node name="BottomLabel" type="Label" parent="VBox/BottomRegion"]
+[node name="BottomLabel" type="Label" parent="VBox/BottomRegion" unique_id=1231750475]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -69,6 +75,5 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
 horizontal_alignment = 1
 vertical_alignment = 1

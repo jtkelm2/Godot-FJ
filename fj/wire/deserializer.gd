@@ -121,6 +121,13 @@ static func parse_dl(e: Dictionary, state: State, catalog: Catalog) -> DL:
 			var effect_v: Variant = e.get("effect")
 			var effect: bool = effect_v != null
 			return DL.PostManipulate(parse_pid(str(e.get("manipulator", ""))), forced, effect)
+		"role_assigned":
+			var alignment = NLEnums.Alignment.GOOD if str(e.role) == "GOOD" else NLEnums.Alignment.EVIL
+			var card = _parse_card(e.card, catalog)
+			var name = card.template.display_name
+			var role = State.Role.new(alignment, name)
+			var pid = parse_pid(e.player)
+			return DL.RoleAssigned(pid, card, role)
 		"player_died":
 			return DL.PlayerDied(parse_pid(str(e.get("target", ""))))
 		"phase_changed":

@@ -18,6 +18,7 @@ enum Type {
 	PLAYER_DIED,
 	PHASE_CHANGED,
 	GAME_ENDED,
+	ROLE_ASSIGNED
 }
 
 enum CardState {
@@ -58,6 +59,7 @@ var manipulator: NLEnums.PID = NLEnums.PID.RED
 ## isn't the manipulator). See protocol §3.2.3.
 var into_hidden_zone: bool = false
 var forced: int = -1
+var role: State.Role = null
 
 
 # --- PascalCase factories ---
@@ -131,6 +133,13 @@ static func GameEnded(p_outcome: NLEnums.Outcome, p_won: Dictionary[NLEnums.PID,
 	d.won = p_won
 	return d
 
+static func RoleAssigned(p_player: NLEnums.PID, p_card: CardInstance, p_role:State.Role):
+	var d = DL.new()
+	d.type = Type.ROLE_ASSIGNED
+	d.target = p_player
+	d.card = p_card
+	d.role = p_role
+	return d
 
 # --- Description ---
 

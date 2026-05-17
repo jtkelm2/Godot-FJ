@@ -71,6 +71,7 @@ signal _advance_requested
 @onready var _top_label: Label = %TopLabel
 @onready var _bottom_label: Label = %BottomLabel
 @onready var _card: CardView = %RoleCard
+@onready var _backdrop: ColorRect = %Backdrop
 
 
 # True from on_play_start through on_play_end. Scopes input consumption
@@ -90,6 +91,7 @@ func _ready() -> void:
 	_bottom_label.text = role_name
 	_top_label.modulate.a = 0.0
 	_bottom_label.modulate.a = 0.0
+	_backdrop.modulate.a = 0.0
 	_card.front_texture = role_front
 	_card.back_texture = role_back
 	_card.is_faceup = false
@@ -100,11 +102,13 @@ func _ready() -> void:
 	_middle_region.resized.connect(_relayout_middle)
 	_bottom_region.resized.connect(_relayout_bottom)
 
-
 func play() -> Action:
 	return Action.Seq.new([
 		Action.Sync.new(_on_play_start),
-		_make_fade_twact(_top_label, 1.0, top_fade_in_duration),
+		Action.Par.new([
+			_make_fade_twact(_top_label, 1.0, top_fade_in_duration),
+			_make_fade_twact(_backdrop, 1.0, top_fade_in_duration)
+			]),
 		Action.Par.new([
 			Action.Lazy.new(_build_card_slide_in),
 			Action.Seq.new([
@@ -119,6 +123,7 @@ func play() -> Action:
 		Action.Par.new([
 			_make_fade_twact(_top_label, 0.0, text_fade_out_duration),
 			_make_fade_twact(_bottom_label, 0.0, text_fade_out_duration),
+			_make_fade_twact(_backdrop, 0.0, text_fade_out_duration)
 		]),
 		Action.Lazy.new(_build_card_exit),
 		Action.Sync.new(_on_play_end),
@@ -142,6 +147,7 @@ func _on_play_start() -> void:
 	_bottom_label.text = role_name
 	_top_label.modulate.a = 0.0
 	_bottom_label.modulate.a = 0.0
+	_backdrop.modulate.a = 0.0
 	_card.front_texture = role_front
 	_card.back_texture = role_back
 	_card.is_faceup = false

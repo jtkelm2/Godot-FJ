@@ -31,7 +31,7 @@ class_name Board extends Control
 
 # --- Tunables ---
 
-const FLY_DURATION := 0.35
+const FLY_DURATION := 0.4
 const LIFT_LOCAL := Vector2(0, -8)
 const RELAYOUT_DURATION := 0.18
 const WIGGLE_AMPLITUDE := 4.0
@@ -51,6 +51,7 @@ const _CARD_SCENE := preload("res://fj/board/scenes/card_view.tscn")
 @onready var info_panel: InfoPanel = %InfoPanel
 @onready var overlay: Control = %Overlay
 @onready var phase_banner: PhaseBanner = %PhaseBanner
+@onready var role_screen: RoleScreen = %RoleScreen
 @onready var _slots_cache: Array[SlotView] = _gather_slots()
 @onready var _weapon_slots_cache: Array[WeaponSlotView] = _gather_weapon_slots()
 
@@ -94,13 +95,19 @@ func card_at(slot: SlotView, idx: int) -> CardView:
 ## Pick the back appropriate to a slot's owner / kind. Used by the
 ## Dispatcher when constructing CardDescriptors for `populate_slot`, and by
 ## Board's own composites when spawning facedown placeholders.
-func back_for(slot: SlotView) -> Texture2D:
+func back_for_slot(slot: SlotView) -> Texture2D:
 	if slot == null:
 		return back_neutral
 	if slot.kind == SlotID.Type.GUARD_DECK:
 		return back_neutral
 	return back_red if slot.side == NLEnums.PID.RED else back_blue
 
+func back_for_pid(pid: NLEnums.PID) -> Texture2D:
+	if pid == null: return back_neutral
+	elif pid == NLEnums.PID.RED: return back_red
+	elif pid == NLEnums.PID.BLUE: return back_blue
+	push_error("back_for_pid: Unknown pid %s" % pid)
+	return null
 
 # ============================================================================
 # (2)+(3) Async composites — return Action
@@ -391,8 +398,8 @@ func _spawn(descriptor: CardDescriptor) -> CardView:
 
 func _descriptor_for(slot: SlotView, faceup_front: Texture2D) -> CardDescriptor:
 	if faceup_front != null:
-		return CardDescriptor.face_up(faceup_front, back_for(slot))
-	return CardDescriptor.face_down(back_for(slot))
+		return CardDescriptor.face_up(faceup_front, back_for_slot(slot))
+	return CardDescriptor.face_down(back_for_slot(slot))
 
 
 ## Reparent `card` from `src` (at index `src_idx`) into `overlay`, preserving

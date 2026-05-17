@@ -41,6 +41,12 @@ var info_panels: Dictionary[NLEnums.PID, InfoPanel] = {}
 ## Single PhaseBanner. Set by the composer before `add_child`.
 var phase_banner: PhaseBanner = null
 
+## Single RoleScreen for dramatic role reveals on the local player's
+## perspective. Set by the composer before `add_child`. Plays the first
+## time a non-empty role appears in State.role[App._my_pid] and again
+## whenever the role's name changes; identical-name State pushes (e.g.
+## divergence rebuilds) are filtered by `_shown_role_name`.
+var role_screen: RoleScreen = null
 
 func _ready() -> void:
 	for pid in info_panels:
@@ -81,6 +87,7 @@ func _handle_dl(ev: DL) -> void:
 		DL.Type.POST_MANIPULATE:  await _on_post_manipulate(ev)
 		DL.Type.HP_CHANGED:       await _on_hp_changed(ev)
 		DL.Type.PHASE_CHANGED:    await _on_phase_changed(ev)
+		DL.Type.ROLE_ASSIGNED:    await _on_show_role(ev.card, ev.role)
 		DL.Type.PLAYER_DIED:      _on_player_died(ev) # TODO: mournful animation overlay
 		DL.Type.GAME_ENDED:       _on_game_ended(ev) # TODO: animation overlay depending on outcome
 
@@ -131,6 +138,11 @@ func _on_phase_changed(ev: DL) -> void:
 	if phase_banner != null:
 		await _orchestrate(phase_banner.play_for_phase(ev.phase))
 
+func _on_show_role(card:CardInstance, role:State.Role):
+	role_screen.role_name = role.role_name
+	role_screen.role_front = card.template.front
+	role_screen.role_back = board.back_for_pid(App._my_pid)
+	await _orchestrate(role_screen.play())
 
 func _on_player_died(ev: DL) -> void:
 	_require_panel(ev.target, "PLAYER_DIED")
@@ -257,7 +269,7 @@ static func _find_contents(slots: Dictionary, target: SlotID) -> State.SlotConte
 ## front; COUNT → `n` facedown descriptors; UNKNOWN → empty array.
 func _descriptors_from(contents: State.SlotContents, view: SlotView) -> Array[CardDescriptor]:
 	var out: Array[CardDescriptor] = []
-	var back := board.back_for(view)
+	var back := board.back_for_slot(view)
 	match contents.type:
 		State.SlotContents.Type.UNKNOWN:
 			pass

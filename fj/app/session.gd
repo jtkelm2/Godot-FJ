@@ -38,6 +38,7 @@ func bootstrap(my_pid: NLEnums.PID, board: Board) -> void:
 	_conductor.board = board
 	_conductor.info_panels = {my_pid: board.info_panel}
 	_conductor.phase_banner = board.phase_banner
+	_conductor.role_screen = board.role_screen
 	add_child(_conductor)
 
 	_input = InputHandler.new()

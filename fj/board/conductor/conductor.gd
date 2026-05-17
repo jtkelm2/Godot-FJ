@@ -34,6 +34,11 @@
 ##                                   area. Optional. Dispatcher orchestrates a
 ##                                   gated banner animation on PhaseChanged
 ##                                   when present.
+##     role_screen                  — Single RoleScreen overlaying the full
+##                                   game window. Optional. Dispatcher plays
+##                                   it when State.role[App._my_pid].role_name
+##                                   first becomes non-empty (and again on
+##                                   any subsequent name change).
 
 class_name Conductor extends Node
 
@@ -43,6 +48,7 @@ class_name Conductor extends Node
 var board: Board = null
 var info_panels: Dictionary[NLEnums.PID, InfoPanel] = {}
 var phase_banner: PhaseBanner = null
+var role_screen: RoleScreen = null
 
 # --- Internal sub-components ---
 
@@ -63,6 +69,7 @@ func _ready() -> void:
 	_dispatcher.board = board
 	_dispatcher.info_panels = info_panels
 	_dispatcher.phase_banner = phase_banner
+	_dispatcher.role_screen = role_screen
 	add_child(_dispatcher)
 
 	# Scheduler ↔ Dispatcher dispatch.
