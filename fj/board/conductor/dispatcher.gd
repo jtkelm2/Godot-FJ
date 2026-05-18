@@ -42,11 +42,15 @@ var info_panels: Dictionary[NLEnums.PID, InfoPanel] = {}
 var phase_banner: PhaseBanner = null
 
 ## Single RoleScreen for dramatic role reveals on the local player's
-## perspective. Set by the composer before `add_child`. Plays the first
-## time a non-empty role appears in State.role[App._my_pid] and again
-## whenever the role's name changes; identical-name State pushes (e.g.
-## divergence rebuilds) are filtered by `_shown_role_name`.
+## perspective.
 var role_screen: RoleScreen = null
+
+## Modal picker for `revealed_card` prompts. Dispatcher drives only the
+## display side — populate, set_text, set_selection_count, present. The
+## input side (`selection_made` → response) is wired in Session to the
+## InputHandler, keeping the renderer subsystem free of input concerns.
+## Dismissal is also Session's job (idempotent on `option_accepted`).
+var card_presenter: CardPresenter = null
 
 func _ready() -> void:
 	for pid in info_panels:
@@ -115,8 +119,8 @@ func _on_card_moved(ev: DL) -> void:
 
 
 func _on_slot_transferred(ev: DL) -> void:
-	var src: SlotView = _slot_view_of_loc(ev.orig)
-	var dst: SlotView = _slot_view_of_loc(ev.dest)
+	var src: SlotView = _find(ev.orig_slot)
+	var dst: SlotView = _find(ev.dest_slot)
 	await _orchestrate(board.slot_transfer_all(src,dst))
 
 
@@ -189,6 +193,17 @@ func _full_rebuild(state: State) -> void:
 
 func _apply_prompt(prompt: Prompt) -> void:
 	board.clear_all_highlights()
+	# §3.3 / user policy: revealed_card options never mix with other types.
+	# All-revealed_card → CardPresenter modal; any revealed_card mixed in is
+	# a contract violation.
+	var n_revealed := 0
+	for opt in prompt.options:
+		if opt.type == Option.Type.REVEALED_CARD:
+			n_revealed += 1
+	if n_revealed > 0:
+		assert(n_revealed == prompt.options.size(), "Dispatcher: mixed revealed_card + other option types not supported")
+		_show_revealed_card_picker(prompt)
+		return
 	for opt in prompt.options:
 		_apply_option_highlight(opt, HighlightLevel.Level.HIGHLIGHT)
 	for opt in prompt.context:
@@ -210,6 +225,22 @@ func _apply_option_highlight(opt: Option, level: HighlightLevel.Level) -> void:
 				var view := _find(opt.loc.slot)
 				if view != null:
 					board.set_card_highlight(view, opt.loc.idx, level)
+
+
+## Display-only: configure the CardPresenter modal for this revealed_card
+## prompt and show it. The input side — `selection_made` → response, plus
+## dismissal — is owned by Session/InputHandler. Per protocol §2.2 P4 state
+## delivery stays non-blocking on user input, so we don't await anything.
+func _show_revealed_card_picker(prompt: Prompt) -> void:
+	var back := board.back_for_pid(App._my_pid)
+	var descriptors: Array[CardDescriptor] = []
+	for opt in prompt.options:
+		descriptors.append(CardDescriptor.face_up(opt.card.front, back))
+	card_presenter.set_text(prompt.text)
+	# Sync actions: fire() executes the side effect synchronously.
+	card_presenter.populate(descriptors).fire()
+	card_presenter.set_selection_count(prompt.must_select)
+	card_presenter.present().fire()
 
 
 # --- Orchestration ---

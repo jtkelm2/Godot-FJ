@@ -52,6 +52,7 @@ const _CARD_SCENE := preload("res://fj/board/scenes/card_view.tscn")
 @onready var overlay: Control = %Overlay
 @onready var phase_banner: PhaseBanner = %PhaseBanner
 @onready var role_screen: RoleScreen = %RoleScreen
+@onready var card_presenter: CardPresenter = %CardPresenter
 @onready var _slots_cache: Array[SlotView] = _gather_slots()
 @onready var _weapon_slots_cache: Array[WeaponSlotView] = _gather_weapon_slots()
 

@@ -1,27 +1,29 @@
 ## RL language: typed options a client may emit in response to a prompt.
 ## NL — wire-agnostic. Serialization/deserialization happens in wire/.
 ##
-## Per the Python sketch this is 3 variants, not 4: the wire's `card` collapses
-## into `Option.Loc(loc)` carrying a `Loc.Slot(slot, idx)`, and the wire's
-## `weapon_slot` collapses into `Option.Slot(slotid)` where the SlotID has
-## `Type.WS`. The wire/NL boundary (Catalog + Serializer/Deserializer) handles
-## the projection.
+## Wire `card` collapses into `Option.Loc(loc)` carrying a `Loc.Slot(slot,
+## idx)`; wire `weapon_slot` collapses into `Option.Slot(slotid)` where the
+## SlotID has `Type.WS`. Wire `revealed_card` keeps its own variant
+## (`Option.RevealedCard`) since it identifies by card-template name rather
+## than slot location. The wire/NL boundary (Catalog + Serializer/Deserializer)
+## handles the projection.
 ##
 ## Tagged-union flattening: one concrete class with a `Type` enum tag plus
 ## the union of fields each former-constructor needed. Construct via the
-## PascalCase factories (`Option.Text`, `Option.Loc`, `Option.Slot`).
+## PascalCase factories (`Option.Text`, `Option.Loc`, `Option.Slot`,
+## `Option.RevealedCard`).
 
 class_name Option extends NL
 
 
-enum Type { TEXT, LOC, SLOT }
+enum Type { TEXT, LOC, SLOT, REVEALED_CARD }
 
 
 var type: Type
 var text: String = ""        ## Used when type == TEXT.
 var loc: Loc = null          ## Used when type == LOC.
 var slot: SlotID = null      ## Used when type == SLOT.
-
+var card: CardTemplate = null   ## Used when type == REVEALED_CARD; wire card-template name.
 
 # --- PascalCase factories ---
 
@@ -46,6 +48,13 @@ static func Slot(p_slot: SlotID) -> Option:
 	return o
 
 
+static func RevealedCard(p_card:CardTemplate) -> Option:
+	var o := Option.new()
+	o.type = Type.REVEALED_CARD
+	o.card = p_card
+	return o
+
+
 # --- Equality ---
 
 ## Used by OptionValidator to match candidate options against pending prompt
@@ -59,4 +68,5 @@ func equals(other: Option) -> bool:
 		Type.TEXT: return text == other.text
 		Type.LOC:  return loc.equals(other.loc)
 		Type.SLOT: return slot.equals(other.slot)
+		Type.REVEALED_CARD: return card.template_name == other.card.template_name
 	return false

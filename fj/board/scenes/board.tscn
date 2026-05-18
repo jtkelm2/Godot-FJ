@@ -17,9 +17,10 @@
 [ext_resource type="Theme" uid="uid://cxd05056mwvh6" path="res://resources/red_phase_banner_theme.tres" id="14_bb7no"]
 [ext_resource type="Theme" uid="uid://ciq48wb5n5sd3" path="res://resources/blue_phase_banner_theme.tres" id="15_evt1f"]
 [ext_resource type="Theme" uid="uid://ch365xgqcb85r" path="res://resources/purple_phase_banner_theme.tres" id="16_abrye"]
-[ext_resource type="PackedScene" path="res://fj/board/scenes/role_screen.tscn" id="17_role"]
+[ext_resource type="PackedScene" uid="uid://cwc04tgyvbusf" path="res://fj/board/scenes/role_screen.tscn" id="17_role"]
 [ext_resource type="Texture2D" uid="uid://bv08mgtbxi2um" path="res://fj/assets/images/cards/named_1.png" id="18_rolef"]
 [ext_resource type="Texture2D" uid="uid://bvs6nqctmi1nj" path="res://fj/assets/images/cards/back1.png" id="19_roleb"]
+[ext_resource type="PackedScene" uid="uid://bps22b5pejac4" path="res://fj/board/scenes/card_presenter.tscn" id="20_cpres"]
 
 [node name="Board" type="Control" unique_id=999268480]
 layout_mode = 3
@@ -693,3 +694,6 @@ unique_name_in_owner = true
 layout_mode = 1
 role_front = ExtResource("18_rolef")
 role_back = ExtResource("19_roleb")
+
+[node name="CardPresenter" parent="." unique_id=1042938576 instance=ExtResource("20_cpres")]
+unique_name_in_owner = true

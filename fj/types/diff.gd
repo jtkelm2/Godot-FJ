@@ -166,4 +166,6 @@ func describe() -> String:
 			return "PhaseChanged %s" % NLEnums.Phase.keys()[phase]
 		Type.GAME_ENDED:
 			return "GameEnded %s won=%s" % [NLEnums.Outcome.keys()[outcome], won]
+		Type.ROLE_ASSIGNED:
+			return "RoleAssigned %s (%s)" % [role.role_name, NLEnums.Alignment.find_key(role.alignment)]
 	return "<unknown DL>"

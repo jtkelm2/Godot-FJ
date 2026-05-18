@@ -63,11 +63,13 @@ func wl_in(msg: Dictionary) -> void:
 
 # --- Inbound NL (outbound across the boundary) ---
 
-func send_response(option: Option) -> void:
+## Single-select callers pass a 1-element array; multi-select pass the full
+## chosen set. Serializer picks the right wire shape (§5.1).
+func send_response(options: Array[Option]) -> void:
 	if _state != SessionState.ACTIVE:
 		push_warning("WireRouter.send_response: not active (state=%s)" % SessionState.keys()[_state])
 		return
-	wl_out.emit(Serializer.serialize_response(option, _catalog))
+	wl_out.emit(Serializer.serialize_response(options, _catalog))
 
 
 func send_resign() -> void:

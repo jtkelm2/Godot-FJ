@@ -30,13 +30,22 @@ static func serialize_option(opt: Option, catalog: Catalog) -> Dictionary:
 			if not ws_wire.is_empty():
 				return {"type": "weapon_slot", "name": ws_wire}
 			return {"type": "slot", "name": catalog.wire_for_slot(opt.slot)}
+		Option.Type.REVEALED_CARD:
+			return {"type": "revealed_card", "name": opt.card_name}
 	push_error("Serializer.serialize_option: unknown Option type: %s" % opt.type)
 	return {}
 
 
-## NL Option → `response` envelope (per protocol §5.1).
-static func serialize_response(opt: Option, catalog: Catalog) -> Dictionary:
-	return {"type": "response", "option": serialize_option(opt, catalog)}
+## NL Options → `response` envelope (per protocol §5.1).
+## Single-element arrays emit the singular `{"option": ...}` shape; arrays of
+## length >= 2 emit the multi-select `{"options": [...]}` shape.
+static func serialize_response(opts: Array[Option], catalog: Catalog) -> Dictionary:
+	if opts.size() == 1:
+		return {"type": "response", "option": serialize_option(opts[0], catalog)}
+	var out: Array[Dictionary] = []
+	for o in opts:
+		out.append(serialize_option(o, catalog))
+	return {"type": "response", "options": out}
 
 
 # --- Out-of-band messages (per protocol §6) ---

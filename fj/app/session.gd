@@ -20,7 +20,7 @@ class_name Session extends Node
 
 # --- Outbound NL signals (App wires these into WireRouter at bootstrap) ---
 
-signal rl_out(option: Option)
+signal rl_out(options: Array[Option])
 @warning_ignore("unused_signal") signal resign_out
 @warning_ignore("unused_signal") signal draw_offer_out
 @warning_ignore("unused_signal") signal draw_accept_out
@@ -39,6 +39,7 @@ func bootstrap(my_pid: NLEnums.PID, board: Board) -> void:
 	_conductor.info_panels = {my_pid: board.info_panel}
 	_conductor.phase_banner = board.phase_banner
 	_conductor.role_screen = board.role_screen
+	_conductor.card_presenter = board.card_presenter
 	add_child(_conductor)
 
 	_input = InputHandler.new()
@@ -57,7 +58,9 @@ func _wire_nl_signals() -> void:
 	notify_in.connect(func(notify: Prompt.Notify): _board.info_panel.show_notify(notify.text))
 
 	_input.option_accepted.connect(rl_out.emit)
-	_input.option_accepted.connect(func(_o: Option): _board.info_panel.clear_prompt())
+	_input.option_accepted.connect(func(_opts: Array[Option]): _board.info_panel.clear_prompt())
+	_input.option_accepted.connect(func(_opts: Array[Option]): _board.card_presenter.dismiss().fire())
+	_input.option_accepted.connect(func(_opts: Array[Option]): _board.clear_all_highlights())
 
 
 func _wire_scene_inputs() -> void:
@@ -72,5 +75,4 @@ func _wire_scene_inputs() -> void:
 		ws.weapon_slot_clicked.connect(func(_w: WeaponSlotView): _input.on_weapon_slot_clicked(ws_id))
 
 	_board.info_panel.text_option_selected.connect(_input.on_text_option)
-
-	_input.option_accepted.connect(func(_opt): _board.clear_all_highlights())
+	_board.card_presenter.selection_made.connect(_input.on_revealed_cards_chosen)

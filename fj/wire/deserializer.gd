@@ -160,11 +160,13 @@ static func _parse_card(v: Variant, catalog: Catalog) -> CardInstance:
 
 
 ## `prompt` payload → Prompt.
+## `must_select` is omitted on the wire when == 1 (§3.3).
 static func parse_prompt(d: Dictionary, catalog: Catalog) -> Prompt:
 	var p := Prompt.new()
 	p.text = str(d.get("text", ""))
 	p.options = _parse_option_array(d.get("options", []), catalog)
 	p.context = _parse_option_array(d.get("context", []), catalog)
+	p.must_select = int(d.get("must_select", 1))
 	return p
 
 
@@ -187,6 +189,8 @@ static func parse_option(d: Dictionary, catalog: Catalog) -> Option:
 			return Option.Slot(catalog.slot_for(str(d.get("name", ""))))
 		"weapon_slot":
 			return Option.Slot(catalog.weapon_slot_for(str(d.get("name", ""))))
+		"revealed_card":
+			return Option.RevealedCard(catalog.card_for(d.name))
 		_:
 			push_warning("Deserializer.parse_option: unknown option type: %s" % d)
 			return null
